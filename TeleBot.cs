@@ -26,13 +26,14 @@ namespace ClickMashine_10._0
     }
     class TeleBot
     {
+        const long IdAdminTG = 597484739;
         object obj = new object();
         TelegramBotClient botClient;
         CancellationTokenSource cts;
         UpdateHandler handler;
         ReceiverOptions receiverOptions;
         List<long> IdChats;
-        string buffer;
+        string buffer; 
         EventWaitHandle eventMessage = new EventWaitHandle(false, EventResetMode.AutoReset);
         public TeleBot()
         {
@@ -43,7 +44,7 @@ namespace ClickMashine_10._0
             handler.eventQuestion += GetMessageQuestion;
             receiverOptions = new ReceiverOptions();
             IdChats = new List<long>();
-            IdChats.Add(597484739);
+            IdChats.Add(IdAdminTG);
         }
         public async void Start()
         {
@@ -71,7 +72,7 @@ namespace ClickMashine_10._0
             }
             return buffer;
         }
-        public void SendError(Site site, string Message)
+        public async void SendError(Site site, string Message)
         {            
             await botClient.SendPhotoAsync(IdChats[0], Message);
         }
