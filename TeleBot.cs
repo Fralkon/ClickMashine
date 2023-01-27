@@ -31,7 +31,7 @@ namespace ClickMashine_10._0
         CancellationTokenSource cts;
         UpdateHandler handler;
         ReceiverOptions receiverOptions;
-        List<int> IdChats;
+        List<long> IdChats;
         string buffer;
         EventWaitHandle eventMessage = new EventWaitHandle(false, EventResetMode.AutoReset);
         public TeleBot()
@@ -42,7 +42,7 @@ namespace ClickMashine_10._0
             handler.Question = false;
             handler.eventQuestion += GetMessageQuestion;
             receiverOptions = new ReceiverOptions();
-            IdChats = new List<int>();
+            IdChats = new List<long>();
             IdChats.Add(597484739);
         }
         public async void Start()
