@@ -200,7 +200,7 @@ else
 								Sleep(ev);
 
 								ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-								if (ev == "error_wait")
+								if (ev == "errorWait")
 								{
 									CM("Error end youtube watch");
 								}

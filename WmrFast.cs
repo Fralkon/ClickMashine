@@ -146,7 +146,7 @@ function click_s()
 						if (ev != "error")
 						{
 							Sleep(ev);
-							ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('a');");
+							WaitButtonClick(browsers[1].MainFrame, "document.querySelector('a');");
 							Sleep(2);
 						}
 					}

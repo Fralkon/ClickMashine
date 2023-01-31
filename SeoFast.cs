@@ -216,7 +216,7 @@ else 'error_youtube';";
                     if (ev != "error_youtube")
                     {
                         Sleep(ev);
-                        ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.sf_button');");
+                        WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.sf_button');");
                     }
 
                 }
@@ -281,7 +281,7 @@ go();";
                             ev = SendJSReturn(1, js);
                             Sleep(ev);
                             ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
-                            if (ev == "waitError")
+                            if (ev == "errorWait")
                                 MessageBox.Show("ERROR BLYA");
                             Sleep(2);
                             break;
@@ -425,7 +425,7 @@ go();";
                                 ev = SendJSReturn(1, js);
                                 Sleep(ev);
                                 ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
-                                if (ev == "waitError")
+                                if (ev == "errorWait")
                                     MessageBox.Show("ERROR BLYA");
                                 Sleep(2);
                             }
