@@ -1,14 +1,5 @@
 ﻿using CefSharp;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace ClickMashine_10._0
 {
@@ -39,20 +30,20 @@ namespace ClickMashine_10._0
 				auth_js += "document.querySelector('.btn_big_green').click();";
 				eventLoadPage.Reset();
 				SendJS(0, auth_js);
-				if (eventLoadPage.WaitOne(5000))
+				if (eventLoadPage.WaitOne(10000))
 					break;
 			}
 		}
 		public override void StartSurf()
 		{
-			try
-			{
-				MailSurf();
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message);
-			}
+			//try
+			//{
+			//	MailSurf();
+			//}
+			//catch (Exception ex)
+			//{
+			//	MessageBox.Show(ex.Message);
+			//}
 			try
 			{
 				ClickSurf();
@@ -74,7 +65,6 @@ namespace ClickMashine_10._0
 		private void ClickSurf()
 		{
 			LoadPage(0, "https://profitcentr.com/");
-			Sleep(2);
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(1)').click();");
 			Sleep(4);
 			//AntiBot();
@@ -200,7 +190,7 @@ else
 								Sleep(ev);
 
 								ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-								if (ev == "error_wait")
+								if (ev == "errorWait")
 								{
 									CM("Error end youtube watch");
 								}
@@ -227,14 +217,14 @@ else
 		{
 			LoadPage(0, "https://profitcentr.com/");
 			Sleep(2);
-			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
+			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').click();");
 			Sleep(4);
 			string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
 function surf()
 {
 	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
-	if (start_ln != null) { start_ln.click(); n++; return 'surf'); }
+	if (start_ln != null) { start_ln.click(); n++; return 'surf'; }
 	else { return 'wait' }
 }
 function click_s()

@@ -360,7 +360,7 @@ namespace ClickMashine_10._0
                 browsers[i].GetHost().CloseBrowser(true);
             }
         }
-        protected string WaitButtonClick(IFrame frame, string element)
+        protected string WaitButtonClick(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
 @"function wait_element()
@@ -370,14 +370,14 @@ namespace ClickMashine_10._0
     else return 'wait';
 }";
             SendJS(frame, js_wait);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < sec; i++)
             {
                 string ev_js_wait = SendJSReturn(frame, "wait_element();");
                 if (ev_js_wait == "click")
                     return ev_js_wait;
                 Thread.Sleep(1000);
             }
-            return "error_wait";
+            return "errorWait";
         }
         /// <summary>
         /// Ответ на MAIl
@@ -386,7 +386,7 @@ namespace ClickMashine_10._0
         /// <param name="question">question</param>
         /// <param name="answer">answer</param>
         /// <returns>errorMail, answer int.ToString()</returns>
-        protected string GetMailAnswer(IFrame frame, string mail, string question, string answer)
+        protected string GetMailAnswer(IFrame frame, string mail, string question, string answer, int sec = 5)
         {
             string js =
 @"function get_mail() {
@@ -405,7 +405,7 @@ namespace ClickMashine_10._0
     else { return 'wait'; }
 };
 get_mail();";
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < sec; i++)
             {
                 string ev = SendJSReturn(frame, js);
                 if (ev == "wait")
@@ -413,6 +413,10 @@ get_mail();";
                 else
                 {
                     MailSurf? mailSurf = JsonSerializer.Deserialize<MailSurf>(ev);
+                    if(mailSurf == null)
+                    {
+                        return "errorMail";
+                    }
                     return mailSurf.GetAnswer();
                 }
             }
