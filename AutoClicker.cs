@@ -31,7 +31,7 @@ namespace ClickMashine_10._0
                 //siteClickers.Add(new SiteClicker(new SeoFast(form, teleBot), authX.Element("seo-fast")));
                 //siteClickers.Add(new SiteClicker(new Aviso(form, teleBot), authX.Element("aviso")));
                 //siteClickers.Add(new SiteClicker(new Profitcentr(form, teleBot), authX.Element("profitcentr")));
-                siteClickers.Add(new SiteClicker(new WmrFast(form, teleBot), authX.Element("wmrfast")));
+                //siteClickers.Add(new SiteClicker(new WmrFast(form, teleBot), authX.Element("wmrfast")));
 
             }
             catch (Exception ex)
