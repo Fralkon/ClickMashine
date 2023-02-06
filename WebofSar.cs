@@ -130,6 +130,7 @@ fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
         private void VisitSites()
         {
             LoadPage("https://webof-sar.ru/work-pay-visits");
+            Sleep(2);
             string js =
 @"var surf_cl = document.querySelectorAll('.td-work');var n = 0;
 function surf()
@@ -166,8 +167,6 @@ function click_s()
                     {
                         WaitCreateBrowser(1);
                         Sleep(7);
-                        CloseBrowser(browsers[2]);
-                        Sleep(2);
                     }
                 }
                 CloseСhildBrowser();
@@ -212,6 +211,11 @@ function click_s()
                     {
                         WaitCreateBrowser(1);
                         Sleep(2);
+
+
+
+
+
                         SendJS(browsers[1].MainFrame, @"loadFrame();
 $(window).on(""focus"", function () {   
     wFocus = true;

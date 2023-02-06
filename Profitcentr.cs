@@ -109,9 +109,9 @@ window.top.start = 0;
 var timer1 = document.querySelector('#time');
 var timer2 = document.querySelector('#timer_inp');
 if (timer1 != null)
-	return timer1.innerText;
+	timer1.innerText;
 else if (timer2 != null)
-	return timer2.innerText;
+	timer2.innerText;
 else 'error_surf';");
 							if (ev != "error")
 							{
@@ -128,10 +128,11 @@ if (range != null)
 }
 else
 {
-	'error_surf';
 	location.replace(""vlss?view=ok"");
+	'error_surf';
 }");
 								Sleep(2);
+								CloseBrowser(browsers[1]);
 							}
 						}
 					}

@@ -19,6 +19,7 @@ namespace ClickMashine_10._0
         {
             MailSurf();
             ClickSurf();
+            VisitSurf();
             //YouTubeSurf();
         }
         public override void Auth(Auth auth)
@@ -33,33 +34,37 @@ namespace ClickMashine_10._0
             if (ev == "login")
             {
                 eventLoadPage.WaitOne(5000);
-                SendJS(0, "captcha_choice('2');onclick=\"save_enter();\"");
-                Sleep(1);
-                while (true)
-                {
-                    ev = SendJSReturn(0, "var js = document.querySelector('#captcha_new').getBoundingClientRect().toJSON();" +
-        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
-                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-                    FocusBrowser(browsers[0]);
-                    Bitmap img = MakeScreenshot(rect_img);
-                    string answer_telebot = teleBot.SendQuestion(img);
+                string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
+                "document.querySelector('#logpassword').value = '" + auth.Password + "';";
+                SendJS(0, js);
+                AntiBot();
+//                SendJS(0, "captcha_choice('2');onclick=\"save_enter();\"");
+//                Sleep(1);
+//                while (true)
+//                {
+//                    ev = SendJSReturn(0, "var js = document.querySelector('#captcha_new').getBoundingClientRect().toJSON();" +
+//        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
+//                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
+//                    FocusBrowser(browsers[0]);
+//                    Bitmap img = MakeScreenshot(rect_img);
+//                    string answer_telebot = teleBot.SendQuestion(img);
 
-                    string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
-                    "document.querySelector('#logpassword').value = '" + auth.Password + "';" +
-                    "document.querySelector('#code').value = '" + answer_telebot + "';" +
-                    "document.querySelector('.sf_button').click();";
-                    eventLoadPage.Reset();
-                    SendJS(0, js);
-                    eventLoadPage.WaitOne();
-                    Sleep(5);
-                    js =
-@"var echoError = document.querySelector('.echo_error');
-if(echoError != null) 'echoError';
-else 'ok';";
-                    ev = SendJSReturn(0, js);
-                    if (ev == "ok")
-                        break;
-                }
+                //                    string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
+                //                    "document.querySelector('#logpassword').value = '" + auth.Password + "';" +
+                //                    "document.querySelector('#code').value = '" + answer_telebot + "';" +
+                //                    "document.querySelector('.sf_button').click();";
+                //                    eventLoadPage.Reset();
+                //                    SendJS(0, js);
+                //                    eventLoadPage.WaitOne();
+                //                    Sleep(5);
+                //                    js =
+                //@"var echoError = document.querySelector('.echo_error');
+                //if(echoError != null) 'echoError';
+                //else 'ok';";
+                //                    ev = SendJSReturn(0, js);
+                //                    if (ev == "ok")
+                //                        break;
+                //                }
             }
         }
         private void CheckCaptcha()
@@ -182,7 +187,7 @@ else 'ok';";
         private void YouTubeSurf()
         {
             LoadPage(0, "https://seo-fast.ru/work_youtube?youtube_video");
-            CheckCaptcha();
+            //CheckCaptcha();
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function click_s()
@@ -227,7 +232,7 @@ else 'error_youtube';";
         private void ClickSurf()
         {
             LoadPage(0, "https://seo-fast.ru/work_surfing?go");
-            CheckCaptcha();
+            //CheckCaptcha();
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -280,9 +285,7 @@ function go(){
 go();";
                             ev = SendJSReturn(1, js);
                             Sleep(ev);
-                            ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
-                            if (ev == "errorWait")
-                                MessageBox.Show("ERROR BLYA");
+                            WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
                             Sleep(2);
                             break;
                         }
@@ -291,8 +294,12 @@ go();";
                 CloseСhildBrowser();
             }
 
+          
+        }
+        private void VisitSurf()
+        {
             LoadPage(0, "https://seo-fast.ru/work_transitions");
-            js =
+            string js =
            @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
 {
@@ -356,7 +363,7 @@ else { return 'wait' }};";
         private void MailSurf()
         {
             LoadPage(0, "https://seo-fast.ru/work_mails");
-            CheckCaptcha();
+            //CheckCaptcha();
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function surf()
@@ -433,6 +440,56 @@ go();";
                     }
                 }
                 CloseСhildBrowser();
+            }
+        }
+        private void AntiBot()
+        {
+            string jsAntiBot =
+@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+if(captha_lab.length != 0){
+    var js = document.querySelector('.out-capcha').getBoundingClientRect().toJSON();
+    JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
+}
+else 'ok';";
+            string evAntiBot = SendJSReturn(0, jsAntiBot);
+            CM(evAntiBot);
+            if (evAntiBot == "ok")
+            {
+                return;
+            }
+            else if (evAntiBot == "error")
+            {
+                CM("ERROR");
+                throw new Exception("Jib,rf ,kz");
+            }
+            else
+            {
+                Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(evAntiBot);
+                FocusBrowser(browsers[0]);
+                Bitmap img = MakeScreenshot(rect_img);
+                string answer_telebot = teleBot.SendQuestion(img);
+
+                jsAntiBot = "";
+                foreach (char ch in answer_telebot)
+                    jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                jsAntiBot += "login('1');";
+
+                eventLoadPage.Reset();
+                SendJS(0, jsAntiBot);
+                eventLoadPage.WaitOne();
+            }
+            LoadPage(0, "https://seo-fast.ru/work_surfing?go");
+            string ev = @"if(document.querySelector('.info') != null) 'antiBot';
+else 'notAntiBot';";
+            ev = SendJSReturn(browsers[0].MainFrame, ev);
+            if(ev == "antiBot")
+            {
+                LoadPage(0, "https://seo-fast.ru/work_tasks");
+                eventLoadPage.Reset();
+                SendJS(0, "document.querySelectorAll('.list_rek_table a')[0].click();");
+                eventLoadPage.WaitOne(3000);
+                CloseСhildBrowser();
+                LoadPage(0, "https://seo-fast.ru/work_youtube");
             }
         }
     }
