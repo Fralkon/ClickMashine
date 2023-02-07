@@ -1,5 +1,5 @@
 ﻿
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     partial class Form1
     {
@@ -36,8 +36,8 @@ namespace ClickMashine_10._0
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Location = new System.Drawing.Point(2, 50);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using CefSharp;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class SeoFast : Site
     {

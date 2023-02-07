@@ -7,7 +7,7 @@ using static Tensorflow.Binding;
 using static Tensorflow.KerasApi;
 using Size = OpenCvSharp.Size;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class PredictNN
     {

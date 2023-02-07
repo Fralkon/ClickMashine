@@ -1,7 +1,7 @@
 ﻿using OpenCvSharp;
 using Size = OpenCvSharp.Size;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class WmrFast : Site
 	{
@@ -102,22 +102,23 @@ namespace ClickMashine_10._0
 		}
 		public override void StartSurf()
 		{
-	   //Bitmap image = new Bitmap("C:/Users/Boyarkin/Desktop/WmrFastSurfDate.png");
-	   //CheckImageCompareColor(image);
-	   //ImageControl imageControl = new ImageControl(image);
-	   //imageControl.SplitImage(CompareSurf);
-	   //MatrixImage imgMat = new MatrixImage(image, CompareSurf);
-	   //Console.WriteLine(imgMat.ToString());
-			//imgMat.Calibrate(26, 20);
-			//Console.WriteLine(imgMat.ToString());
-			//Console.WriteLine(imageControl.images.Count);
-	   //for (int i1 = 0; i1 < imageControl.images.Count; i1++)
-	   //{
-	   //    MatrixImage matrixImage = new MatrixImage(imageControl.images[i1], CompareSurf);
-	   //    Console.WriteLine(matrixImage.ToString());
-	   //}
-	   //Console.ReadLine();
+		   //Bitmap image = new Bitmap("C:/Users/Boyarkin/Desktop/WmrFastSurfDate.png");
+		   //CheckImageCompareColor(image);
+		   //ImageControl imageControl = new ImageControl(image);
+		   //imageControl.SplitImage(CompareSurf);
+		   //MatrixImage imgMat = new MatrixImage(image, CompareSurf);
+		   //Console.WriteLine(imgMat.ToString());
+				//imgMat.Calibrate(26, 20);
+				//Console.WriteLine(imgMat.ToString());
+				//Console.WriteLine(imageControl.images.Count);
+		   //for (int i1 = 0; i1 < imageControl.images.Count; i1++)
+		   //{
+		   //    MatrixImage matrixImage = new MatrixImage(imageControl.images[i1], CompareSurf);
+		   //    Console.WriteLine(matrixImage.ToString());
+		   //}
+		   //Console.ReadLine();
             ClickSurf();
+			VisitSurf();
 			YouTubeSurf();
 		}
 		private void YouTubeSurf()
@@ -160,6 +161,97 @@ function click_s()
 		{
 			WmrFastNNClick nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 			LoadPage("https://wmrfast.com/serfing.php");
+			string js =
+@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
+function click_s()
+{
+	if (n >= surf_cl.length) return 'end';
+	else
+	{
+		surf_cl[n].click(); n++; return 'surf';
+	}
+}";
+			SendJS(0, js);
+			while (true)
+			{
+				string ev = SendJSReturn(0, "click_s();");
+				if (ev == "surf")
+				{
+					Sleep(3);
+					if (browsers.Count == 2)
+					{
+						ev = SendJSReturn(1, "counter.toString();");
+						if (ev != "error")
+						{
+							Sleep(ev);
+							js =
+@"function waitCounter(){
+	if(counter == -1) return 'ok';
+	else return 'wait';
+}";
+							ev = WaitFunction(browsers[1].MainFrame, "waitCounter();", js);
+							if (ev == "ok")
+							{
+								Window window = new Window("123");
+								for (int i = 0; i < 5; i++)
+								{
+									Sleep(1);
+									Mat image = GetMatBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')");
+									window.ShowImage(image);
+									Cv2.WaitKey(1);
+									Mat matClick = WmrFastClickGray(image);
+									MatControl matControl = new MatControl(matClick);
+									if (matControl.SplitImage(sizeImgClick.Width, sizeImgClick.Height, range: 7))
+									{
+										string value = matControl.Predict(nnClick);
+										js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
+for (var i = 0; i < butRet.length; i++)
+{
+	if (butRet[i].querySelector('.submit').value == " + value + @")
+	{ butRet[i].querySelector('.submit').click(); return 'ok'}
+}
+return 'errorClick';}endClick();";
+										ev = SendJSReturn(1, js);
+										if (ev == "ok") { Sleep(2); break; }
+									}
+									SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+									//CheckImageCompareColor(image); 
+									//ImageControl imageControl = new ImageControl(image);
+									//imageControl.SplitImage(CompareSurf);
+									//Console.WriteLine(imageControl.images.Count);
+									//if (imageControl.images.Count == 3)
+									//{
+									//                               for (int i1 = 0; i1 < imageControl.images.Count; i1++)
+									//	{
+									//                                   MatrixImage matrixImage = new MatrixImage(imageControl.images[i1], CompareSurf);
+									//		if (matrixImage.cols > 20 && matrixImage.cols < 14 && matrixImage.rows < 16 && matrixImage.rows > 26)
+									//			continue;
+									//		matrixImage.Calibrate(26, 20);
+									//		Console.WriteLine(matrixImage.ToString());
+									//		matrixImage.SaveToDateFile("C:/Users/Boyarkin/Desktop/WmrFastSurfDate.txt", number[i1]);
+									//	}
+									//}
+									//else
+
+									//	Console.WriteLine("Error BLLYA");
+
+									Sleep(2);
+								}
+								window.Close();
+							}
+						}
+					}
+				}
+				else if (ev == "end")
+					break;
+				CloseСhildBrowser();
+				Sleep(2);
+			}
+		}
+		private void VisitSurf()
+        {
+			WmrFastNNClick nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
+			LoadPage("https://wmrfast.com/serfingnew.php");
 			string js =
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
 function click_s()
@@ -239,8 +331,9 @@ return 'errorClick';}endClick();";
 				}
 				else if (ev == "end")
 					break;
-				CloseСhildBrowser();
+				CloseСhildBrowser(); 
+				Sleep(2);
 			}
-		}
+		}	
 	}
 }

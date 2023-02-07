@@ -1,7 +1,7 @@
 ﻿using CefSharp;
 using System.Text.Json;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
 	class Profitcentr : Site
 	{
@@ -44,14 +44,14 @@ namespace ClickMashine_10._0
 			//{
 			//	MessageBox.Show(ex.Message);
 			//}
-			try
-			{
-				ClickSurf();
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message);
-			}
+			//try
+			//{
+			//	ClickSurf();
+			//}
+			//catch (Exception ex)
+			//{
+			//	MessageBox.Show(ex.Message);
+			//}
 			try
 			{
 				YouTubeSurf();
@@ -73,7 +73,87 @@ namespace ClickMashine_10._0
 function surf()
 {
 	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
-	if (start_ln != null) { start_ln.click(); n++; return 'surf'; }
+	if (start_ln != null) { start_ln.click(); n+=2; return 'surf'; }
+	else { return 'wait'; }
+}
+function click_s()
+{
+	if (n + 4 >= surf_cl.length) return 'end_surf';
+	else
+	{
+		surf_cl[n].querySelector('a').click(); return 'click';
+	}
+}";
+			SendJS(0, js);
+			while (true)
+			{
+				string ev = SendJSReturn(0, "click_s();");
+				if (ev == "end_surf")
+					break;
+				else if (ev == "continue")
+					continue;
+				else if (ev == "click")
+				{
+					for (int i = 0; i < 10; i++)
+					{
+						ev = SendJSReturn(0, "surf();");
+						if (ev == "wait")
+							Sleep(2);
+						else if (ev == "surf")
+						{
+							Sleep(3);
+							IFrame frame = browsers[1].GetFrame("frminfo");
+							ev = SendJSReturn(frame,
+@"b = false;
+window.top.start = 0;
+var timer1 = document.querySelector('#time');
+var timer2 = document.querySelector('#timer_inp');
+if (timer1 != null)
+	timer1.innerText;
+else if (timer2 != null)
+	timer2.innerText;
+else 'error_surf';");
+							if (ev != "error")
+							{
+								Sleep(ev);
+								Sleep(2);
+								frame = browsers[1].GetFrame("frminfo");
+								SendJSReturn(frame,
+@"var range = document.querySelector('[type=""range""]');
+if (range != null)
+{
+	range.value = range.max;
+	document.querySelector('button').click();
+	'end';
+}
+else
+{
+	location.replace(""vlss?view=ok"");
+	'error_surf';
+}");
+								Sleep(2);
+								CloseBrowser(browsers[1]);
+							}
+						}
+					}
+				}
+				Sleep(2);
+				CloseСhildBrowser();
+			}
+		}
+		private void VisitSurf()
+        {
+
+			LoadPage(0, "https://profitcentr.com/");
+			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(1)').click();");
+			Sleep(4);
+			//AntiBot();
+			string js =
+@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+function surf()
+{
+	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
+	if (start_ln != null) { start_ln.click(); n+=2; return 'surf'; }
 	else { return 'wait'; }
 }
 function click_s()
@@ -147,7 +227,7 @@ else
 			Sleep(2);
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
-			//AntiBot();
+			AntiBot();
 			IFrame main_frame = browsers[0].MainFrame;
 			string js_links = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 2;
 			function click_s()

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class Aviso : Site
     {

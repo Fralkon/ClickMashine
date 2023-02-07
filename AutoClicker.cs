@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class AutoClicker
     {
@@ -26,12 +26,10 @@ namespace ClickMashine_10._0
                 //List<Auth> authRouter = new List<Auth>() { new Auth(authX.Element("google")), new Auth(authX.Element("vk")) };
                 //router.Auth(authRouter);
 
-
                 //siteClickers.Add(new SiteClicker(new WebofSar(form, teleBot), authX.Element("webof-sar")));
                 //siteClickers.Add(new SiteClicker(new SeoFast(form, teleBot), authX.Element("seo-fast")));
                 //siteClickers.Add(new SiteClicker(new Profitcentr(form, teleBot), authX.Element("profitcentr")));
                 siteClickers.Add(new SiteClicker(new WmrFast(form, teleBot), authX.Element("wmrfast")));
-
             }
             catch (Exception ex)
             {

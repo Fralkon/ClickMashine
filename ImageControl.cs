@@ -2,7 +2,7 @@
 using Point = OpenCvSharp.Point;
 using Size = OpenCvSharp.Size;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     // delegate bool CompareColor(Color color1);
     //internal class MatrixImage

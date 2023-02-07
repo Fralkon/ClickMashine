@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     enum EnumTypeSite
     {
