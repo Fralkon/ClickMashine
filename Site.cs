@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     enum EnumTypeSite
     {
@@ -110,6 +110,14 @@ namespace ClickMashine_10._0
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
         protected Thread thread;
+        Auth auth;
+        public Site(Form1 form, TeleBot teleBot, Auth auth)
+        {
+            this.auth = auth;
+            this.form = form;
+            this.teleBot = teleBot;
+            thread = new Thread(StartSurf);
+        }
         public Site(Form1 form, TeleBot teleBot)
         {
             this.form = form;
@@ -125,6 +133,8 @@ namespace ClickMashine_10._0
         }
         public virtual void StartSurf()
         {
+            Initialize();
+            Auth(auth);
         }
         public virtual void Auth(Auth auth)
         {
@@ -162,22 +172,43 @@ namespace ClickMashine_10._0
             {
                 if (browsers[i].Identifier == browser.Identifier)
                 {
-                    var windowHandle = browser.GetHost().GetWindowHandle();
+                    //var windowHandle = browser.GetHost().GetWindowHandle();
 
-                    //WinForms will kindly lookup the child control from it's handle
-                    //If no parentControl then likely it's a native popup created by CEF
-                    //(Devtools by default will open as a popup, at this point the Url hasn't been set, so 
-                    // we're going with this assumption as it fits the use case of this example)
+                    ////WinForms will kindly lookup the child control from it's handle
+                    ////If no parentControl then likely it's a native popup created by CEF
+                    ////(Devtools by default will open as a popup, at this point the Url hasn't been set, so 
+                    //// we're going with this assumption as it fits the use case of this example)
 
-                    var parentControl = Control.FromChildHandle(windowHandle);
-                    if (parentControl != null)
-                    {
-                        parentControl.Invoke(new Action(() =>
+                    //var parentControl = Control.FromChildHandle(windowHandle);
+                    //if (parentControl != null)
+                    //{
+                    //    parentControl.Invoke(new Action(() =>
+                    //    {
+                    //        parentControl.Dispose();
+
+                    //    }));
+                    //}
+
+                    var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
+                    if (controlBrowser != null)
+                        controlBrowser.Invoke(new Action(() =>
                         {
-                            parentControl.Dispose();
-
+                            TabPage parentControl = controlBrowser.Parent as TabPage;
+                            if (parentControl != null)
+                            {
+                                parentControl.Dispose();
+                            }
+                            else
+                            {
+                                controlBrowser.Dispose();
+                            }
                         }));
+                    else
+                    {
+                        MessageBox.Show("asdasdasdasdasdas");
                     }
+
+
                     browsers.RemoveAt(i);
                     if (i != 0)
                     {

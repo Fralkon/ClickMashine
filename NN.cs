@@ -7,7 +7,7 @@ using static Tensorflow.Binding;
 using static Tensorflow.KerasApi;
 using Size = OpenCvSharp.Size;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class PredictNN
     {
@@ -28,7 +28,7 @@ namespace ClickMashine_10._0
     class NN
     {
         protected Shape img_dim;
-        protected IDatasetV2 train_ds, val_ds;
+        protected IDatasetV2? train_ds, val_ds;
         protected Model model;
         public NN(Size imgSize)
         {
@@ -66,7 +66,7 @@ namespace ClickMashine_10._0
         }
         protected virtual void BuildModel()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             //var layers = new LayersApi();
 
             //// input layer
@@ -93,31 +93,31 @@ namespace ClickMashine_10._0
             //   loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
             //   metrics: new[] { "accuracy" });
 
-            LayersApi layers = new LayersApi();
+            //LayersApi layers = new LayersApi();
 
-            // input layer
-            var inputs = keras.layers.Input(shape: img_dim, name: "img");
+            //// input layer
+            //var inputs = keras.layers.Input(shape: img_dim, name: "img");
 
-            // convolutional layer
-            var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
-            x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
-            x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            x = layers.GlobalAveragePooling2D().Apply(x);
-            x = layers.Dense(256, activation: "relu").Apply(x);
-            x = layers.Dropout(0.5f).Apply(x);
+            //// convolutional layer
+            //var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
+            //x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
+            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
+            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
+            //x = layers.GlobalAveragePooling2D().Apply(x);
+            //x = layers.Dense(256, activation: "relu").Apply(x);
+            //x = layers.Dropout(0.5f).Apply(x);
 
-            // output layer
-            var outputs = layers.Dense(10).Apply(x);
+            //// output layer
+            //var outputs = layers.Dense(10).Apply(x);
 
-            // build keras model
-            model = keras.Model(inputs, outputs, name: "toy_resnet");
-            model.summary();
+            //// build keras model
+            //model = keras.Model(inputs, outputs, name: "toy_resnet");
+            //model.summary();
 
-            // compile keras model in tensorflow static graph
-            model.compile(optimizer: keras.optimizers.Adam(),
-               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
-               metrics: new[] { "accuracy" });
+            //// compile keras model in tensorflow static graph
+            //model.compile(optimizer: keras.optimizers.Adam(),
+            //   loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+            //   metrics: new[] { "accuracy" });
 
         }
         public void Train(string path, int epochs)
@@ -182,11 +182,9 @@ namespace ClickMashine_10._0
             model = keras.Model(inputs, outputs, name: "WmrClick");
             model.summary();
 
-            // compile keras model in tensorflow static graph
             model.compile(optimizer: keras.optimizers.Adam(),
-               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
-               metrics: new[] { "accuracy" });
-
+                loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+                metrics: new[] { "accuracy" });
         }
     }
     class WmrFastNNAuth : NN

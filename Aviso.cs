@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class Aviso : Site
     {
-        public Aviso(Form1 form, TeleBot teleBot) : base(form, teleBot)
+        public Aviso(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://aviso.bz";
             type.enam = EnumTypeSite.Aviso;

@@ -6,21 +6,23 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using CefSharp;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class SeoFast : Site
     {
-        public SeoFast(Form1 form, TeleBot teleBot) : base(form, teleBot)
+        public SeoFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://seo-fast.ru/";
             type.enam = EnumTypeSite.SeoFast;
         }
         public override void StartSurf()
         {
+            base.StartSurf();
             MailSurf();
             ClickSurf();
             VisitSurf();
             //YouTubeSurf();
+            CloseAllBrowser();
         }
         public override void Auth(Auth auth)
         {
@@ -292,9 +294,7 @@ go();";
                     }
                 }
                 CloseСhildBrowser();
-            }
-
-          
+            }          
         }
         private void VisitSurf()
         {
@@ -431,9 +431,7 @@ function click_s()
 go();";
                                 ev = SendJSReturn(1, js);
                                 Sleep(ev);
-                                ev = WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
-                                if (ev == "errorWait")
-                                    MessageBox.Show("ERROR BLYA");
+                                WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
                                 Sleep(2);
                             }
                         }

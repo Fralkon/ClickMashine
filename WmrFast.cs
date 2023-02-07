@@ -1,12 +1,14 @@
 ﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using Size = OpenCvSharp.Size;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class WmrFast : Site
 	{
 		private Size sizeMatAuth = new(8, 10);
 		private Size sizeImgClick = new(20, 26);
+		WmrFastNNClick nnClick;
 		private int CheckImageCompareColor(Mat bitmap)
 		{
 			for (int i = 0; i < bitmap.Cols; i++)
@@ -60,16 +62,16 @@ namespace ClickMashine_10._0
 			}
 			return gray;
 		}
-		public WmrFast(Form1 form, TeleBot teleBot) : base(form, teleBot)
+		public WmrFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
 		{
 			homePage = "https://wmrfast.com/";
 			type.enam = EnumTypeSite.WmrFast;
+			nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
 		public override void Auth(Auth auth)
 		{
 			LoadPage(0, "https://wmrfast.com/");
 			Sleep(2);
-			WmrFastNNAuth authNN = new WmrFastNNAuth(sizeMatAuth, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
 				string ev = SendJSReturn(0, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
@@ -77,6 +79,7 @@ namespace ClickMashine_10._0
 				{
 					Sleep(2);
 
+					WmrFastNNAuth authNN = new WmrFastNNAuth(sizeMatAuth, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 					Mat authMat = GetMatBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')");
 					Cv2.Split(authMat, out Mat[] mat_channels);
 					authMat = mat_channels[0];
@@ -86,39 +89,50 @@ namespace ClickMashine_10._0
 
 					matControl.SplitImage(sizeMatAuth.Width,sizeMatAuth.Height, Cout: 5);
 
-					string js =
-							@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
+                    string js =
+                            @"document.querySelector('#vhusername').value = '" + auth.Login + @"';
 										document.querySelector('#vhpass').value = '" + auth.Password + @"';
 										document.querySelector('#cap_text').value = '" + matControl.Predict(authNN) + @"';
 										document.querySelector('#vhod1').click();";
-					eventLoadPage.Reset();
-					SendJS(0, js);
-					eventLoadPage.WaitOne();
-					Sleep(3);
-				}
+                    eventLoadPage.Reset();
+                    SendJS(0, js);
+                    eventLoadPage.WaitOne();
+                    Sleep(3);
+                }
 				else
 					break;
 			}
 		}
 		public override void StartSurf()
 		{
-	   //Bitmap image = new Bitmap("C:/Users/Boyarkin/Desktop/WmrFastSurfDate.png");
-	   //CheckImageCompareColor(image);
-	   //ImageControl imageControl = new ImageControl(image);
-	   //imageControl.SplitImage(CompareSurf);
-	   //MatrixImage imgMat = new MatrixImage(image, CompareSurf);
-	   //Console.WriteLine(imgMat.ToString());
-			//imgMat.Calibrate(26, 20);
-			//Console.WriteLine(imgMat.ToString());
-			//Console.WriteLine(imageControl.images.Count);
-	   //for (int i1 = 0; i1 < imageControl.images.Count; i1++)
-	   //{
-	   //    MatrixImage matrixImage = new MatrixImage(imageControl.images[i1], CompareSurf);
-	   //    Console.WriteLine(matrixImage.ToString());
-	   //}
-	   //Console.ReadLine();
-            ClickSurf();
-			YouTubeSurf();
+			base.StartSurf();
+			try
+			{
+				ClickSurf();
+			}
+			catch (Exception ex)
+			{
+				CM("ERROR EPTA: " + ex.Message);
+			}
+
+			try
+			{
+				VisitSurf();
+			}
+			catch (Exception ex)
+			{
+				CM("ERROR EPTA: " + ex.Message);
+			}
+
+			//try
+			//{
+			//	YouTubeSurf();
+			//}
+			//catch (Exception ex)
+			//{
+			//	CM("ERROR EPTA: " + ex.Message);
+			//}
+			CloseAllBrowser();
 		}
 		private void YouTubeSurf()
 		{
@@ -158,7 +172,6 @@ function click_s()
 		}
 		private void ClickSurf()
 		{
-			WmrFastNNClick nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 			LoadPage("https://wmrfast.com/serfing.php");
 			string js =
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
@@ -240,7 +253,37 @@ return 'errorClick';}endClick();";
 				else if (ev == "end")
 					break;
 				CloseСhildBrowser();
+				Sleep(2);
 			}
 		}
+		private void VisitSurf()
+        {
+			LoadPage("https://wmrfast.com/serfingnew.php");
+			string js =
+@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
+function click_s()
+{
+	if (n >= surf_cl.length) return 'end';
+	else
+	{
+		surf_cl[n].click(); n++; return surf_cl[0].getAttribute('timer').toString();
+	}
+}";
+			SendJS(0, js);
+			while (true)
+			{
+				string ev = SendJSReturn(0, "click_s();");
+				if (ev == "end")
+					break;
+				else
+				{
+					WaitCreateBrowser(1);
+					Sleep(ev);
+					Sleep(2);
+				}
+				CloseСhildBrowser(); 
+				Sleep(2);
+			}
+		}	
 	}
 }

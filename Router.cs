@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class Router : Site
     {

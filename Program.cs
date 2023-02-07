@@ -1,4 +1,4 @@
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     internal static class Program
     {

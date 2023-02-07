@@ -5,7 +5,7 @@ using CefSharp.WinForms;
 using System.Threading;
 using System.Xml.Linq;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     public partial class Form1 : Form
     {

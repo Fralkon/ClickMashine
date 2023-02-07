@@ -4,21 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     internal class WebofSar : Site
     {
-        public WebofSar(Form1 form, TeleBot teleBot) : base(form, teleBot)
+        public WebofSar(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://webof-sar.ru/";
             type.enam = EnumTypeSite.WebofSar;
         }
         public override void StartSurf()
         {
+            base.StartSurf();
             // MailSurf();
             ClickSurf(); 
             VisitSites();
             //YouTubeSurf();
+            CloseAllBrowser();
         }
         public override void Auth(Auth auth)
         {

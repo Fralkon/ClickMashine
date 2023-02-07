@@ -4,7 +4,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     public class EventQuestionArg : EventArgs
     {

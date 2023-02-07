@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using CefSharp;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     public class PopupAsChildHelper : NativeWindow, IDisposable
     {

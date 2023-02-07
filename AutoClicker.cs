@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace ClickMashine_10._0
+namespace ClickMashine
 {
     class AutoClicker
     {
@@ -9,7 +9,7 @@ namespace ClickMashine_10._0
 
         Thread? teleBotThread;
 
-        List<SiteClicker> siteClickers = new List<SiteClicker>();
+        List<Site> siteList = new List<Site>();
         public AutoClicker(Form1 form)
         {
             try
@@ -21,17 +21,15 @@ namespace ClickMashine_10._0
                 teleBotThread = new Thread(teleBot.Start);
                 teleBotThread.Start();
 
-                router = new Router(form, teleBot);
-                router.Initialize();
                 //List<Auth> authRouter = new List<Auth>() { new Auth(authX.Element("google")), new Auth(authX.Element("vk")) };
+                //router = new Router(form, teleBot);
+                //router.Initialize();
                 //router.Auth(authRouter);
 
-
-                //siteClickers.Add(new SiteClicker(new WebofSar(form, teleBot), authX.Element("webof-sar")));
-                //siteClickers.Add(new SiteClicker(new SeoFast(form, teleBot), authX.Element("seo-fast")));
-                //siteClickers.Add(new SiteClicker(new Profitcentr(form, teleBot), authX.Element("profitcentr")));
-                siteClickers.Add(new SiteClicker(new WmrFast(form, teleBot), authX.Element("wmrfast")));
-
+                siteList.Add(new WebofSar(form, teleBot, new Auth(authX.Element("webof-sar"))));
+                siteList.Add(new SeoFast(form, teleBot, new Auth(authX.Element("seo-fast"))));
+                siteList.Add(new Profitcentr(form, teleBot, new Auth(authX.Element("profitcentr"))));
+                siteList.Add(new WmrFast(form, teleBot, new Auth(authX.Element("wmrfast"))));
             }
             catch (Exception ex)
             {
@@ -40,32 +38,13 @@ namespace ClickMashine_10._0
         } 
         public void ClickSurf()
         {       
-            for(int i = 0; i < siteClickers.Count; i++)
-                siteClickers[i].Start();
+            foreach (var site in siteList)
+                site.Start();
         }
         public void Close()
         {
-            for (int i = 0; i < siteClickers.Count; i++)
-                siteClickers[i].Stop();
-        }
-    }
-    class SiteClicker {
-        Site Site;
-        Auth auth;
-        public SiteClicker(Site site, XElement? element)
-        {
-            auth = new Auth(element);
-            this.Site = site;
-        }
-        public void Start()
-        {
-            Site.Initialize();
-            Site.Auth(auth);
-            Site.Start();
-        }
-        public void Stop()
-        {
-            Site.Stop();
+            foreach (var site in siteList)
+                site.Stop();
         }
     }
 }
