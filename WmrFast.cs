@@ -204,10 +204,13 @@ function click_s()
 							ev = WaitFunction(browsers[1].MainFrame, "waitCounter();", js);
 							if (ev == "ok")
 							{
+								Window window = new Window("123");
 								for (int i = 0; i < 5; i++)
 								{
 									Sleep(1);
 									Mat image = GetMatBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')");
+									window.ShowImage(image);
+									Cv2.WaitKey(1);
 									Mat matClick = WmrFastClickGray(image);
 									MatControl matControl = new MatControl(matClick);
 									if (matControl.SplitImage(sizeImgClick.Width, sizeImgClick.Height, range: 7))
@@ -246,6 +249,7 @@ return 'errorClick';}endClick();";
 
 									Sleep(2);
 								}
+								window.Close();
 							}
 						}
 					}
@@ -253,36 +257,6 @@ return 'errorClick';}endClick();";
 				else if (ev == "end")
 					break;
 				CloseСhildBrowser();
-				Sleep(2);
-			}
-		}
-		private void VisitSurf()
-        {
-			LoadPage("https://wmrfast.com/serfingnew.php");
-			string js =
-@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
-function click_s()
-{
-	if (n >= surf_cl.length) return 'end';
-	else
-	{
-		surf_cl[n].click(); n++; return surf_cl[0].getAttribute('timer').toString();
-	}
-}";
-			SendJS(0, js);
-			while (true)
-			{
-				string ev = SendJSReturn(0, "click_s();");
-				if (ev == "end")
-					break;
-				else
-				{
-					WaitCreateBrowser(1);
-					Sleep(ev);
-					Sleep(2);
-				}
-				CloseСhildBrowser(); 
-				Sleep(2);
 			}
 		}	
 	}
