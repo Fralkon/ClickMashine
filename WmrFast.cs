@@ -80,7 +80,7 @@ namespace ClickMashine
 					Sleep(2);
 
 					WmrFastNNAuth authNN = new WmrFastNNAuth(sizeMatAuth, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
-					Mat authMat = GetMatBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')");
+					Mat authMat = BitmapConverter.ToMat(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')"));
 					Cv2.Split(authMat, out Mat[] mat_channels);
 					authMat = mat_channels[0];
 					Cv2.Threshold(authMat, authMat, 140, 255, ThresholdTypes.BinaryInv);
@@ -106,6 +106,7 @@ namespace ClickMashine
 		public override void StartSurf()
 		{
 			base.StartSurf();
+
 			try
 			{
 				ClickSurf();
@@ -132,7 +133,7 @@ namespace ClickMashine
 			//{
 			//	CM("ERROR EPTA: " + ex.Message);
 			//}
-			CloseAllBrowser();
+			//CloseAllBrowser();
 		}
 		private void YouTubeSurf()
 		{
@@ -204,13 +205,10 @@ function click_s()
 							ev = WaitFunction(browsers[1].MainFrame, "waitCounter();", js);
 							if (ev == "ok")
 							{
-								Window window = new Window("123");
 								for (int i = 0; i < 5; i++)
 								{
 									Sleep(1);
-									Mat image = GetMatBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')");
-									window.ShowImage(image);
-									Cv2.WaitKey(1);
+									Mat image = BitmapConverter.ToMat(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));
 									Mat matClick = WmrFastClickGray(image);
 									MatControl matControl = new MatControl(matClick);
 									if (matControl.SplitImage(sizeImgClick.Width, sizeImgClick.Height, range: 7))
@@ -249,7 +247,6 @@ return 'errorClick';}endClick();";
 
 									Sleep(2);
 								}
-								window.Close();
 							}
 						}
 					}
@@ -259,5 +256,34 @@ return 'errorClick';}endClick();";
 				CloseСhildBrowser();
 			}
 		}	
+		private void VisitSurf()
+        {
+			LoadPage("https://wmrfast.com/serfing.php");
+			string js =
+@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
+function click_s()
+{
+	if (n >= surf_cl.length) return surf_cl[0].getAttribute('timer').toString();
+	else
+	{
+		surf_cl[n].click(); n++; return 'surf';
+	}
+}";
+			SendJS(0, js);
+			while (true)
+			{
+				string ev = SendJSReturn(0, "click_s();");
+				if (ev == "end")
+					break;
+                else
+                {
+					WaitCreateBrowser(1);
+					Sleep(2);
+					Sleep(ev);
+				}
+				CloseСhildBrowser();
+				Sleep(2);
+			}
+		}
 	}
 }

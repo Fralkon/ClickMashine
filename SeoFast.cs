@@ -22,7 +22,7 @@ namespace ClickMashine
             ClickSurf();
             VisitSurf();
             //YouTubeSurf();
-            CloseAllBrowser();
+            //CloseAllBrowser();
         }
         public override void Auth(Auth auth)
         {
@@ -98,12 +98,7 @@ else {'end';}");
                     while (true)
                     {
                         Sleep(1);
-                        ev = SendJSReturn(0,
-                            "var js = document.querySelector('[title=\"Main content of the hCaptcha challenge\"]').getBoundingClientRect().toJSON();" +
-"JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
-                        Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-                        FocusBrowser(browsers[0]);
-                        Bitmap img = MakeScreenshot(rect_img);
+                        Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('[title=\"Main content of the hCaptcha challenge\"]')");
                         string answerTelebot = teleBot.SendQuestion(img);
                         js = "var items = document.querySelectorAll('.task-image');";
                         string jsCaptch =
@@ -155,12 +150,7 @@ else 'end';");
             {
                 while (true)
                 {
-                    ev = SendJSReturn(0, "var js = document.querySelector('.out-capcha').getBoundingClientRect().toJSON();" +
-        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)}); ");
-                    Rectangle rect_image = JsonSerializer.Deserialize<Rectangle>(ev);
-
-                    FocusBrowser(browsers[0]);
-                    Bitmap image = MakeScreenshot(rect_image);
+                    Bitmap image = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
                     string answer_telebot = teleBot.SendQuestion(image);
 
                     string auth_js = "";
@@ -445,8 +435,7 @@ go();";
             string jsAntiBot =
 @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
-    var js = document.querySelector('.out-capcha').getBoundingClientRect().toJSON();
-    JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
+    'captcha';
 }
 else 'ok';";
             string evAntiBot = SendJSReturn(0, jsAntiBot);
@@ -462,10 +451,7 @@ else 'ok';";
             }
             else
             {
-                Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(evAntiBot);
-                FocusBrowser(browsers[0]);
-                Bitmap img = MakeScreenshot(rect_img);
-                string answer_telebot = teleBot.SendQuestion(img);
+                string answer_telebot = teleBot.SendQuestion(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')"));
 
                 jsAntiBot = "";
                 foreach (char ch in answer_telebot)

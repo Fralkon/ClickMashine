@@ -128,6 +128,10 @@ namespace ClickMashine
         {
             thread.Start();
         }
+        public void Join()
+        {
+            thread.Join();
+        }
         public void Stop()
         {
         }
@@ -172,28 +176,11 @@ namespace ClickMashine
             {
                 if (browsers[i].Identifier == browser.Identifier)
                 {
-                    //var windowHandle = browser.GetHost().GetWindowHandle();
-
-                    ////WinForms will kindly lookup the child control from it's handle
-                    ////If no parentControl then likely it's a native popup created by CEF
-                    ////(Devtools by default will open as a popup, at this point the Url hasn't been set, so 
-                    //// we're going with this assumption as it fits the use case of this example)
-
-                    //var parentControl = Control.FromChildHandle(windowHandle);
-                    //if (parentControl != null)
-                    //{
-                    //    parentControl.Invoke(new Action(() =>
-                    //    {
-                    //        parentControl.Dispose();
-
-                    //    }));
-                    //}
-
                     var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                     if (controlBrowser != null)
                         controlBrowser.Invoke(new Action(() =>
                         {
-                            TabPage parentControl = controlBrowser.Parent as TabPage;
+                            TabPage? parentControl = controlBrowser.Parent as TabPage;
                             if (parentControl != null)
                             {
                                 parentControl.Dispose();
@@ -203,16 +190,10 @@ namespace ClickMashine
                                 controlBrowser.Dispose();
                             }
                         }));
-                    else
-                    {
-                        MessageBox.Show("asdasdasdasdasdas");
-                    }
-
-
                     browsers.RemoveAt(i);
                     if (i != 0)
                     {
-                        FocusBrowser(browsers[i - 1]);
+                        form.FocusTab(browsers[i-1]);
                     }
                 }
             }
@@ -232,30 +213,6 @@ namespace ClickMashine
                 if (!eventBrowserCreated.WaitOne(3000))
                     if (!eventLoadPage.WaitOne(5000))
                         throw new Exception("Type: " + type.ToString() + "\nError wait Create browser");
-        }
-        protected void FocusBrowser(IBrowser browser)
-        {
-            browser.GetHost().SetFocus(true);
-            var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
-            if (controlBrowser != null)
-                controlBrowser.Invoke(new Action(() =>
-                {
-                    TabPage parentControl = controlBrowser.Parent as TabPage;
-                    if (parentControl != null)
-                    {
-                        TabControl parentControlTabConrol = (TabControl)parentControl.Parent;
-                        parentControlTabConrol.SelectedTab = parentControl;
-                    }
-                    else
-                    {
-                        TabControl parentControl2 = (TabControl)controlBrowser.Parent;
-                        parentControl2.SelectedTab = (TabPage)controlBrowser;
-                    }
-                }));
-            else
-            {
-                MessageBox.Show("asdasdasdasdasdas");
-            }
         }
         protected void LoadPage(int id_browser, string page)
         {
@@ -359,23 +316,6 @@ namespace ClickMashine
                 eventKey.Type = KeyEventType.Char;
                 browsers[id_browser].GetHost().SendKeyEvent(eventKey);
             }
-        }
-        protected Bitmap MakeScreenshot(Rectangle rectImage)
-        {
-            form.Invoke(new Action(() => form.Activate()));
-            Rectangle bounds_form = form.DesktopBounds;
-            bounds_form.X += 9;
-            bounds_form.Width -= 16;
-            bounds_form.Height -= 10;
-            Rectangle bounds_browser = form.tabControl1.Bounds;
-            bounds_browser.Height -= 28;
-            bounds_browser.Width -= 10;
-            Bitmap bitmap = new Bitmap(rectImage.Width, rectImage.Height);
-            using (Graphics g = Graphics.FromImage(bitmap))
-            {
-                g.CopyFromScreen(new System.Drawing.Point(bounds_form.Left + bounds_browser.Left + 4 + rectImage.Left, bounds_form.Top + bounds_browser.Top + 54 + rectImage.Top), System.Drawing.Point.Empty, rectImage.Size);
-            }
-            return bitmap;
         }
         protected void CloseСhildBrowser()
         {
@@ -502,16 +442,14 @@ else 'errorImg';";
                 ev = SendJSReturn(frame, js);
                 if (ev != "errorImg")
                 {
-                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-                    FocusBrowser(frame.Browser);
-                    return MakeScreenshot(rect_img);
+                    Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ev);
+                    return form.MakeScreenshot(frame.Browser, rectElement);
                 }
+                else
+                    throw new Exception("Ошибка скриншота");
             }
-            return null;
-        }
-        protected Mat GetMatBrowser(IFrame frame, string element)
-        {
-            return BitmapConverter.ToMat(GetImgBrowser(frame, element));
+            else
+                throw new Exception("Ошибка ожидания элемента для скриншота");
         }
     }
 }

@@ -16,11 +16,7 @@ namespace ClickMashine
 			LoadPage(0, "https://profitcentr.com/login");
 			while (true)
 			{
-				string ev = SendJSReturn(0, "var js = document.querySelector('.out-capcha').getBoundingClientRect().toJSON();" +
-	"JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
-				Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-				FocusBrowser(browsers[0]);
-				Bitmap img = MakeScreenshot(rect_img);
+				Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 				string answer_telebot = teleBot.SendQuestion(img);
 
 				string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
@@ -61,7 +57,7 @@ namespace ClickMashine
             //{
             //	MessageBox.Show(ex.Message);
             //}
-            CloseAllBrowser();
+            //CloseAllBrowser();
 		}
 		private void ClickSurf()
 		{
@@ -386,16 +382,13 @@ else
 			string jsAntiBot =
 @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
-    var js = document.querySelector('.out-capcha').getBoundingClientRect().toJSON();
-    JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
+    'captcha';
 }
 else 'ok';";
 			string evAntiBot = SendJSReturn(0, jsAntiBot);
 			CM(evAntiBot);
 			if (evAntiBot == "ok")
-			{
 				return;
-			}
 			else if (evAntiBot == "error")
 			{
 				CM("ERROR");
@@ -403,9 +396,8 @@ else 'ok';";
 			}
 			else
 			{
-				Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(evAntiBot);
-				FocusBrowser(browsers[0]);
-				Bitmap img = MakeScreenshot(rect_img);
+				Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')");
+
 				string answer_telebot = teleBot.SendQuestion(img);
 
 				jsAntiBot = "";

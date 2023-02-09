@@ -20,7 +20,7 @@ namespace ClickMashine
             ClickSurf(); 
             VisitSites();
             //YouTubeSurf();
-            CloseAllBrowser();
+            //CloseAllBrowser();
         }
         public override void Auth(Auth auth)
         {

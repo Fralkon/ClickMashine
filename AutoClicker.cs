@@ -26,12 +26,10 @@ namespace ClickMashine
                 //router.Initialize();
                 //router.Auth(authRouter);
 
-
-                //siteClickers.Add(new SiteClicker(new WebofSar(form, teleBot), authX.Element("webof-sar")));
-                //siteClickers.Add(new SiteClicker(new SeoFast(form, teleBot), authX.Element("seo-fast")));
-                //siteClickers.Add(new SiteClicker(new Profitcentr(form, teleBot), authX.Element("profitcentr")));
-                siteClickers.Add(new SiteClicker(new WmrFast(form, teleBot), authX.Element("wmrfast")));
-
+                siteList.Add(new WebofSar(form, teleBot, new Auth(authX.Element("webof-sar"))));
+                siteList.Add(new SeoFast(form, teleBot, new Auth(authX.Element("seo-fast"))));
+                siteList.Add(new Profitcentr(form, teleBot, new Auth(authX.Element("profitcentr"))));
+                siteList.Add(new WmrFast(form, teleBot, new Auth(authX.Element("wmrfast"))));
             }
             catch (Exception ex)
             {
@@ -42,6 +40,8 @@ namespace ClickMashine
         {       
             foreach (var site in siteList)
                 site.Start();
+            foreach (var site in siteList)
+                site.Join();
         }
         public void Close()
         {
