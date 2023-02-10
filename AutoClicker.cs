@@ -5,7 +5,7 @@ namespace ClickMashine
     class AutoClicker
     {
         TeleBot teleBot = new TeleBot();
-        Router? router;
+        //Router? router;
 
         Thread? teleBotThread;
 
@@ -45,6 +45,7 @@ namespace ClickMashine
         }
         public void Close()
         {
+            teleBot.Stop();
             foreach (var site in siteList)
                 site.Stop();
         }

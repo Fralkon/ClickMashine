@@ -101,6 +101,7 @@ namespace ClickMashine
     class Site
     {
         public Form1 form;
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
         protected TeleBot teleBot;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -109,28 +110,26 @@ namespace ClickMashine
         public TypeSite type = new TypeSite();
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
-        protected Thread thread;
+        protected Task Task;
         Auth auth;
         public Site(Form1 form, TeleBot teleBot, Auth auth)
         {
             this.auth = auth;
             this.form = form;
             this.teleBot = teleBot;
-            thread = new Thread(StartSurf);
         }
         public Site(Form1 form, TeleBot teleBot)
         {
             this.form = form;
             this.teleBot = teleBot;
-            thread = new Thread(StartSurf);
         }
         public void Start()
         {
-            thread.Start();
+            Task = Task.Run(() => StartSurf());
         }
         public void Join()
         {
-            thread.Join();
+            Task.Wait();
         }
         public void Stop()
         {

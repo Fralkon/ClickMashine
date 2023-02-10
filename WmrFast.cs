@@ -222,29 +222,12 @@ for (var i = 0; i < butRet.length; i++)
 }
 return 'errorClick';}endClick();";
 										ev = SendJSReturn(1, js);
-										if (ev == "ok") { Sleep(2); break; }
+										if (ev == "ok") { 
+											Sleep(2); 
+											break; 
+										}
 									}
 									SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-									//CheckImageCompareColor(image); 
-									//ImageControl imageControl = new ImageControl(image);
-									//imageControl.SplitImage(CompareSurf);
-									//Console.WriteLine(imageControl.images.Count);
-									//if (imageControl.images.Count == 3)
-									//{
-									//                               for (int i1 = 0; i1 < imageControl.images.Count; i1++)
-									//	{
-									//                                   MatrixImage matrixImage = new MatrixImage(imageControl.images[i1], CompareSurf);
-									//		if (matrixImage.cols > 20 && matrixImage.cols < 14 && matrixImage.rows < 16 && matrixImage.rows > 26)
-									//			continue;
-									//		matrixImage.Calibrate(26, 20);
-									//		Console.WriteLine(matrixImage.ToString());
-									//		matrixImage.SaveToDateFile("C:/Users/Boyarkin/Desktop/WmrFastSurfDate.txt", number[i1]);
-									//	}
-									//}
-									//else
-
-									//	Console.WriteLine("Error BLLYA");
-
 									Sleep(2);
 								}
 							}
@@ -254,6 +237,7 @@ return 'errorClick';}endClick();";
 				else if (ev == "end")
 					break;
 				CloseСhildBrowser();
+				Sleep(2);
 			}
 		}	
 		private void VisitSurf()

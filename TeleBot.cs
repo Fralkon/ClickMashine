@@ -23,7 +23,7 @@ namespace ClickMashine
         UpdateHandler handler;
         ReceiverOptions receiverOptions;
         List<long> IdChats;
-        string buffer; 
+        string buffer= ""; 
         EventWaitHandle eventMessage = new EventWaitHandle(false, EventResetMode.AutoReset);
         public TeleBot()
         {
@@ -42,6 +42,10 @@ namespace ClickMashine
             Console.WriteLine("Bot started");
             await Task.Delay(-1, cancellationToken: cts.Token); // Такой вариант советуют MS: https://github.com/dotnet/runtime/issues/28510#issuecomment-458139641
             Console.WriteLine("Bot stopped");
+        }
+        public void Stop()
+        {
+            cts.Cancel();
         }
         private async void SendPhoto(Bitmap image)
         {
