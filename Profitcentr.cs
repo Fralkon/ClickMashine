@@ -87,7 +87,7 @@ namespace ClickMashine
 				}
 				Sleep(200);
 			}
-			//CloseAllBrowser();
+			CloseAllBrowser();
 		}
 		private void ClickSurf()
 		{
@@ -221,8 +221,6 @@ function click_s()
 		}
 		private void YouTubeSurf()
 		{
-			LoadPage(0, "https://profitcentr.com/");
-			Sleep(2);
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
             for (int i = 0; i < 5; i++)
@@ -305,45 +303,36 @@ else 'end';");
 						ev = SendJSReturn(main_frame, "cl();");
 						if (ev == "surf")
 						{
-							if (!WaitCreateBrowser(1))
-								continue;
-							Sleep(3);
-							IFrame yotube_frame = browsers[1].MainFrame;
+							var browserYouTube = GetBrowser(1);
+							if (browserYouTube == null)
+								break ;
+							Sleep(2);
+							IFrame yotube_frame = browserYouTube.MainFrame;
 							ev = SendJSReturn(yotube_frame,
 @"if(player != null){player.setVolume(0);player.seekTo(0, true);}  b = true; document.querySelector('#tmr').innerText;");
 							if (ev != "error")
 							{
 								Sleep(ev);
-
 								ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
 								if (ev == "errorWait")
-								{
-									CM("Error end youtube watch");
-								}
+									Error("Error end youtube watch");
+								Sleep(2);
 							}
 							break;
 						}
 						else if (ev == "sec_wait")
-						{
 							Sleep(1);
-						}
 						else if (ev == "continue")
-						{
-							CloseСhildBrowser();
 							break;
-						}
 					}
 				}
 				else MessageBox.Show("Ошибка блять");
-				Sleep(2);
 				CloseСhildBrowser();
 				Sleep(1);
 			}
 		}
 		private void RuTubeSurf()
 		{
-            LoadPage(0, "https://profitcentr.com/");
-            Sleep(2);
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').click();");
             Sleep(4);
             for (int i = 0; i < 5; i++)
@@ -360,7 +349,6 @@ else 'ok';";
                     break;
                 else if (evAntiBot == "error")
                 {
-                    CM("ERROR");
                     Error("Ошибка капчи");
                     return;
                 }
@@ -426,12 +414,13 @@ else 'end';");
                         ev = SendJSReturn(main_frame, "cl();");
                         if (ev == "surf")
                         {
-                            if (!WaitCreateBrowser(1))
-                                continue;
-                            Sleep(3);
-                            IFrame yotube_frame = browsers[1].MainFrame;
+                            var browserYouTube = GetBrowser(1);
+                            if (browserYouTube == null)
+                                break;
+                            Sleep(2);
+                            IFrame yotube_frame = browserYouTube.MainFrame;
                             ev = SendJSReturn(yotube_frame,
-@"b = true; c = true; document.querySelector('#tmr').innerText;");
+@"c = true; b = true; document.querySelector('#tmr').innerText;");
                             if (ev != "error")
                             {
                                 Sleep(ev);
@@ -439,24 +428,19 @@ else 'end';");
                                 ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
                                 if (ev == "errorWait")
                                 {
-                                    CM("Error end youtube watch");
+                                    Error("Error end youtube watch");
                                 }
+                                Sleep(2);
                             }
                             break;
                         }
                         else if (ev == "sec_wait")
-                        {
                             Sleep(1);
-                        }
                         else if (ev == "continue")
-                        {
-                            CloseСhildBrowser();
                             break;
-                        }
                     }
                 }
                 else MessageBox.Show("Ошибка блять");
-                Sleep(2);
                 CloseСhildBrowser();
                 Sleep(1);
             }

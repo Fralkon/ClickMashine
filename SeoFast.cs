@@ -71,7 +71,7 @@ namespace ClickMashine
                     Error("Error youtube3\n" + ex.Message);
                 }
             }
-            //CloseAllBrowser();
+            CloseAllBrowser();
         }
         public override bool Auth(Auth auth)
         {
@@ -558,20 +558,7 @@ else 'ok';";
                     jsAntiBot += "login('1');";
 
                     SendJS(0, jsAntiBot);
-                    string funcResultEcho = @"function resultEcho() {
-if(document.querySelector('#result_echo').style.display != 'none')
-    return document.querySelector('#result_echo').innerText;
-else return 'wait';}";
-                    evAntiBot = WaitFunction(browser.MainFrame, "resultEcho();", funcResultEcho, 10);
-                    if (evAntiBot.IndexOf("Проблемы") != -1 || evAntiBot.Length == 0)
-                    {
-                        Error("Ошибка авторизации.\n" + evAntiBot);
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
+                    Sleep(7);
                 }
             }
             Error("Ошибка ввода капчи");

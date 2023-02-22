@@ -115,27 +115,25 @@ namespace ClickMashine
 			}
 			catch (Exception ex)
 			{
-				CM("ERROR EPTA: " + ex.Message);
+				Error("Ошибка Click: " + ex.Message);
 			}
-
 			try
 			{
 				VisitSurf();
 			}
 			catch (Exception ex)
 			{
-				CM("ERROR EPTA: " + ex.Message);
+                Error("Ошибка Visit: " + ex.Message);
 			}
-
-			//try
-			//{
-			//	YouTubeSurf();
-			//}
-			//catch (Exception ex)
-			//{
-			//	CM("ERROR EPTA: " + ex.Message);
-			//}
-			//CloseAllBrowser();
+			try
+			{
+				YouTubeSurf();
+			}
+			catch (Exception ex)
+			{
+				Error("Ошибка YouTube: " + ex.Message);
+			}
+			CloseAllBrowser();
 		}
 		private void YouTubeSurf()
 		{

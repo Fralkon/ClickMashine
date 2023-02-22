@@ -17,7 +17,8 @@ namespace ClickMashine
         Aviso,
         Profitcentr,
         WmrFast,
-        WebofSar
+        WebofSar,
+        Losena
     }
     class TypeSite
     {
@@ -40,6 +41,8 @@ namespace ClickMashine
                     return "WmrFast";
                 case EnumTypeSite.WebofSar:
                     return "WebofSar";
+                case EnumTypeSite.Losena:
+                    return "Losena";
                 default: return "Error";
             }
         }
@@ -184,11 +187,17 @@ namespace ClickMashine
                             TabPage? parentControl = controlBrowser.Parent as TabPage;
                             if (parentControl != null)
                             {
-                                parentControl.Dispose();
+                                form.tabControl1.TabPages.Remove(parentControl);
                             }
                             else
                             {
-                                controlBrowser.Dispose();
+                                var tabControl = controlBrowser as TabPage;
+                                if (tabControl != null)
+                                {
+                                    form.tabControl1.TabPages.Remove(tabControl);
+                                }
+                                else
+                                    throw new Exception("Ошибка удаления TabControl");
                             }
                         }));
                     browsers.RemoveAt(i);
@@ -306,10 +315,10 @@ namespace ClickMashine
         }
         protected void Error(string text)
         {
-            string Message = "---------------------------" +
+            string Message = "---------------------------\n" +
             text +
-            "Type: " + type.ToString() +
-            "---------------------------";
+            "\nType: " + type.ToString() +
+            "\n---------------------------\n";
             Console.WriteLine(Message);
             teleBot.SendError(Message);
         }
