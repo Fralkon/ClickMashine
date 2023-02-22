@@ -17,14 +17,63 @@ namespace ClickMashine
         }
         public override void StartSurf()
         {
-            base.StartSurf();
-            MailSurf();
-            ClickSurf();
-            VisitSurf();
-            //YouTubeSurf();
+            Initialize();
+            if (!Auth(auth))
+                return;
+            while (true)
+            {
+                try
+                {
+                    MailSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error("Error mail\n" + ex.Message);
+                }
+                try
+                {
+                    ClickSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error("Error Click\n" + ex.Message);
+                }
+                try
+                {
+                    VisitSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error("Error visit\n" + ex.Message);
+                }
+                try
+                {
+                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
+                }
+                catch (Exception ex)
+                {
+                    Error("Error youtube1\n" + ex.Message);
+                }
+                try
+                {
+                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_simple");
+                }
+                catch (Exception ex)
+                {
+                    Error("Error youtube2\n" + ex.Message);
+                }
+                try
+                {
+                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
+                }
+                catch (Exception ex)
+                {
+                    Error("Error youtube3\n" + ex.Message);
+                }
+            }
             //CloseAllBrowser();
         }
-        public override void Auth(Auth auth)
+        public override bool Auth(Auth auth)
         {
             LoadPage(0, "https://seo-fast.ru/");
             eventLoadPage.Reset();
@@ -39,17 +88,20 @@ namespace ClickMashine
                 string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
                 "document.querySelector('#logpassword').value = '" + auth.Password + "';";
                 SendJS(0, js);
-                AntiBot();
-//                SendJS(0, "captcha_choice('2');onclick=\"save_enter();\"");
-//                Sleep(1);
-//                while (true)
-//                {
-//                    ev = SendJSReturn(0, "var js = document.querySelector('#captcha_new').getBoundingClientRect().toJSON();" +
-//        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
-//                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-//                    FocusBrowser(browsers[0]);
-//                    Bitmap img = MakeScreenshot(rect_img);
-//                    string answer_telebot = teleBot.SendQuestion(img);
+                if (!Captcha(browsers[0]))
+                    return false;
+                LoadPage(0, "https://seo-fast.ru/work_surfing?go");
+                AntiBot(browsers[0]);
+                //                SendJS(0, "captcha_choice('2');onclick=\"save_enter();\"");
+                //                Sleep(1);
+                //                while (true)
+                //                {
+                //                    ev = SendJSReturn(0, "var js = document.querySelector('#captcha_new').getBoundingClientRect().toJSON();" +
+                //        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
+                //                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
+                //                    FocusBrowser(browsers[0]);
+                //                    Bitmap img = MakeScreenshot(rect_img);
+                //                    string answer_telebot = teleBot.SendQuestion(img);
 
                 //                    string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
                 //                    "document.querySelector('#logpassword').value = '" + auth.Password + "';" +
@@ -68,6 +120,7 @@ namespace ClickMashine
                 //                        break;
                 //                }
             }
+            return true;
         }
         private void CheckCaptcha()
         {
@@ -79,7 +132,7 @@ else {'end';}");
             if (ev == "captcha")
             {
                 List<long> list_id = browsers[0].GetFrameIdentifiers();
-                IFrame frameCheckbox = null, frameChallenge = null;
+                IFrame? frameCheckbox = null, frameChallenge = null;
                 for (int i = 0; i < list_id.Count; i++)
                 {
                     IFrame frame = browsers[0].GetFrame(list_id[i]);
@@ -88,7 +141,8 @@ else {'end';}");
                     else if (frame.Url.IndexOf("checkbox") != -1)
                         frameCheckbox = frame;
                 }
-
+                if (frameChallenge == null || frameCheckbox == null)
+                    throw new Exception("Ошибка капчи");
                 string js = "var check_box = document.querySelector('#checkbox'); if(check_box==null){ 'error'; } else {" +
                         "check_box.click(); 'ok'; }";
                 ev = SendJSReturn(frameCheckbox, js);
@@ -176,10 +230,11 @@ else 'ok';";
                 }
             }
         }
-        private void YouTubeSurf()
+        private void YouTubeSurf(string url)
         {
-            LoadPage(0, "https://seo-fast.ru/work_youtube?youtube_video");
+            LoadPage(0, url);
             //CheckCaptcha();
+            AntiBot(browsers[0]);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function click_s()
@@ -202,20 +257,25 @@ function click_s()
                     continue;
                 else if (ev == "surf")
                 {
-                    WaitCreateBrowser(1);
-                    Sleep(1);
+                    Sleep(2);
+                    var browserYouTube = GetBrowser(1);
+                    if (browserYouTube == null)
+                    {
+                        CloseСhildBrowser();
+                        continue;
+                    }
+                    Sleep(2);
                     js =
 @"b = true;
 var timer_youtube = document.querySelector('#tmr');
 if (timer_youtube != null) timer_youtube.innerText;
 else 'error_youtube';";
-                    ev = SendJSReturn(1, js);
+                    ev = SendJSReturn(browserYouTube.MainFrame, js);
                     if (ev != "error_youtube")
                     {
                         Sleep(ev);
-                        WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.sf_button');");
+                        WaitButtonClick(browserYouTube.MainFrame, "document.querySelector('.sf_button');");
                     }
-
                 }
                 Sleep(2);
                 CloseСhildBrowser();
@@ -262,7 +322,9 @@ function click_s()
                             Sleep(1);
                         else if (ev == "click")
                         {
-                            WaitCreateBrowser(1);
+                            var browserSurf = GetBrowser(1);
+                            if (browserSurf == null)
+                                continue;
                             Sleep(2);
                             js =
 @"function clace(){
@@ -275,16 +337,26 @@ function go(){
     return document.querySelector('#time').innerText;
 }
 go();";
-                            ev = SendJSReturn(1, js);
+                            ev = SendJSReturn(browserSurf.MainFrame, js);
                             Sleep(ev);
-                            WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
+                            if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');") != "click")
+                            {
+                                ev = @"
+$.ajax({
+	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
+	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
+    beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
+    success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
+});";
+                                WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');");
+                            }
                             Sleep(2);
                             break;
                         }
                     }
                 }
                 CloseСhildBrowser();
-            }          
+            }
         }
         private void VisitSurf()
         {
@@ -326,7 +398,12 @@ function click_s()
                             Sleep(1);
                         else if (ev == "click")
                         {
-                            WaitCreateBrowser(1);
+                            var browserVisit = GetBrowser(1);
+                            if (browserVisit == null)
+                            {
+                                CloseСhildBrowser();
+                                continue;
+                            }
                             Sleep(2);
                             js =
 @"function w() {
@@ -334,12 +411,18 @@ if(counter == 0) {
 	return timer.toString();
 }
 else { return 'wait' }};";
-                            ev = WaitFunction(browsers[1].MainFrame, "w();", js);
+                            ev = WaitFunction(browserVisit.MainFrame, "w();", js);
                             if (ev != "errorWait")
                             {
                                 Sleep(ev);
                                 Sleep(1);
-                                browsers[2].GetHost().CloseBrowser(true);
+                                var browserVisit2 = GetBrowser(2);
+                                if (browserVisit2 == null)
+                                {
+                                    CloseСhildBrowser();
+                                    continue;
+                                }
+                                CloseBrowser(browserVisit2);
                                 Sleep(1);
                                 break;
                             }
@@ -405,13 +488,15 @@ function click_s()
     }    
     else { return 'wait'; }
 }";
-                        
+
                         SendJS(0, "document.querySelectorAll('.button_a_m')[" + ev + @"].click();");
                         ev = WaitFunction(browsers[0].MainFrame, "waitReturn();", js);
                         if (ev == "click")
                         {
-                            Sleep(3);
-                            if (browsers.Count == 2)
+
+                            var browserSurf = GetBrowser(1);
+                            Sleep(2);
+                            if (browserSurf != null)
                             {
                                 js =
 @"function go(){
@@ -419,59 +504,97 @@ function click_s()
     return document.querySelector('#time').innerText;
 }
 go();";
-                                ev = SendJSReturn(1, js);
+                                ev = SendJSReturn(browserSurf.MainFrame, js);
                                 Sleep(ev);
-                                WaitButtonClick(browsers[1].MainFrame, "document.querySelector('.button_s');");
+                                if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');") != "click")
+                                {
+                                    ev = @"
+$.ajax({
+	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
+	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
+    beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
+    success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
+});";
+                                    WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');");
+                                }
                                 Sleep(2);
                             }
                         }
                     }
                 }
                 CloseСhildBrowser();
+                Sleep(2);
             }
         }
-        private void AntiBot()
+        private bool Captcha(IBrowser browser)
         {
-            string jsAntiBot =
-@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+            for (int i = 0; i < 5; i++)
+            {
+                string jsAntiBot =
+    @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
     'captcha';
 }
 else 'ok';";
-            string evAntiBot = SendJSReturn(0, jsAntiBot);
-            CM(evAntiBot);
-            if (evAntiBot == "ok")
-            {
-                return;
-            }
-            else if (evAntiBot == "error")
-            {
-                CM("ERROR");
-                throw new Exception("Jib,rf ,kz");
-            }
-            else
-            {
-                string answer_telebot = teleBot.SendQuestion(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')"));
+                string evAntiBot = SendJSReturn(browser.MainFrame, jsAntiBot);
+                CM(evAntiBot);
+                if (evAntiBot == "ok")
+                    return true;
+                else if (evAntiBot == "error")
+                {
+                    CM("ERROR");
+                    Error("Ошибка капчи");
+                    return false;
+                }
+                else
+                {
+                    Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
 
-                jsAntiBot = "";
-                foreach (char ch in answer_telebot)
-                    jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                jsAntiBot += "login('1');";
+                    string answer_telebot = teleBot.SendQuestion(img);
 
-                eventLoadPage.Reset();
-                SendJS(0, jsAntiBot);
-                eventLoadPage.WaitOne();
+                    jsAntiBot = "";
+                    foreach (char ch in answer_telebot)
+                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                    jsAntiBot += "login('1');";
+
+                    SendJS(0, jsAntiBot);
+                    string funcResultEcho = @"function resultEcho() {
+if(document.querySelector('#result_echo').style.display != 'none')
+    return document.querySelector('#result_echo').innerText;
+else return 'wait';}";
+                    evAntiBot = WaitFunction(browser.MainFrame, "resultEcho();", funcResultEcho, 10);
+                    if (evAntiBot.IndexOf("Проблемы") != -1 || evAntiBot.Length == 0)
+                    {
+                        Error("Ошибка авторизации.\n" + evAntiBot);
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
             }
-            LoadPage(0, "https://seo-fast.ru/work_surfing?go");
-            string ev = @"if(document.querySelector('.info') != null) 'antiBot';
+            Error("Ошибка ввода капчи");
+            return false;
+        }       
+        private void AntiBot(IBrowser browser)
+        {
+            string ev = @"var info = document.querySelector('.info');
+if(info != null)
+{
+    if(document.querySelector('.info').innerText == 'Перейдите в раздел ""Задания"" и откройте любое задание, далее вернитесь на страницу ""YouTube"".') 'antiBot';
+    else 'notAntiBot';
+}
 else 'notAntiBot';";
-            ev = SendJSReturn(browsers[0].MainFrame, ev);
-            if(ev == "antiBot")
+            ev = SendJSReturn(browser.MainFrame, ev);
+            if (ev == "antiBot")
             {
                 LoadPage(0, "https://seo-fast.ru/work_tasks");
+                Sleep(2);
                 eventLoadPage.Reset();
                 SendJS(0, "document.querySelectorAll('.list_rek_table a')[0].click();");
                 eventLoadPage.WaitOne(3000);
+                Sleep(2);
                 CloseСhildBrowser();
                 LoadPage(0, "https://seo-fast.ru/work_youtube");
             }

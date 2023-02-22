@@ -15,14 +15,16 @@ namespace ClickMashine
         }
         public override void StartSurf()
         {
-            base.StartSurf();
+            Initialize();
+            if (!Auth(auth))
+                return;
             // MailSurf();
             ClickSurf(); 
             VisitSites();
             //YouTubeSurf();
             //CloseAllBrowser();
         }
-        public override void Auth(Auth auth)
+        public override bool Auth(Auth auth)
         {
             LoadPage(0, "https://webof-sar.ru/");
             eventLoadPage.Reset();
@@ -46,6 +48,7 @@ namespace ClickMashine
                 eventLoadPage.WaitOne();
                 Sleep(2);
             }
+            return true;
         }
         private void ClickSurf()
         {

@@ -10,54 +10,84 @@ namespace ClickMashine
 			homePage = "https://profitcentr.com/";
 			type.enam = EnumTypeSite.Profitcentr;
 		}
-		public override void Auth(Auth auth)
+		public override bool Auth(Auth auth)
 		{
 			Sleep(5);
 			LoadPage(0, "https://profitcentr.com/login");
-			while (true)
-			{
-				Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-				string answer_telebot = teleBot.SendQuestion(img);
+			string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
+							 "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
 
-				string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
-				"document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
-				foreach (char ch in answer_telebot)
-					auth_js += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-				auth_js += "document.querySelector('.btn_big_green').click();";
-				eventLoadPage.Reset();
-				SendJS(0, auth_js);
-				if (eventLoadPage.WaitOne(10000))
-					break;
-			}
+            SendJS(0, auth_js);
+            AntiBot();
+			//while (true)
+			//{
+			//	Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+			//	string answer_telebot = teleBot.SendQuestion(img);
+
+			//	string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
+			//	"document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
+			//	foreach (char ch in answer_telebot)
+			//		auth_js += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+			//	auth_js += "document.querySelector('.btn_big_green').click();";
+			//	eventLoadPage.Reset();
+			//	SendJS(0, auth_js);
+			//	if (eventLoadPage.WaitOne(10000))
+			//		break;
+			//}
+			return true;
 		}
 		public override void StartSurf()
 		{
-			base.StartSurf();
-            //try
-            //{
-            //	MailSurf();
-            //}
-            //catch (Exception ex)
-            //{
-            //	MessageBox.Show(ex.Message);
-            //}
-            try
-            {
-                ClickSurf();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            //try
-            //{
-            //	YouTubeSurf();
-            //}
-            //catch (Exception ex)
-            //{
-            //	MessageBox.Show(ex.Message);
-            //}
-            //CloseAllBrowser();
+			Initialize();
+			if (!Auth(auth))
+				return;
+			while (true)
+			{
+				//try
+				//{
+				//	MailSurf();
+				//}
+				//catch (Exception ex)
+				//{
+				//	MessageBox.Show(ex.Message);
+				//}
+				try
+				{
+					ClickSurf();
+				}
+				catch (Exception ex)
+				{
+                    Error(ex.Message);
+				}
+				try
+				{
+					VisitSurf();
+				}
+				catch (Exception ex)
+				{
+                    Error(ex.Message);
+				}
+				try
+				{
+					RuTubeSurf();
+				}
+				catch (Exception ex)
+				{
+					Error(ex.Message);
+				}
+                try
+				{
+					YouTubeSurf();
+					YouTubeSurf();
+					YouTubeSurf();
+				}
+				catch (Exception ex)
+				{
+                    Error(ex.Message);
+				}
+				Sleep(200);
+			}
+			//CloseAllBrowser();
 		}
 		private void ClickSurf()
 		{
@@ -70,15 +100,22 @@ namespace ClickMashine
 function surf()
 {
 	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
-	if (start_ln != null) { start_ln.click(); n+=2; return 'surf'; }
+	if (start_ln != null) { start_ln.click(); n++; return 'surf'; }
 	else { return 'wait'; }
 }
 function click_s()
 {
-	if (n + 4 >= surf_cl.length) return 'end_surf';
+	if (n >= surf_cl.length) return 'end_surf';
 	else
-	{
-		surf_cl[n].querySelector('a').click(); return 'click';
+	{	
+		if(surf_cl[n].querySelector('.workquest')!=null)
+			{
+				if(surf_cl[n].querySelectorAll('td')[2].querySelector('a')==null || surf_cl[n].getBoundingClientRect().height == 0)
+					{n++; return 'continue';}
+				else {surf_cl[n].querySelector('a').click(); return 'click';}
+			}
+		else
+			{n++;return 'continue';}
 	}
 }";
 			SendJS(0, js);
@@ -91,15 +128,18 @@ function click_s()
 					continue;
 				else if (ev == "click")
 				{
-					for (int i = 0; i < 10; i++)
+					for (int i = 0; i < 5; i++)
 					{
 						ev = SendJSReturn(0, "surf();");
 						if (ev == "wait")
-							Sleep(2);
+							Sleep(1);
 						else if (ev == "surf")
 						{
+							IBrowser? browserSurf = GetBrowser(1);
+							if (browserSurf == null)
+								continue;
 							Sleep(3);
-							IFrame frame = browsers[1].GetFrame("frminfo");
+							IFrame frame = browserSurf.GetFrame("frminfo");
 							ev = SendJSReturn(frame,
 @"b = false;
 window.top.start = 0;
@@ -114,7 +154,7 @@ else 'error_surf';");
 							{
 								Sleep(ev);
 								Sleep(2);
-								frame = browsers[1].GetFrame("frminfo");
+								frame = browserSurf.GetFrame("frminfo");
 								SendJSReturn(frame,
 @"var range = document.querySelector('[type=""range""]');
 if (range != null)
@@ -129,36 +169,33 @@ else
 	'error_surf';
 }");
 								Sleep(2);
-								CloseBrowser(browsers[1]);
-							}
-						}
+                            }
+                            break;
+                        }
 					}
 				}
-				Sleep(2);
 				CloseСhildBrowser();
-			}
+                Sleep(2);
+            }
 		}
 		private void VisitSurf()
         {
 
 			LoadPage(0, "https://profitcentr.com/");
-			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(1)').click();");
+			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
 			Sleep(4);
 			//AntiBot();
 			string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
-function surf()
-{
-	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
-	if (start_ln != null) { start_ln.click(); n+=2; return 'surf'; }
-	else { return 'wait'; }
-}
 function click_s()
 {
-	if (n + 4 >= surf_cl.length) return 'end_surf';
+	if (n >= surf_cl.length) return 'end_surf';
 	else
 	{
-		surf_cl[n].querySelector('a').click(); return 'click';
+		var link = surf_cl[n];
+		if(link.querySelectorAll('td')[2].querySelector('a')==null || link.getBoundingClientRect().height == 0)
+					{n++; return 'continue';}
+		else {link.querySelector('a').click(); n++; return link.querySelectorAll('td')[1].querySelectorAll('div')[1].innerText;}
 	}
 }";
 			SendJS(0, js);
@@ -169,54 +206,18 @@ function click_s()
 					break;
 				else if (ev == "continue")
 					continue;
-				else if (ev == "click")
+				else
 				{
-					for (int i = 0; i < 10; i++)
-					{
-						ev = SendJSReturn(0, "surf();");
-						if (ev == "wait")
-							Sleep(2);
-						else if (ev == "surf")
-						{
-							Sleep(3);
-							IFrame frame = browsers[1].GetFrame("frminfo");
-							ev = SendJSReturn(frame,
-@"b = false;
-window.top.start = 0;
-var timer1 = document.querySelector('#time');
-var timer2 = document.querySelector('#timer_inp');
-if (timer1 != null)
-	timer1.innerText;
-else if (timer2 != null)
-	timer2.innerText;
-else 'error_surf';");
-							if (ev != "error")
-							{
-								Sleep(ev);
-								Sleep(2);
-								frame = browsers[1].GetFrame("frminfo");
-								SendJSReturn(frame,
-@"var range = document.querySelector('[type=""range""]');
-if (range != null)
-{
-	range.value = range.max;
-	document.querySelector('button').click();
-	'end';
-}
-else
-{
-	location.replace(""vlss?view=ok"");
-	'error_surf';
-}");
-								Sleep(2);
-								CloseBrowser(browsers[1]);
-							}
-						}
-					}
-				}
-				Sleep(2);
+                    int pointStart = ev.IndexOf("Таймер: ") + 8;
+					int pointEnd = ev.IndexOf(' ', pointStart);
+					int countText = pointEnd- pointStart;
+					if(pointStart ==-1 || pointEnd == -1 || countText > 0)
+						Sleep(ev.Substring(pointStart, pointEnd - pointStart));
+                    Sleep(2);
+                }
 				CloseСhildBrowser();
-			}
+                Sleep(2);
+            }
 		}
 		private void YouTubeSurf()
 		{
@@ -224,9 +225,54 @@ else
 			Sleep(2);
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
-			AntiBot();
-			IFrame main_frame = browsers[0].MainFrame;
-			string js_links = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 2;
+            for (int i = 0; i < 5; i++)
+            {
+                string jsAntiBot =
+    @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+if(captha_lab.length != 0){
+    'captcha';
+}
+else 'ok';";
+                string evAntiBot = SendJSReturn(0, jsAntiBot);
+                CM(evAntiBot);
+				if (evAntiBot == "ok")
+					break;
+                else if (evAntiBot == "error")
+                {
+                    CM("ERROR");
+                    Error("Ошибка капчи");
+					return;
+                }
+                else
+                {
+                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+
+                    string answer_telebot = teleBot.SendQuestion(img);
+
+                    jsAntiBot = "";
+                    foreach (char ch in answer_telebot)
+                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                    jsAntiBot += "document.querySelector('.btn').click();";
+
+                    SendJS(0, jsAntiBot);
+                    Sleep(5);
+                }
+            }
+            IFrame main_frame = browsers[0].MainFrame;
+			SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
+if(loadPage != null) loadPage.click();");
+			Sleep(2);
+
+			for (int i = 0; i < 5; i++)
+			{
+				string goBottom = SendJSReturn(main_frame, @"var goBottom = document.querySelector('#Go_Bottom');
+if(goBottom.style.display != ""none"") {goBottom.click(); 'reply';}
+else 'end';");
+				Sleep(1);
+				if (goBottom == "end")
+					break;
+			}
+			string js_links = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 			function click_s()
 			{
 				if (n >= surf_cl.length) return 'end_surf';
@@ -239,7 +285,7 @@ else
 			{
 				var start_ln = surf_cl[n].querySelector('.youtube-button');
 				if (start_ln != null) { 
-					if(start_ln.innerText == 'Площадка не найдена') {n++; return 'continue';}
+					if(start_ln.innerText != 'Приступить к просмотру') {n++; return 'continue';}
 					else {start_ln.querySelector('span').click(); n++; return 'surf'; }
 				}
 				else { return 'sec_wait'; }
@@ -259,10 +305,12 @@ else
 						ev = SendJSReturn(main_frame, "cl();");
 						if (ev == "surf")
 						{
+							if (!WaitCreateBrowser(1))
+								continue;
 							Sleep(3);
 							IFrame yotube_frame = browsers[1].MainFrame;
 							ev = SendJSReturn(yotube_frame,
-@"player.setVolume(0); b = true; player.seekTo(0, true); document.querySelector('#tmr').innerText;");
+@"if(player != null){player.setVolume(0);player.seekTo(0, true);}  b = true; document.querySelector('#tmr').innerText;");
 							if (ev != "error")
 							{
 								Sleep(ev);
@@ -289,8 +337,130 @@ else
 				else MessageBox.Show("Ошибка блять");
 				Sleep(2);
 				CloseСhildBrowser();
+				Sleep(1);
 			}
 		}
+		private void RuTubeSurf()
+		{
+            LoadPage(0, "https://profitcentr.com/");
+            Sleep(2);
+            SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').click();");
+            Sleep(4);
+            for (int i = 0; i < 5; i++)
+            {
+                string jsAntiBot =
+    @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+if(captha_lab.length != 0){
+    'captcha';
+}
+else 'ok';";
+                string evAntiBot = SendJSReturn(0, jsAntiBot);
+                CM(evAntiBot);
+                if (evAntiBot == "ok")
+                    break;
+                else if (evAntiBot == "error")
+                {
+                    CM("ERROR");
+                    Error("Ошибка капчи");
+                    return;
+                }
+                else
+                {
+                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+
+                    string answer_telebot = teleBot.SendQuestion(img);
+
+                    jsAntiBot = "";
+                    foreach (char ch in answer_telebot)
+                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                    jsAntiBot += "document.querySelector('.btn').click();";
+
+                    SendJS(0, jsAntiBot);
+                    Sleep(5);
+                }
+            }
+            IFrame main_frame = browsers[0].MainFrame;
+            SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
+if(loadPage != null) loadPage.click();");
+            Sleep(2);
+
+            for (int i = 0; i < 5; i++)
+            {
+                string goBottom = SendJSReturn(main_frame, @"var goBottom = document.querySelector('#Go_Bottom');
+if(goBottom.style.display != ""none"") {goBottom.click(); 'reply';}
+else 'end';");
+                Sleep(1);
+                if (goBottom == "end")
+                    break;
+            }
+            string js_links = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+			function click_s()
+			{
+				if (n >= surf_cl.length) return 'end_surf';
+				else
+				{
+					surf_cl[n].querySelector('span').click(); return 'click';
+				}
+			}
+			function cl()
+			{
+				var start_ln = surf_cl[n].querySelector('.youtube-button');
+				if (start_ln != null) { 
+					if(start_ln.innerText != 'Приступить к просмотру') {n++; return 'continue';}
+					else {start_ln.querySelector('span').click(); n++; return 'surf'; }
+				}
+				else { return 'sec_wait'; }
+			}";
+            SendJS(main_frame, js_links);
+            while (true)
+            {
+                string ev = SendJSReturn(main_frame, "click_s();");
+                if (ev == "end_surf")
+                {
+                    break;
+                }
+                else if (ev == "click")
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ev = SendJSReturn(main_frame, "cl();");
+                        if (ev == "surf")
+                        {
+                            if (!WaitCreateBrowser(1))
+                                continue;
+                            Sleep(3);
+                            IFrame yotube_frame = browsers[1].MainFrame;
+                            ev = SendJSReturn(yotube_frame,
+@"b = true; c = true; document.querySelector('#tmr').innerText;");
+                            if (ev != "error")
+                            {
+                                Sleep(ev);
+
+                                ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
+                                if (ev == "errorWait")
+                                {
+                                    CM("Error end youtube watch");
+                                }
+                            }
+                            break;
+                        }
+                        else if (ev == "sec_wait")
+                        {
+                            Sleep(1);
+                        }
+                        else if (ev == "continue")
+                        {
+                            CloseСhildBrowser();
+                            break;
+                        }
+                    }
+                }
+                else MessageBox.Show("Ошибка блять");
+                Sleep(2);
+                CloseСhildBrowser();
+                Sleep(1);
+            }
+        }
 		private void MailSurf()
 		{
 			LoadPage(0, "https://profitcentr.com/");
@@ -377,38 +547,43 @@ else
 				CloseСhildBrowser();
 			}
 		}
-		private void AntiBot()
+		private bool AntiBot()
 		{
-			string jsAntiBot =
-@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+			for (int i = 0; i < 5; i++)
+			{
+				string jsAntiBot =
+	@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
     'captcha';
 }
 else 'ok';";
-			string evAntiBot = SendJSReturn(0, jsAntiBot);
-			CM(evAntiBot);
-			if (evAntiBot == "ok")
-				return;
-			else if (evAntiBot == "error")
-			{
-				CM("ERROR");
-				throw new Exception("Jib,rf ,kz");
+				string evAntiBot = SendJSReturn(0, jsAntiBot);
+				CM(evAntiBot);
+				if (evAntiBot == "ok")
+					return true;
+				else if (evAntiBot == "error")
+				{
+					CM("ERROR");
+					Error("Ошибка капчи");
+					return false;
+				}
+				else
+				{
+					Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+
+					string answer_telebot = teleBot.SendQuestion(img);
+
+					jsAntiBot = "";
+					foreach (char ch in answer_telebot)
+						jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+					jsAntiBot += "document.querySelector('.btn_big_green').click();";
+
+					SendJS(0, jsAntiBot);
+					Sleep(5);
+				}
 			}
-			else
-			{
-				Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')");
-
-				string answer_telebot = teleBot.SendQuestion(img);
-
-				jsAntiBot = "";
-				foreach (char ch in answer_telebot)
-					jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-				jsAntiBot += "document.querySelector('.btn').click();";
-
-				eventLoadPage.Reset();
-				SendJS(0, jsAntiBot);
-				eventLoadPage.WaitOne();
-			}
+			Error("Ошибка ввода капчи");
+			return false;
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace ClickMashine
             homePage = "https://aviso.bz";
             type.enam = EnumTypeSite.Aviso;
         }
-        public override void Auth(Auth auth)
+        public override bool Auth(Auth auth)
         {
             Sleep(2);
             LoadPage(0, "https://aviso.bz/login");
@@ -29,6 +29,7 @@ namespace ClickMashine
             CM(ev_lodin);
             Sleep(7);
             CM("Auth Aviso");
+            return true;
         }
         public override void StartSurf()
         {

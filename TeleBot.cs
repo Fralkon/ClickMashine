@@ -66,7 +66,7 @@ namespace ClickMashine
             }
             return buffer;
         }
-        public async void SendError(Site site, string Message)
+        public async void SendError(string Message)
         {            
             await botClient.SendPhotoAsync(IdChats[0], Message);
         }

@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ClickMashine
 {
@@ -111,7 +112,7 @@ namespace ClickMashine
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
         protected Task Task;
-        Auth auth;
+        protected Auth auth;
         public Site(Form1 form, TeleBot teleBot, Auth auth)
         {
             this.auth = auth;
@@ -139,8 +140,9 @@ namespace ClickMashine
             Initialize();
             Auth(auth);
         }
-        public virtual void Auth(Auth auth)
+        public virtual bool Auth(Auth auth)
         {
+            return true;
         }
         public void SomedoIt()
         {
@@ -204,14 +206,27 @@ namespace ClickMashine
                 eventLoadPage.Set();
             }
         }
-        protected void WaitCreateBrowser(int id)
+        protected IBrowser? GetBrowser(int id)
+        {
+            if (browsers.Count <= id)
+            {
+                eventBrowserCreated.Reset();
+                eventLoadPage.Reset();
+                if (!eventBrowserCreated.WaitOne(3000))
+                    if (!eventLoadPage.WaitOne(5000))
+                        return null;
+            }
+            return browsers[id];
+        }
+        protected bool WaitCreateBrowser(int id)
         {
             eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (browsers.Count <= id)
                 if (!eventBrowserCreated.WaitOne(3000))
                     if (!eventLoadPage.WaitOne(5000))
-                        throw new Exception("Type: " + type.ToString() + "\nError wait Create browser");
+                        return false;
+            return true;
         }
         protected void LoadPage(int id_browser, string page)
         {
@@ -228,6 +243,18 @@ namespace ClickMashine
         protected void LoadPage(string page)
         {
             LoadPage(0, page);
+        }
+        protected void LoadPage(IBrowser browser, string page)
+        {
+            if (browsers.Find(item => item.Identifier == browser.Identifier) != null)
+            {
+                Console.WriteLine("---------------------------\nOpen: " + page);
+                Console.WriteLine("Type: " + type.ToString());
+                Console.WriteLine("---------------------------");
+                eventLoadPage.Reset();
+                browser.MainFrame.LoadUrl(page);
+                eventLoadPage.WaitOne();
+            }
         }
         protected string SendJSReturn(int id_browser, string JS)
         {
@@ -276,6 +303,15 @@ namespace ClickMashine
             Console.WriteLine("Not return!!!!!!!");
             Console.WriteLine("---------------------------");
             return null;
+        }
+        protected void Error(string text)
+        {
+            string Message = "---------------------------" +
+            text +
+            "Type: " + type.ToString() +
+            "---------------------------";
+            Console.WriteLine(Message);
+            teleBot.SendError(Message);
         }
         protected void CM(string text)
         {
@@ -395,7 +431,7 @@ get_mail();";
         protected string WaitElement(IFrame frame, string element)
         {
             string js_wait =
-@"function wait_element()
+@"function waitElement()
 {
     var element = " + element + @";
     if (element != null) { return 'end'; }
@@ -404,7 +440,7 @@ get_mail();";
             SendJS(frame, js_wait);
             for (int i = 0; i < 5; i++)
             {
-                string? ev_js_wait = SendJSReturn(frame, "wait_element();");
+                string? ev_js_wait = SendJSReturn(frame, "waitElement();");
                 if (ev_js_wait == null)
                     continue;
                 if (ev_js_wait == "end")
@@ -414,11 +450,11 @@ get_mail();";
             return "error_wait";
         }
         /// <returns>errorWait, answer String</returns>
-        protected string WaitFunction(IFrame frame, string functionName, string? function = null)
+        protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
         {
             if (function != null)
                 SendJS(frame, function);
-            for (int j = 0; j < 5; j++)
+            for (int j = 0; j < sec; j++)
             {
                 string ev = SendJSReturn(frame, functionName);
                 if (ev == "wait")

@@ -68,7 +68,7 @@ namespace ClickMashine
 			type.enam = EnumTypeSite.WmrFast;
 			nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
-		public override void Auth(Auth auth)
+		public override bool Auth(Auth auth)
 		{
 			LoadPage(0, "https://wmrfast.com/");
 			Sleep(2);
@@ -102,11 +102,13 @@ namespace ClickMashine
 				else
 					break;
 			}
+			return true;
 		}
 		public override void StartSurf()
 		{
-			base.StartSurf();
-
+			Initialize();
+			if (!Auth(auth))
+				return;
 			try
 			{
 				ClickSurf();
