@@ -264,7 +264,6 @@ function click_s()
                         CloseСhildBrowser();
                         continue;
                     }
-                    Sleep(2);
                     js =
 @"b = true;
 var timer_youtube = document.querySelector('#tmr');
