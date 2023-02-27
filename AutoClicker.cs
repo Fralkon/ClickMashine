@@ -27,10 +27,10 @@ namespace ClickMashine
                 //router.Auth(authRouter);
 
                 //siteList.Add(new Losena(form, teleBot, new Auth(authX.Element("losena"))));
-                siteList.Add(new WebofSar(form, teleBot, new Auth(authX.Element("webof-sar"))));
-                siteList.Add(new SeoFast(form, teleBot, new Auth(authX.Element("seo-fast"))));
-                siteList.Add(new Profitcentr(form, teleBot, new Auth(authX.Element("profitcentr"))));
-                //siteList.Add(new WmrFast(form, teleBot, new Auth(authX.Element("wmrfast"))));
+                //siteList.Add(new WebofSar(form, teleBot, new Auth(authX.Element("webof-sar"))));
+                //siteList.Add(new SeoFast(form, teleBot, new Auth(authX.Element("seo-fast"))));
+                //siteList.Add(new Profitcentr(form, teleBot, new Auth(authX.Element("profitcentr"))));
+                siteList.Add(new WmrFast(form, teleBot, new Auth(authX.Element("wmrfast"))));
             }
             catch (Exception ex)
             {

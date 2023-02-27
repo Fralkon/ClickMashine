@@ -55,6 +55,8 @@ namespace ClickMashine
         {
             lock (lockTabFocus)
             {
+                if (this.WindowState == FormWindowState.Minimized)
+                    this.WindowState = FormWindowState.Maximized;
                 browser.GetHost().SetFocus(true);
                 var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                 if (controlBrowser != null)
@@ -76,6 +78,8 @@ namespace ClickMashine
         {
             lock (lockTabFocus)
             {
+                if(this.WindowState == FormWindowState.Minimized)
+                    this.WindowState = FormWindowState.Maximized;
                 browser.GetHost().SetFocus(true);
                 var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                 return (Bitmap)controlBrowser.Invoke(new DelegateMakeScreen(GetBitmap), controlBrowser, rect);

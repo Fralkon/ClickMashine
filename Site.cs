@@ -133,7 +133,7 @@ namespace ClickMashine
         }
         public void Join()
         {
-            Task.Wait();
+            //Task.Wait();
         }
         public void Stop()
         {
@@ -217,14 +217,15 @@ namespace ClickMashine
         }
         protected IBrowser? GetBrowser(int id)
         {
+            eventLoadPage.Reset();
             if (browsers.Count <= id)
             {
                 eventBrowserCreated.Reset();
-                eventLoadPage.Reset();
-                if (!eventBrowserCreated.WaitOne(3000))
-                    if (!eventLoadPage.WaitOne(5000))
-                        return null;
+                if (!eventBrowserCreated.WaitOne(5000))
+                    return null;
             }
+            eventLoadPage.WaitOne(5000);
+            Sleep(1);
             return browsers[id];
         }
         protected bool WaitCreateBrowser(int id)

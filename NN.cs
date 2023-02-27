@@ -51,7 +51,6 @@ namespace ClickMashine
         protected NDArray ConvertToPredict(Mat mat)
         {
             mat.ConvertTo(mat, MatType.CV_32SC1);
-            mat = mat.Resize(new Size(img_dim[1], img_dim[0]));
             mat.GetArray(out int[] arr);
             var numpy_array = np.array(arr);
             return numpy_array.reshape(new int[] { mat.Rows, mat.Cols, 1 });
