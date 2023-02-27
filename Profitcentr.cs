@@ -67,14 +67,7 @@ namespace ClickMashine
 				{
                     Error(ex.Message);
 				}
-				try
-				{
-					RuTubeSurf();
-				}
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
+				
                 try
 				{
 					YouTubeSurf();
@@ -85,7 +78,15 @@ namespace ClickMashine
 				{
                     Error(ex.Message);
 				}
-				Sleep(200);
+                try
+                {
+                    RuTubeSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error(ex.Message);
+                }
+                Sleep(200);
 			}
 			CloseAllBrowser();
 		}
@@ -302,14 +303,14 @@ else 'end';");
 					{
 						ev = SendJSReturn(main_frame, "cl();");
 						if (ev == "surf")
-						{
-							var browserYouTube = GetBrowser(1);
+                        {
+                            Sleep(2);
+                            var browserYouTube = GetBrowser(1);
 							if (browserYouTube == null)
 								break ;
-							Sleep(2);
 							IFrame yotube_frame = browserYouTube.MainFrame;
 							ev = SendJSReturn(yotube_frame,
-@"if(player != null){player.setVolume(0);player.seekTo(0, true);}  b = true; document.querySelector('#tmr').innerText;");
+@"c = true;  b = true; document.querySelector('#tmr').innerText;");
 							if (ev != "error")
 							{
 								Sleep(ev);

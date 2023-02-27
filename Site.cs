@@ -182,6 +182,7 @@ namespace ClickMashine
                 {
                     var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                     if (controlBrowser != null)
+                    {
                         controlBrowser.Invoke(new Action(() =>
                         {
                             TabPage? parentControl = controlBrowser.Parent as TabPage;
@@ -200,7 +201,9 @@ namespace ClickMashine
                                     throw new Exception("Ошибка удаления TabControl");
                             }
                         }));
-                    browsers.RemoveAt(i);
+                        controlBrowser.Dispose();
+                    }
+                        browsers.RemoveAt(i);
                     if (i != 0)
                     {
                         form.FocusTab(browsers[i-1]);
