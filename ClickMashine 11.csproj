@@ -2,16 +2,31 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>ClickMashine_11</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Platforms>AnyCPU;x64</Platforms>
-    <StartupObject>ClickMashine.Program</StartupObject>
-    <IsPublishable>False</IsPublishable>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="cef.redist.x64" Version="109.1.11" />
