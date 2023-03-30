@@ -11,7 +11,7 @@ namespace ClickMashine
         public WebofSar(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://webof-sar.ru/";
-            type.enam = EnumTypeSite.WebofSar;
+            type = EnumTypeSite.WebofSar;
         }
         protected override void StartSurf()
         {

@@ -8,7 +8,7 @@ namespace ClickMashine
 		public Profitcentr(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
 		{
 			homePage = "https://profitcentr.com/";
-			type.enam = EnumTypeSite.Profitcentr;
+			type = EnumTypeSite.Profitcentr;
 		}
 		public override bool Auth(Auth auth)
 		{

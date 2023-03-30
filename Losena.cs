@@ -7,7 +7,7 @@ namespace ClickMashine
         public Losena(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://losena.net/";
-            type.enam = EnumTypeSite.Losena;
+            type = EnumTypeSite.Losena;
         }
         public override bool Auth(Auth auth)
         {

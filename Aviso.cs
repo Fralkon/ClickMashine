@@ -13,7 +13,7 @@ namespace ClickMashine
         public Aviso(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://aviso.bz";
-            type.enam = EnumTypeSite.Aviso;
+            type = EnumTypeSite.Aviso;
         }
         public override bool Auth(Auth auth)
         {

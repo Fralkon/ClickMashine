@@ -16,7 +16,7 @@ namespace ClickMashine
         public Router(Form1 form, TeleBot teleBot) : base(form, teleBot)
         {
             homePage = "https://www.google.com/";
-            type.enam = EnumTypeSite.Router;
+            type = EnumTypeSite.Router;
         }
         public void Auth(List<Auth> auth)
         {

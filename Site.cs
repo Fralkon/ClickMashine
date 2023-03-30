@@ -20,33 +20,6 @@ namespace ClickMashine
         WebofSar,
         Losena
     }
-    class TypeSite
-    {
-        public EnumTypeSite enam = EnumTypeSite.None;
-        public override string ToString()
-        {
-            switch (enam)
-            {
-                case EnumTypeSite.None:
-                    return "None";
-                case EnumTypeSite.Router:
-                    return "Router";
-                case EnumTypeSite.SeoFast:
-                    return "SeoFast";
-                case EnumTypeSite.Aviso:
-                    return "Aviso";
-                case EnumTypeSite.Profitcentr:
-                    return "Profitcentr";
-                case EnumTypeSite.WmrFast:
-                    return "WmrFast";
-                case EnumTypeSite.WebofSar:
-                    return "WebofSar";
-                case EnumTypeSite.Losena:
-                    return "Losena";
-                default: return "Error";
-            }
-        }
-    }
     class Auth
     {
         public string Login { get; set; }
@@ -110,7 +83,7 @@ namespace ClickMashine
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
         protected string homePage;
-        public TypeSite type = new TypeSite();
+        protected EnumTypeSite type;
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
         protected Task Task;

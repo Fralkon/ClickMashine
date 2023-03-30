@@ -13,7 +13,7 @@ namespace ClickMashine
         public SeoFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
         {
             homePage = "https://seo-fast.ru/";
-            type.enam = EnumTypeSite.SeoFast;
+            type = EnumTypeSite.SeoFast;
         }
         protected override void StartSurf()
         {

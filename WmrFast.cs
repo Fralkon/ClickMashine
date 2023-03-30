@@ -67,7 +67,7 @@ namespace ClickMashine
 		public WmrFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
 		{
 			homePage = "https://wmrfast.com/";
-			type.enam = EnumTypeSite.WmrFast; 
+			type = EnumTypeSite.WmrFast; 
 			//nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 			imageConrolWmrClick = new ImageConrolWmrClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
