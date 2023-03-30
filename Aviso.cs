@@ -31,7 +31,7 @@ namespace ClickMashine
             CM("Auth Aviso");
             return true;
         }
-        public override void StartSurf()
+        protected override void StartSurf()
         {
             try
             {

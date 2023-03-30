@@ -13,7 +13,7 @@ namespace ClickMashine
             homePage = "https://webof-sar.ru/";
             type.enam = EnumTypeSite.WebofSar;
         }
-        public override void StartSurf()
+        protected override void StartSurf()
         {
             Initialize();
             if (!Auth(auth))

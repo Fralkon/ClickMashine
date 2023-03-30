@@ -15,7 +15,7 @@ namespace ClickMashine
             homePage = "https://seo-fast.ru/";
             type.enam = EnumTypeSite.SeoFast;
         }
-        public override void StartSurf()
+        protected override void StartSurf()
         {
             Initialize();
             if (!Auth(auth))

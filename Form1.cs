@@ -56,7 +56,7 @@ namespace ClickMashine
             lock (lockTabFocus)
             {
                 if (this.WindowState == FormWindowState.Minimized)
-                    this.WindowState = FormWindowState.Maximized;
+                    this.WindowState = FormWindowState.Maximized;                
                 browser.GetHost().SetFocus(true);
                 var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                 if (controlBrowser != null)

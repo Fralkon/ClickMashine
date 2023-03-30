@@ -102,10 +102,9 @@ namespace ClickMashine
             return "errorMail";
         }
     }
-    class Site
+    class Site : MyThread
     {
         public Form1 form;
-        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
         protected TeleBot teleBot;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -126,22 +125,6 @@ namespace ClickMashine
         {
             this.form = form;
             this.teleBot = teleBot;
-        }
-        public void Start()
-        {
-            Task = Task.Run(() => StartSurf());
-        }
-        public void Join()
-        {
-            //Task.Wait();
-        }
-        public void Stop()
-        {
-        }
-        public virtual void StartSurf()
-        {
-            Initialize();
-            Auth(auth);
         }
         public virtual bool Auth(Auth auth)
         {
@@ -225,9 +208,13 @@ namespace ClickMashine
             {
                 eventBrowserCreated.Reset();
                 if (!eventBrowserCreated.WaitOne(5000))
+                {
+                    CM("End create wait ERRR");
                     return null;
+                }
             }
             eventLoadPage.WaitOne(5000);
+            CM("End create wait");
             Sleep(1);
             return browsers[id];
         }
@@ -238,7 +225,9 @@ namespace ClickMashine
             if (browsers.Count <= id)
                 if (!eventBrowserCreated.WaitOne(3000))
                     if (!eventLoadPage.WaitOne(5000))
-                        return false;
+                    {
+                    }
+            CM("End create wait");
             return true;
         }
         protected void LoadPage(int id_browser, string page)

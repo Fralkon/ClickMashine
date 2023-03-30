@@ -36,7 +36,7 @@ namespace ClickMashine
 			//}
 			return true;
 		}
-		public override void StartSurf()
+		protected override void StartSurf()
 		{
 			Initialize();
 			if (!Auth(auth))
