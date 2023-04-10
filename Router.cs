@@ -13,10 +13,10 @@ namespace ClickMashine
 {
     class Router : Site
     {
-        public Router(Form1 form, TeleBot teleBot) : base(form, teleBot)
+        public Router(Form1 form) : base(form)
         {
             homePage = "https://www.google.com/";
-            type = EnumTypeSite.Router;
+            Type = EnumTypeSite.Router;
         }
         public void Auth(List<Auth> auth)
         {

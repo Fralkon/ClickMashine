@@ -8,6 +8,7 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Data;
 
 namespace ClickMashine
 {
@@ -16,6 +17,7 @@ namespace ClickMashine
         object lockTabFocus = new object();
         AutoClicker? autoClicker;
         public int Step { private set; get; }
+        public int ID { private set; get; }
         public string PATH_SETTING = @"C:/ClickMashine/Settings/";
         public Form1(string[] args)
         {
@@ -23,13 +25,25 @@ namespace ClickMashine
             CefSettings settings = new CefSettings();
             if (args.Length > 0) { Step = int.Parse(args[0]); }
             else { Step = 0; }
-            var XML = XDocument.Load(PATH_SETTING + Step + ".xml");
-            XElement? settingXML = XML.Element("Setting");
-            Console.WriteLine(settingXML);
-            settings.CachePath = PATH_SETTING + "Cache/" + Step.ToString();
-            settings.UserAgent = settingXML.Element("UserAgent").Value.Trim();
-            settings.AcceptLanguageList = settingXML.Element("AcceptLanguageList").Value.Trim();
-            settings.CefCommandLineArgs.Add("disable-gpu", "");
+            using (StreamReader reader = new StreamReader(PATH_SETTING + "IDMashine.txt"))
+            {
+                string text = reader.ReadToEnd();
+                ID = int.Parse(text);
+            }
+            using (DataTable settingData = new MySQL("clicker").GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
+            {
+                if(settingData.Rows.Count > 0)
+                {
+                    settings.UserAgent = settingData.Rows[0]["user_agent"].ToString();
+                    settings.AcceptLanguageList = settingData.Rows[0]["language"].ToString();
+                }
+                else
+                {
+                    throw new Exception("Error load setting CefSharp");
+                }
+                settings.CachePath = PATH_SETTING + "Cache/" + Step.ToString();
+                settings.CefCommandLineArgs.Add("disable-gpu", "");
+            }
             Cef.Initialize(settings);
         }
         public EventWaitHandle event_eny = new EventWaitHandle(false, EventResetMode.ManualReset);

@@ -64,10 +64,10 @@ namespace ClickMashine
 		private Size sizeImgClick = new(20, 26);
 		ImageConrolWmrClick imageConrolWmrClick;
 		//WmrFastNNClick nnClick;
-		public WmrFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
-			type = EnumTypeSite.WmrFast; 
+			Type = EnumTypeSite.WmrFast; 
 			//nnClick = new WmrFastNNClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 			imageConrolWmrClick = new ImageConrolWmrClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}

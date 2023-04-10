@@ -5,10 +5,10 @@ namespace ClickMashine
 {
 	class Profitcentr : Site
 	{
-		public Profitcentr(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+		public Profitcentr(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://profitcentr.com/";
-			type = EnumTypeSite.Profitcentr;
+			Type = EnumTypeSite.Profitcentr;
 		}
 		public override bool Auth(Auth auth)
 		{
@@ -245,10 +245,10 @@ else 'ok';";
                 else
                 {
                     Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+					
+                    string answer_telebot = SendQuestion(img, "");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
-
-                    jsAntiBot = "";
+					jsAntiBot = "";
                     foreach (char ch in answer_telebot)
                         jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
                     jsAntiBot += "document.querySelector('.btn').click();";
@@ -357,7 +357,7 @@ else 'ok';";
                 {
                     Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
+                    string answer_telebot = SendQuestion(img,"");
 
                     jsAntiBot = "";
                     foreach (char ch in answer_telebot)
@@ -556,7 +556,7 @@ else 'ok';";
 				{
 					Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 
-					string answer_telebot = teleBot.SendQuestion(img);
+					string answer_telebot = SendQuestion(img, "");
 
 					jsAntiBot = "";
 					foreach (char ch in answer_telebot)

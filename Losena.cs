@@ -4,10 +4,10 @@ namespace ClickMashine
 {
     class Losena : Site
     {
-        public Losena(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+        public Losena(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://losena.net/";
-            type = EnumTypeSite.Losena;
+            Type = EnumTypeSite.Losena;
         }
         public override bool Auth(Auth auth)
         {

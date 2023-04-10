@@ -8,10 +8,10 @@ namespace ClickMashine
 {
     internal class WebofSar : Site
     {
-        public WebofSar(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+        public WebofSar(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://webof-sar.ru/";
-            type = EnumTypeSite.WebofSar;
+            Type = EnumTypeSite.WebofSar;
         }
         protected override void StartSurf()
         {

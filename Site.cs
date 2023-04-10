@@ -78,26 +78,24 @@ namespace ClickMashine
     class Site : MyThread
     {
         public Form1 form;
-        protected TeleBot teleBot;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
         protected string homePage;
-        protected EnumTypeSite type;
+        public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
         protected Task Task;
         protected Auth auth;
-        public Site(Form1 form, TeleBot teleBot, Auth auth)
+        public TCPMessageManager TCPMessageManager = new TCPMessageManager();
+        public Site(Form1 form, Auth auth)
         {
             this.auth = auth;
             this.form = form;
-            this.teleBot = teleBot;
         }
-        public Site(Form1 form, TeleBot teleBot)
+        public Site(Form1 form)
         {
             this.form = form;
-            this.teleBot = teleBot;
         }
         public virtual bool Auth(Auth auth)
         {
@@ -115,7 +113,7 @@ namespace ClickMashine
             form.Invoke(new Action(() =>
             {
                 TabPage newTabPage = new TabPage();
-                newTabPage.Text = type.ToString();
+                newTabPage.Text = Type.ToString();
                 newTabPage.BorderStyle = BorderStyle.None;
                 newTabPage.Dock = DockStyle.Fill;
                 newTabPage.Controls.Add(main_browser);
@@ -208,7 +206,7 @@ namespace ClickMashine
             if (browsers.Count > id_browser)
             {
                 Console.WriteLine("---------------------------\nOpen: " + page);
-                Console.WriteLine("Type: " + type.ToString());
+                Console.WriteLine("Type: " + Type.ToString());
                 Console.WriteLine("---------------------------");
                 eventLoadPage.Reset();
                 browsers[id_browser].MainFrame.LoadUrl(page);
@@ -224,7 +222,7 @@ namespace ClickMashine
             if (browsers.Find(item => item.Identifier == browser.Identifier) != null)
             {
                 Console.WriteLine("---------------------------\nOpen: " + page);
-                Console.WriteLine("Type: " + type.ToString());
+                Console.WriteLine("Type: " + Type.ToString());
                 Console.WriteLine("---------------------------");
                 eventLoadPage.Reset();
                 browser.MainFrame.LoadUrl(page);
@@ -252,7 +250,7 @@ namespace ClickMashine
         {
             Console.WriteLine("---------------------------\nSend JS: \n");
             Console.WriteLine(JS);
-            Console.WriteLine("Type: " + type.ToString());
+            Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
             frame.ExecuteJavaScriptAsync(JS);
         }
@@ -261,14 +259,14 @@ namespace ClickMashine
             string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS_TRY);
-            Console.WriteLine("Type: " + type.ToString());
+            Console.WriteLine("Type: " + Type.ToString());
             var task = frame.EvaluateScriptAsync(JS_TRY);
             task.Wait();
             if (task.Result.Result != null)
             {
                 if (task.Result.Result.ToString() == "error")
                 {
-                    throw new Exception("Type: " + type.ToString() + "\nError JS");
+                    throw new Exception("Type: " + Type.ToString() + "\nError JS");
                 }
                 Console.WriteLine("Return: " + task.Result.Result.ToString());
                 Console.WriteLine("---------------------------");
@@ -283,23 +281,23 @@ namespace ClickMashine
         {
             string Message = "---------------------------\n" +
             text +
-            "\nType: " + type.ToString() +
+            "\nType: " + Type.ToString() +
             "\n---------------------------\n";
             Console.WriteLine(Message);
-            teleBot.SendError(Message);
+            TCPMessageManager.SendError(Message,Type);
         }
         protected void CM(string text)
         {
             Console.WriteLine("---------------------------");
             Console.WriteLine(text);
-            Console.WriteLine("Type: " + type.ToString());
+            Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
         }
         protected void Sleep(int sec)
         {
             Console.WriteLine("---------------------------");
             Console.WriteLine("Sleep: " + sec.ToString());
-            Console.WriteLine("Type: " + type.ToString());
+            Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
             Thread.Sleep(sec * 1000);
         }
@@ -460,6 +458,10 @@ else 'errorImg';";
             }
             else
                 throw new Exception("Ошибка ожидания элемента для скриншота");
+        }
+        protected string SendQuestion(Bitmap image, string text)
+        {
+            return TCPMessageManager.SendQuestion(image,text, Type);
         }
     }
 }

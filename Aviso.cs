@@ -10,10 +10,10 @@ namespace ClickMashine
 {
     class Aviso : Site
     {
-        public Aviso(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+        public Aviso(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://aviso.bz";
-            type = EnumTypeSite.Aviso;
+            Type = EnumTypeSite.Aviso;
         }
         public override bool Auth(Auth auth)
         {

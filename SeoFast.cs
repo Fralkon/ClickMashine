@@ -10,10 +10,10 @@ namespace ClickMashine
 {
     class SeoFast : Site
     {
-        public SeoFast(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+        public SeoFast(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://seo-fast.ru/";
-            type = EnumTypeSite.SeoFast;
+            Type = EnumTypeSite.SeoFast;
         }
         protected override void StartSurf()
         {
@@ -153,7 +153,7 @@ else {'end';}");
                     {
                         Sleep(1);
                         Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('[title=\"Main content of the hCaptcha challenge\"]')");
-                        string answerTelebot = teleBot.SendQuestion(img);
+                        string answerTelebot = SendQuestion(img, "");
                         js = "var items = document.querySelectorAll('.task-image');";
                         string jsCaptch =
     @"var buttonEnd = document.querySelector('.button-submit');
@@ -205,7 +205,7 @@ else 'end';");
                 while (true)
                 {
                     Bitmap image = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-                    string answer_telebot = teleBot.SendQuestion(image);
+                    string answer_telebot = SendQuestion(image, "");
 
                     string auth_js = "";
                     foreach (char ch in answer_telebot)
@@ -549,7 +549,7 @@ else 'ok';";
                 {
                     Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
+                    string answer_telebot = SendQuestion(img, "");
 
                     jsAntiBot = "";
                     foreach (char ch in answer_telebot)
