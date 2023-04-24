@@ -75,7 +75,7 @@ namespace ClickMashine
             return "errorMail";
         }
     }
-    class Site : MyThread
+    abstract class Site : MyThread
     {
         public Form1 form;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -97,10 +97,7 @@ namespace ClickMashine
         {
             this.form = form;
         }
-        public virtual bool Auth(Auth auth)
-        {
-            return true;
-        }
+        public abstract bool Auth(Auth auth);
         public void SomedoIt()
         {
         }
@@ -125,7 +122,7 @@ namespace ClickMashine
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
-            browsers.Add(browser);
+            browsers.Add(browser);      
             eventBrowserCreated.Set();
         }
         public void CloseBrowser(IBrowser browser)
@@ -157,10 +154,10 @@ namespace ClickMashine
                         }));
                         controlBrowser.Dispose();
                     }
-                        browsers.RemoveAt(i);
+                    browsers.RemoveAt(i);
                     if (i != 0)
                     {
-                        form.FocusTab(browsers[i-1]);
+                        form.FocusTab(browsers[i - 1]);
                     }
                 }
             }
@@ -284,7 +281,21 @@ namespace ClickMashine
             "\nType: " + Type.ToString() +
             "\n---------------------------\n";
             Console.WriteLine(Message);
-            TCPMessageManager.SendError(Message,Type);
+            TCPMessageManager.SendError(Message, Type);
+        }
+        protected void Error(IBrowser browser, string text)
+        {
+            browser.GetSourceAsync().ContinueWith(v =>
+            {
+                string path = @"C:\ClickMashine\Settings\Errors\Pages\";
+                File.WriteAllText(path + "html_page_error" + new DirectoryInfo(path).GetFiles().Length.ToString() + ".txt", v.Result);
+            }).Wait();
+            string Message = "---------------------------\n" +
+            text +
+            "\nType: " + Type.ToString() +
+            "\n---------------------------\n";
+            Console.WriteLine(Message);
+            TCPMessageManager.SendError(Message, Type);
         }
         protected void CM(string text)
         {
@@ -329,16 +340,20 @@ namespace ClickMashine
         {
             for (int i = 1; i < browsers.Count; i++)
             {
-                browsers[i].GetHost().CloseBrowser(true);
+                browsers[i].CloseBrowser(false);
             }
         }
         protected void CloseAllBrowser()
         {
             for (int i = 0; i < browsers.Count; i++)
             {
-                browsers[i].GetHost().CloseBrowser(true);
+                browsers[i].CloseBrowser(false);
             }
         }
+        /// <summary>
+        /// Ожидание Button и клик.
+        /// </summary>
+        /// <returns>errorMail, click</returns>
         protected string WaitButtonClick(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
@@ -392,7 +407,7 @@ get_mail();";
                 else
                 {
                     MailSurf? mailSurf = JsonSerializer.Deserialize<MailSurf>(ev);
-                    if(mailSurf == null)
+                    if (mailSurf == null)
                     {
                         return "errorMail";
                     }
@@ -401,7 +416,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected string WaitElement(IFrame frame, string element)
+        protected bool WaitElement(IFrame frame, string element)
         {
             string js_wait =
 @"function waitElement()
@@ -417,10 +432,10 @@ get_mail();";
                 if (ev_js_wait == null)
                     continue;
                 if (ev_js_wait == "end")
-                    return ev_js_wait;
+                    return true;
                 Thread.Sleep(1000);
             }
-            return "error_wait";
+            return false;
         }
         /// <returns>errorWait, answer String</returns>
         protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
@@ -438,8 +453,7 @@ get_mail();";
         }
         protected Bitmap GetImgBrowser(IFrame frame, string element)
         {
-            string ev = WaitElement(frame, element);
-            if (ev == "end")
+            if( WaitElement(frame, element))
             {
                 string js = @"var elementImg = " + element + @";
 if(elementImg != null){
@@ -447,7 +461,7 @@ if(elementImg != null){
     JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
 }
 else 'errorImg';";
-                ev = SendJSReturn(frame, js);
+                string ev = SendJSReturn(frame, js);
                 if (ev != "errorImg")
                 {
                     Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ev);
@@ -461,7 +475,7 @@ else 'errorImg';";
         }
         protected string SendQuestion(Bitmap image, string text)
         {
-            return TCPMessageManager.SendQuestion(image,text, Type);
+            return TCPMessageManager.SendQuestion(image, text, Type);
         }
     }
 }

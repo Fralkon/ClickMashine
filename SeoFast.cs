@@ -585,5 +585,22 @@ else 'notAntiBot';";
                 LoadPage(0, "https://seo-fast.ru/work_youtube");
             }
         }
+        private async void YouTubeTab(IBrowser browser)
+        {
+            await Task.Run(() => {
+                string js =
+@"b = true;
+var timer_youtube = document.querySelector('#tmr');
+if (timer_youtube != null) timer_youtube.innerText;
+else 'error_youtube';";
+                string ev = SendJSReturn(browser.MainFrame, js);
+                if (ev != "error_youtube")
+                {
+                    Sleep(ev);
+                    Sleep(2);
+                }
+                CloseBrowser(browser);
+            });
+        }
     }
 }

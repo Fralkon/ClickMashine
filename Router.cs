@@ -13,6 +13,10 @@ namespace ClickMashine
 {
     class Router : Site
     {
+        public override bool Auth(Auth auth)
+        {
+            return true;
+        }
         public Router(Form1 form) : base(form)
         {
             homePage = "https://www.google.com/";

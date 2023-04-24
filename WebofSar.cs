@@ -19,7 +19,7 @@ namespace ClickMashine
             if (!Auth(auth))
                 return;
             // MailSurf();
-            ClickSurf(); 
+            ClickSurf();
             VisitSites();
             //YouTubeSurf();
             CloseAllBrowser();
@@ -101,14 +101,13 @@ $(window).on(""blur"", function() {
 $(window).focus();");
                         browsers[1].GetHost().SetFocus(true);
                         Sleep(1);
-                        ev = WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')");
-                        if (ev == "end")
+                        if(WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')"))
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
                             if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5) == "errorWait")
                             {
-                                SendJS(browsers[1].MainFrame, 
+                                SendJS(browsers[1].MainFrame,
 @"clearInterval(idInterval[""Timer""]);
 $(""#BlockWait"").remove();
 $(""#BlockTimer"").fadeIn(""fast"");
@@ -233,8 +232,7 @@ $(window).on(""blur"", function() {
 $(window).focus();");
                         browsers[1].GetHost().SetFocus(true);
                         Sleep(1);
-                        ev = WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')");
-                        if (ev == "end")
+                        if(WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')"))
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);

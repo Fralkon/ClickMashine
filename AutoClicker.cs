@@ -19,11 +19,7 @@ namespace ClickMashine
             TCPControl.StartListing();
             try
             {                
-                var authXML = XDocument.Load(form.PATH_SETTING + "Auth/" + form.Step.ToString() + ".xml");
-                XElement? authX = authXML.Element("Auth");
-                if (authX == null)
-                    throw new Exception("Нет файла логинов и паролей");
-                using(DataTable authData = mySQL.GetDataTableSQL("SELECT login, password, site FROM auth WHERE id_object = " + form.ID.ToString() + " AND step = " + form.Step.ToString()))
+                using(DataTable authData = mySQL.GetDataTableSQL("SELECT login, password, site FROM auth WHERE id_object = " + form.ID.ToString() + " AND step = " + form.Step.ToString() + " AND status = 'Activate'"))
                 {
                     if(authData.Rows.Count > 0)
                     {
@@ -44,7 +40,17 @@ namespace ClickMashine
                                             siteList.Add(new Profitcentr(form, auth));
                                             break;
                                         }
-                                    default:
+                                    case EnumTypeSite.WmrFast:
+                                        {
+                                            siteList.Add(new WmrFast(form, auth));
+                                            break;
+                                        }
+                                    case EnumTypeSite.WebofSar:
+                                        {
+                                            siteList.Add(new WebofSar(form, auth));
+                                            break;
+                                        }
+                                default:
                                         throw new Exception("Нет такого сайта.");
                                 }
                             }

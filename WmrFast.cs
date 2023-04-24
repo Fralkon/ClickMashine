@@ -201,7 +201,8 @@ function click_s()
 								for (int i = 0; i < 10; i++)
 								{
 									string evClick = "";
-									Sleep(1); string value = "";
+									Sleep(1);
+									string value;
 									try
 									{
 										value = imageConrolWmrClick.Predict(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));

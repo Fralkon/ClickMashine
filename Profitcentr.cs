@@ -93,7 +93,7 @@ namespace ClickMashine
 		private void ClickSurf()
 		{
 			LoadPage(0, "https://profitcentr.com/");
-			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(1)').click();");
+			SendJS(0, "document.querySelectorAll('#mnu_tblock1 > a')[0].click();");
 			Sleep(4);
 			//AntiBot();
 			string js =
@@ -138,25 +138,27 @@ function click_s()
 						{
 							IBrowser? browserSurf = GetBrowser(1);
 							if (browserSurf == null)
+							{
+								CloseСhildBrowser();
 								continue;
-							Sleep(3);
+							}
 							IFrame frame = browserSurf.GetFrame("frminfo");
-							ev = SendJSReturn(frame,
+							if (WaitElement(frame, "document.querySelector('#timer_inp')"))
+							{
+								ev = SendJSReturn(frame,
 @"b = false;
 window.top.start = 0;
-var timer1 = document.querySelector('#time');
-var timer2 = document.querySelector('#timer_inp');
-if (timer1 != null)
-	timer1.innerText;
-else if (timer2 != null)
-	timer2.innerText;
+var timer_s = document.querySelector('#timer_inp');
+if (timer_s != null)
+	timer_s.innerText;
 else 'error_surf';");
-							if (ev != "error")
-							{
-								Sleep(ev);
-								Sleep(2);
-								frame = browserSurf.GetFrame("frminfo");
-								SendJSReturn(frame,
+								if (ev != "error_surf")
+								{
+									Sleep(ev);
+									frame = browserSurf.GetFrame("frminfo");
+									if (WaitElement(frame, @"document.querySelector('[type=""range""]')"))
+									{
+										SendJSReturn(frame,
 @"var range = document.querySelector('[type=""range""]');
 if (range != null)
 {
@@ -169,9 +171,11 @@ else
 	location.replace(""vlss?view=ok"");
 	'error_surf';
 }");
-								Sleep(2);
-                            }
-                            break;
+										Sleep(2);
+									}
+									break;
+								}
+							}
                         }
 					}
 				}
@@ -227,7 +231,7 @@ function click_s()
             for (int i = 0; i < 5; i++)
             {
                 string jsAntiBot =
-    @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
     'captcha';
 }
@@ -339,7 +343,7 @@ else 'end';");
             for (int i = 0; i < 5; i++)
             {
                 string jsAntiBot =
-    @"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
 if(captha_lab.length != 0){
     'captcha';
 }
