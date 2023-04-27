@@ -90,8 +90,9 @@ namespace ClickMashine
 			}
 			CloseAllBrowser();
 		}
-		private void ClickSurf()
+		private int ClickSurf()
 		{
+			int Count = 0;
 			LoadPage(0, "https://profitcentr.com/");
 			SendJS(0, "document.querySelectorAll('#mnu_tblock1 > a')[0].click();");
 			Sleep(4);
@@ -171,6 +172,7 @@ else
 	location.replace(""vlss?view=ok"");
 	'error_surf';
 }");
+										Count++;
 										Sleep(2);
 									}
 									break;
@@ -182,10 +184,11 @@ else
 				CloseСhildBrowser();
                 Sleep(2);
             }
+			return Count;
 		}
-		private void VisitSurf()
+		private int VisitSurf()
         {
-
+			int Count = 0;
 			LoadPage(0, "https://profitcentr.com/");
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
 			Sleep(4);
@@ -216,16 +219,21 @@ function click_s()
                     int pointStart = ev.IndexOf("Таймер: ") + 8;
 					int pointEnd = ev.IndexOf(' ', pointStart);
 					int countText = pointEnd- pointStart;
-					if(pointStart ==-1 || pointEnd == -1 || countText > 0)
+					if (pointStart == -1 || pointEnd == -1 || countText > 0)
+					{
+						Count++;
 						Sleep(ev.Substring(pointStart, pointEnd - pointStart));
+					}
                     Sleep(2);
                 }
 				CloseСhildBrowser();
                 Sleep(2);
             }
+			return Count;
 		}
-		private void YouTubeSurf()
+		private int YouTubeSurf()
 		{
+			int Count = 0;
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
             for (int i = 0; i < 5; i++)
@@ -244,7 +252,7 @@ else 'ok';";
                 {
                     CM("ERROR");
                     Error("Ошибка капчи");
-					return;
+					return -1;
                 }
                 else
                 {
@@ -318,9 +326,9 @@ else 'end';");
 							if (ev != "error")
 							{
 								Sleep(ev);
-								ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-								if (ev == "errorWait")
+								if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
 									Error("Error end youtube watch");
+								Count++;
 								Sleep(2);
 							}
 							break;
@@ -335,9 +343,11 @@ else 'end';");
 				CloseСhildBrowser();
 				Sleep(1);
 			}
+			return Count;
 		}
-		private void RuTubeSurf()
+		private int RuTubeSurf()
 		{
+			int Count = 0;
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').click();");
             Sleep(4);
             for (int i = 0; i < 5; i++)
@@ -355,7 +365,7 @@ else 'ok';";
                 else if (evAntiBot == "error")
                 {
                     Error("Ошибка капчи");
-                    return;
+                    return -1;
                 }
                 else
                 {
@@ -430,12 +440,12 @@ else 'end';");
                             {
                                 Sleep(ev);
 
-                                ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-                                if (ev == "errorWait")
+                                if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
                                 {
                                     Error("Error end youtube watch");
                                 }
-                                Sleep(2);
+								Count++;
+								Sleep(2);
                             }
                             break;
                         }
@@ -449,9 +459,12 @@ else 'end';");
                 CloseСhildBrowser();
                 Sleep(1);
             }
-        }
-		private void MailSurf()
+			return Count;
+
+		}
+		private int MailSurf()
 		{
+			int Count = 0;
 			LoadPage(0, "https://profitcentr.com/");
 			Sleep(2);
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').click();");
@@ -477,7 +490,7 @@ function click_s()
 			{
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "end_surf")
-					return;
+					break;
 				else if (ev == "contionue")
 					continue;
 				else if (ev == "click")
@@ -528,6 +541,7 @@ else
 	'error_surf';
 	location.replace(""vlss?view=ok"");
 }");
+								Count++;
 								Sleep(2);
 							}
 						}
@@ -535,6 +549,7 @@ else
 				}
 				CloseСhildBrowser();
 			}
+			return Count;
 		}
 		private bool AntiBot()
 		{

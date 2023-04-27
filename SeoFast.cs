@@ -84,41 +84,38 @@ namespace ClickMashine
             "else {'go';}");
             if (ev == "login")
             {
-                eventLoadPage.WaitOne(5000);
-                string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
-                "document.querySelector('#logpassword').value = '" + auth.Password + "';";
-                SendJS(0, js);
-                if (!Captcha(browsers[0]))
-                    return false;
-                LoadPage(0, "https://seo-fast.ru/work_surfing?go");
-                AntiBot(browsers[0]);
-                //                SendJS(0, "captcha_choice('2');onclick=\"save_enter();\"");
-                //                Sleep(1);
-                //                while (true)
-                //                {
-                //                    ev = SendJSReturn(0, "var js = document.querySelector('#captcha_new').getBoundingClientRect().toJSON();" +
-                //        "JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});");
-                //                    Rectangle rect_img = JsonSerializer.Deserialize<Rectangle>(ev);
-                //                    FocusBrowser(browsers[0]);
-                //                    Bitmap img = MakeScreenshot(rect_img);
-                //                    string answer_telebot = teleBot.SendQuestion(img);
+                IBrowser browser = browsers[0];
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i == 9)
+                        return false;
+                    eventLoadPage.WaitOne(5000);
+                    if (WaitElement(browser.MainFrame, "document.querySelector('.out-capcha')"))
+                    {
+                        string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
+                        "document.querySelector('#logpassword').value = '" + auth.Password + "';";
+                        SendJS(0, js);
+                        Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
 
-                //                    string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
-                //                    "document.querySelector('#logpassword').value = '" + auth.Password + "';" +
-                //                    "document.querySelector('#code').value = '" + answer_telebot + "';" +
-                //                    "document.querySelector('.sf_button').click();";
-                //                    eventLoadPage.Reset();
-                //                    SendJS(0, js);
-                //                    eventLoadPage.WaitOne();
-                //                    Sleep(5);
-                //                    js =
-                //@"var echoError = document.querySelector('.echo_error');
-                //if(echoError != null) 'echoError';
-                //else 'ok';";
-                //                    ev = SendJSReturn(0, js);
-                //                    if (ev == "ok")
-                //                        break;
-                //                }
+                        string answer_telebot = SendQuestion(img, "");
+
+                        string jsAntiBot = "";
+                        foreach (char ch in answer_telebot)
+                            jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                        jsAntiBot += "login('1');";
+
+                        SendJS(0, jsAntiBot);
+                        Sleep(7);
+                        if(WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
+                        {
+                            return true;
+                        }
+                        eventLoadPage.Reset();
+                        browser.Reload();
+                    }
+                    else
+                        return false;
+                }
             }
             return true;
         }
@@ -280,8 +277,9 @@ else 'error_youtube';";
                 CloseСhildBrowser();
             }
         }
-        private void ClickSurf()
+        private int ClickSurf()
         {
+            int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_surfing?go");
             //CheckCaptcha();
             string js =
@@ -338,16 +336,24 @@ function go(){
 go();";
                             ev = SendJSReturn(browserSurf.MainFrame, js);
                             Sleep(ev);
-                            if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');") != "click")
+                            if (!WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
                             {
-                                ev = @"
-$.ajax({
+                                ev = 
+@"$.ajax({
 	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
 	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
     beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
     success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
 });";
-                                WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');");
+                                ev = SendJSReturn(browserSurf.MainFrame, ev);
+                                if(WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
+                                {
+                                    Count++;
+                                }
+                            }
+                            else
+                            {
+                                Count++;
                             }
                             Sleep(2);
                             break;
@@ -356,9 +362,11 @@ $.ajax({
                 }
                 CloseСhildBrowser();
             }
+            return Count;
         }
-        private void VisitSurf()
+        private int VisitSurf()
         {
+            int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_transitions");
             string js =
            @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
@@ -422,6 +430,7 @@ else { return 'wait' }};";
                                     continue;
                                 }
                                 CloseBrowser(browserVisit2);
+                                Count++;
                                 Sleep(1);
                                 break;
                             }
@@ -431,9 +440,11 @@ else { return 'wait' }};";
                 CloseСhildBrowser();
                 Sleep(1);
             }
+            return Count;
         }
-        private void MailSurf()
+        private int MailSurf()
         {
+            int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_mails");
             //CheckCaptcha();
             string js =
@@ -505,7 +516,7 @@ function click_s()
 go();";
                                 ev = SendJSReturn(browserSurf.MainFrame, js);
                                 Sleep(ev);
-                                if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');") != "click")
+                                if (!WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
                                 {
                                     ev = @"
 $.ajax({
@@ -514,8 +525,14 @@ $.ajax({
     beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
     success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
 });";
-                                    WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');");
+                                    SendJS(browserSurf.MainFrame, ev);
+                                    if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
+                                    {
+                                        Count++;
+                                    }
                                 }
+                                else
+                                    Count++;
                                 Sleep(2);
                             }
                         }
@@ -524,6 +541,7 @@ $.ajax({
                 CloseСhildBrowser();
                 Sleep(2);
             }
+            return Count;
         }
         private bool Captcha(IBrowser browser)
         {
@@ -547,22 +565,12 @@ else 'ok';";
                 }
                 else
                 {
-                    Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
-
-                    string answer_telebot = SendQuestion(img, "");
-
-                    jsAntiBot = "";
-                    foreach (char ch in answer_telebot)
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "login('1');";
-
-                    SendJS(0, jsAntiBot);
-                    Sleep(7);
+                   
                 }
             }
             Error("Ошибка ввода капчи");
             return false;
-        }       
+        }  
         private void AntiBot(IBrowser browser)
         {
             string ev = @"var info = document.querySelector('.info');

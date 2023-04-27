@@ -507,13 +507,14 @@ namespace ClickMashine
             return predict;
         }
     }
-    class ImageControl
+    abstract class ImageControl
     {
         public NN nn;
         protected Size sizeImage;
-        public ImageControl(Size size)
+        public ImageControl(Size size, string pathNN)
         {
             this.sizeImage = new Size(size.Width, size.Height);
+            nn = new WmrFastNNAuth(sizeImage, pathNN);
         }
         //public void SaveDate(string path, string name)
         //{
@@ -692,9 +693,8 @@ namespace ClickMashine
             }
             return gray;
         }
-        public ImageConrolWmrClick(Size imgSize, string pathNN) : base(imgSize)
+        public ImageConrolWmrClick(Size imgSize, string pathNN) : base(imgSize, pathNN)
         {
-            nn = new WmrFastNNClick(imgSize, pathNN);
         }
         public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
@@ -710,9 +710,8 @@ namespace ClickMashine
     }
     class ImageControlWmrAuth : ImageControl
     {
-        public ImageControlWmrAuth(Size imgSize, string pathNN) : base(imgSize)
+        public ImageControlWmrAuth(Size imgSize, string pathNN) : base(imgSize, pathNN)
         {
-            nn = new WmrFastNNAuth(imgSize, pathNN);
         }
         public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
@@ -727,6 +726,24 @@ namespace ClickMashine
             Mat mat = BitmapConverter.ToMat(bitmap);
             Cv2.Split(mat, out Mat[] mat_channels1);
             mat = mat_channels1[0];
+            Cv2.Threshold(mat, mat, 140, 255, ThresholdTypes.BinaryInv);
+            return mat;
+        }
+    }
+    class VipClickImageConrol : ImageControl {
+        public VipClickImageConrol(Size imgSize, string pathNN) : base(imgSize, pathNN)
+        {
+        }
+        public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
+        {
+            images = new List<Mat>();
+            foreach (Mat mat in elements)
+                images.Add(mat.Resize(sizeImage));
+            return images.Count;
+        }
+        protected override Mat ImageNormalize(Bitmap bitmap)
+        {
+            Mat mat = BitmapConverter.ToMat(bitmap);
             Cv2.Threshold(mat, mat, 140, 255, ThresholdTypes.BinaryInv);
             return mat;
         }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ClickMashine
+﻿namespace ClickMashine
 {
     internal class WebofSar : Site
     {
@@ -105,7 +99,7 @@ $(window).focus();");
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
-                            if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5) == "errorWait")
+                            if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
                             {
                                 SendJS(browsers[1].MainFrame,
 @"clearInterval(idInterval[""Timer""]);
@@ -215,11 +209,6 @@ function click_s()
                     {
                         WaitCreateBrowser(1);
                         Sleep(2);
-
-
-
-
-
                         SendJS(browsers[1].MainFrame, @"loadFrame();
 $(window).on(""focus"", function () {   
     wFocus = true;
@@ -236,7 +225,7 @@ $(window).focus();");
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
-                            if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5) == "errorWait")
+                            if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
                             {
                                 SendJS(browsers[1].MainFrame,
 @"clearInterval(idInterval[""Timer""]);

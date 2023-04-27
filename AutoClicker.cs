@@ -50,6 +50,11 @@ namespace ClickMashine
                                             siteList.Add(new WebofSar(form, auth));
                                             break;
                                         }
+                                    case EnumTypeSite.VipClick:
+                                        {
+                                            siteList.Add(new VipClick(form, auth));
+                                            break;
+                                        }
                                 default:
                                         throw new Exception("Нет такого сайта.");
                                 }

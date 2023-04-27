@@ -3,9 +3,6 @@ using CefSharp.WinForms;
 using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ClickMashine
 {
@@ -18,7 +15,8 @@ namespace ClickMashine
         Profitcentr,
         WmrFast,
         WebofSar,
-        Losena
+        Losena,
+        VipClick
     }
     class Auth
     {
@@ -73,6 +71,15 @@ namespace ClickMashine
                 }
             }
             return "errorMail";
+        }
+    }
+    class Report {
+        int Click { get; set; }
+        int Visit { get; set; }
+        int YouTube { get; set; }
+        public Report()
+        {
+
         }
     }
     abstract class Site : MyThread
@@ -350,11 +357,7 @@ namespace ClickMashine
                 browsers[i].CloseBrowser(false);
             }
         }
-        /// <summary>
-        /// Ожидание Button и клик.
-        /// </summary>
-        /// <returns>errorMail, click</returns>
-        protected string WaitButtonClick(IFrame frame, string element, int sec = 10)
+        protected bool WaitButtonClick(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
 @"function wait_element()
@@ -368,18 +371,11 @@ namespace ClickMashine
             {
                 string ev_js_wait = SendJSReturn(frame, "wait_element();");
                 if (ev_js_wait == "click")
-                    return ev_js_wait;
+                    return true;
                 Thread.Sleep(1000);
             }
-            return "errorWait";
+            return false;
         }
-        /// <summary>
-        /// Ответ на MAIl
-        /// </summary>
-        /// <param name="mail">mail</param>
-        /// <param name="question">question</param>
-        /// <param name="answer">answer</param>
-        /// <returns>errorMail, answer int.ToString()</returns>
         protected string GetMailAnswer(IFrame frame, string mail, string question, string answer, int sec = 5)
         {
             string js =
@@ -416,7 +412,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected bool WaitElement(IFrame frame, string element)
+        protected bool WaitElement(IFrame frame, string element, int sec = 5)
         {
             string js_wait =
 @"function waitElement()
@@ -426,7 +422,7 @@ get_mail();";
     else return 'wait';
 }";
             SendJS(frame, js_wait);
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < sec; i++)
             {
                 string? ev_js_wait = SendJSReturn(frame, "waitElement();");
                 if (ev_js_wait == null)
@@ -437,7 +433,6 @@ get_mail();";
             }
             return false;
         }
-        /// <returns>errorWait, answer String</returns>
         protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
         {
             if (function != null)
