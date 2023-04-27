@@ -18,10 +18,9 @@ namespace ClickMashine
             Initialize();
             if (!Auth(auth))
                 return;
-            // MailSurf();
             ClickSurf(); 
-            VisitSites();
-            //YouTubeSurf();
+            VisitSites(); 
+            AutoClick();
             CloseAllBrowser();
         }
         public override bool Auth(Auth auth)
@@ -101,8 +100,7 @@ $(window).on(""blur"", function() {
 $(window).focus();");
                         browsers[1].GetHost().SetFocus(true);
                         Sleep(1);
-                        ev = WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')");
-                        if (ev == "end")
+                        if (WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')"))
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
@@ -233,8 +231,7 @@ $(window).on(""blur"", function() {
 $(window).focus();");
                         browsers[1].GetHost().SetFocus(true);
                         Sleep(1);
-                        ev = WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')");
-                        if (ev == "end")
+                        if (WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')"))
                         {
                             ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
@@ -262,6 +259,29 @@ fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
                     }
                 }
                 CloseСhildBrowser();
+            }
+        }
+        private void AutoClick()
+        {
+            LoadPage(main_browser.GetBrowser(), "https://webof-sar.ru/work-auto-surfings");
+            string ev = SendJSReturn(browsers[0], "document.querySelector('.text-bold').innerText");
+            if(ev != "0")
+            {
+                SendJS(browsers[0], "document.querySelector('.btn-block').click()");
+                while (true)
+                {
+                    Sleep(5);
+                    ev = SendJSReturn(browsers[1],
+@"var timer_r = document.querySelector('.timer');
+if(timer_r != null) timer.innerText;
+else 'none';");
+
+                    if (ev == "none")
+                    {
+                        break;
+                    }
+                    else { Sleep(ev); }
+                }
             }
         }
     }

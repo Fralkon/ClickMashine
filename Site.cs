@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using static System.Net.Mime.MediaTypeNames;
+using static Tensorflow.ApiDef.Types;
+using CefSharp.DevTools.Page;
 
 namespace ClickMashine
 {
@@ -18,7 +20,37 @@ namespace ClickMashine
         Profitcentr,
         WmrFast,
         WebofSar,
-        Losena
+        Losena,
+        SeoClub
+    }
+    class TypeSite
+    {
+        public EnumTypeSite enam = EnumTypeSite.None;
+        public override string ToString()
+        {
+            switch (enam)
+            {
+                case EnumTypeSite.None:
+                    return "None";
+                case EnumTypeSite.Router:
+                    return "Router";
+                case EnumTypeSite.SeoFast:
+                    return "SeoFast";
+                case EnumTypeSite.Aviso:
+                    return "Aviso";
+                case EnumTypeSite.Profitcentr:
+                    return "Profitcentr";
+                case EnumTypeSite.WmrFast:
+                    return "WmrFast";
+                case EnumTypeSite.WebofSar:
+                    return "WebofSar";
+                case EnumTypeSite.Losena:
+                    return "Losena";
+                case EnumTypeSite.SeoClub:
+                    return "SeoClub";
+                default: return "Error";
+            }
+        }
     }
     class Auth
     {
@@ -78,9 +110,12 @@ namespace ClickMashine
     class Site : MyThread
     {
         public Form1 form;
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
+        protected TeleBot teleBot;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
+        protected IBrowser LastBrowser;
         protected string homePage;
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser main_browser;
@@ -109,7 +144,6 @@ namespace ClickMashine
             lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
             main_browser.LifeSpanHandler = lifeSplanHandler;
-            main_browser.LoadingStateChanged += Browser_LoadingStateChanged;
             form.Invoke(new Action(() =>
             {
                 TabPage newTabPage = new TabPage();
@@ -123,9 +157,18 @@ namespace ClickMashine
             }));
             Sleep(1);
         }
+
+        private void Main_browser_FrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
+        {
+            if (e.Frame.IsMain)
+                Console.WriteLine("-----------\nMainFrameEnd\n----------");
+        }
+
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
+            LastBrowser = browser;
             browsers.Add(browser);
+            browserControl.LoadingStateChanged += Browser_LoadingStateChanged;
             eventBrowserCreated.Set();
         }
         public void CloseBrowser(IBrowser browser)
@@ -155,37 +198,37 @@ namespace ClickMashine
                                     throw new Exception("Ошибка удаления TabControl");
                             }
                         }));
-                        controlBrowser.Dispose();
+                        controlBrowser.Invoke(() => { controlBrowser.Dispose(); });
                     }
-                        browsers.RemoveAt(i);
+                    browsers.RemoveAt(i);
                     if (i != 0)
                     {
-                        form.FocusTab(browsers[i-1]);
+                        form.FocusTab(browsers[i - 1]);
                     }
                 }
             }
         }
-        public void Browser_LoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
+        public void Browser_LoadingStateChanged(object? sender, LoadingStateChangedEventArgs e)
         {
             if (!e.IsLoading)
             {
+                Console.WriteLine("---------------\nloadEnd\n" +
+                    "Browser: " + e.Browser.Identifier.ToString() + "\n---------------");
                 eventLoadPage.Set();
             }
         }
         protected IBrowser? GetBrowser(int id)
         {
+            eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (browsers.Count <= id)
             {
                 eventBrowserCreated.Reset();
                 if (!eventBrowserCreated.WaitOne(5000))
-                {
-                    CM("End create wait ERRR");
                     return null;
                 }
             }
             eventLoadPage.WaitOne(5000);
-            CM("End create wait");
             Sleep(1);
             return browsers[id];
         }
@@ -200,6 +243,15 @@ namespace ClickMashine
                     }
             CM("End create wait");
             return true;
+        }
+        protected IBrowser? WaitCreateBrowser()
+        {
+            eventBrowserCreated.Reset();
+            eventLoadPage.Reset();
+            if (!eventBrowserCreated.WaitOne(3000))
+                return null;
+            eventLoadPage.WaitOne(5000);
+            return LastBrowser;
         }
         protected void LoadPage(int id_browser, string page)
         {
@@ -254,6 +306,10 @@ namespace ClickMashine
             Console.WriteLine("---------------------------");
             frame.ExecuteJavaScriptAsync(JS);
         }
+        protected void SendJS(IBrowser browser, string JS)
+        {
+            SendJS(browser.MainFrame, JS);
+        }
         protected string SendJSReturn(IFrame frame, string JS)
         {
             string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
@@ -266,7 +322,7 @@ namespace ClickMashine
             {
                 if (task.Result.Result.ToString() == "error")
                 {
-                    throw new Exception("Type: " + Type.ToString() + "\nError JS");
+                    throw new Exception("Type: " + type.ToString() + "\nError JS");
                 }
                 Console.WriteLine("Return: " + task.Result.Result.ToString());
                 Console.WriteLine("---------------------------");
@@ -276,6 +332,10 @@ namespace ClickMashine
             Console.WriteLine("Not return!!!!!!!");
             Console.WriteLine("---------------------------");
             return null;
+        }
+        protected string SendJSReturn(IBrowser browser, string JS)
+        {
+            return SendJSReturn(browser.MainFrame, JS);
         }
         protected void Error(string text)
         {
@@ -392,7 +452,7 @@ get_mail();";
                 else
                 {
                     MailSurf? mailSurf = JsonSerializer.Deserialize<MailSurf>(ev);
-                    if(mailSurf == null)
+                    if (mailSurf == null)
                     {
                         return "errorMail";
                     }
@@ -401,7 +461,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected string WaitElement(IFrame frame, string element)
+        protected bool WaitElement(IFrame frame, string element)
         {
             string js_wait =
 @"function waitElement()
@@ -417,10 +477,10 @@ get_mail();";
                 if (ev_js_wait == null)
                     continue;
                 if (ev_js_wait == "end")
-                    return ev_js_wait;
+                    return true;
                 Thread.Sleep(1000);
             }
-            return "error_wait";
+            return false;
         }
         /// <returns>errorWait, answer String</returns>
         protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
@@ -438,8 +498,7 @@ get_mail();";
         }
         protected Bitmap GetImgBrowser(IFrame frame, string element)
         {
-            string ev = WaitElement(frame, element);
-            if (ev == "end")
+            if (WaitElement(frame, element))
             {
                 string js = @"var elementImg = " + element + @";
 if(elementImg != null){
@@ -447,7 +506,7 @@ if(elementImg != null){
     JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
 }
 else 'errorImg';";
-                ev = SendJSReturn(frame, js);
+                string ev = SendJSReturn(frame, js);
                 if (ev != "errorImg")
                 {
                     Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ev);

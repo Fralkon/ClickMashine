@@ -28,32 +28,36 @@ namespace ClickMashine
         protected override void StartSurf()
         {
             Initialize();
-            if (!Auth(auth))
-                return;
-            try
+            while (true)
             {
-                MailSurf();
+                if (!Auth(auth))
+                    return;
+                try
+                {
+                    YouTubeSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error(ex.Message);
+                }
+                try
+                {
+                    MailSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error(ex.Message);
+                }
+                try
+                {
+                    ClickSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error(ex.Message);
+                }
+                Sleep(60 * 60);
             }
-            catch (Exception ex)
-            {
-                Error(ex.Message);
-            }
-            try
-            {
-                ClickSurf();
-            }
-            catch (Exception ex)
-            {
-                Error(ex.Message);
-            }
-            //try
-            //{
-            //    YouTubeSurf();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Error(ex.Message);
-            //}
             CloseAllBrowser();
         }
         private void YouTubeSurf()
@@ -119,77 +123,31 @@ function click_s()
                         else if (ev == "ads")
                         {
                             CM("See youtube");
-                            Sleep(2);
-                            IFrame youTubeFrame = browsers[1].MainFrame;
-                            ev = SendJSReturn(youTubeFrame, @"player.setVolume(0); b = true; player.seekTo(0, true); timerInitial;");
+                            IBrowser? youtube_Browser = GetBrowser(1);
+                            if(youtube_Browser == null)
+                            {
+                                CloseСhildBrowser();
+                                continue;
+                            }
+                            IFrame youTubeFrame = youtube_Browser.MainFrame;
+                            ev = SendJSReturn(youTubeFrame, @"player.setVolume(0); b = true; c = true; player.seekTo(0, true); document.querySelector('#tmr').innerText;");
                             Sleep(ev);
+                            if (WaitElement(youTubeFrame, @"document.querySelector('[type=""range""]')"))
+                            {
+                                string js =
+    @"var range = document.querySelector('[type=""range""]');
+if (range != null)
+{
+    range.value = range.max;
+    document.querySelector('button').click(); 'end_surf';
+}
+else { 'error_range'; }";
+                                SendJSReturn(youTubeFrame, js);
+                            }
+                            break;
                         }
                     }
-                }
-                //CM("Podp youtube");
-                ////					WaitCreateBrowser(1);
-                //Sleep(4);
-                //ev = SendJSReturn(1, @"player.setVolume(0); b = true; player.seekTo(0, true); window.ev(timerInitial);");
-                //if (ev != "error")
-                //{
-                //    CM(ev);
-                //    Sleep(ev);
-                //}
-                //Sleep(2);
-                //ev = SendJSReturn(1, @"document.querySelector('.go-link-youtube').click(); document.querySelector('#link_youtube').innerText;");
-
-                //if (ev != "error")
-                //{
-                //    CM(ev);
-                //    int point = ev.find("be/");
-                //    if (point != -1)
-                //    {
-                //        point += 3;
-                //        WaitCreateBrowser(2);
-                //        string link_youtube_podp = "https://www.youtube.com/watch?v=" + ev.substr(point, ev.size() - point);
-                //        LoadPage(2, link_youtube_podp.c_str());
-                //        string ev_youtube_podp = R"(try{document.querySelector('#subscribe-button > ytd-subscribe-button-renderer > tp-yt-paper-button').click();window.ev(document.querySelector('#channel-name').innerText);}
-                //catch (e) { window.ev("error"); })";
-
-                //                        SendJS(2, ev_youtube_podp);
-                //        WaitTime(2);
-                //        ev_youtube_podp = GetStringMessage();
-                //        if (ev_youtube_podp != "error")
-                //        {
-                //            string ev_end_youtube_podp = R"(try{surf_cl[n-1].querySelector('input').value = )" + ev_youtube_podp + R"(;surf_cl[n-1].querySelector('.status-link-youtube').click();window.ev('OK');}
-                //catch (e) { window.ev("error"); })";
-
-                //                            SendJS(0, ev_end_youtube_podp.c_str());
-                //            CM(GetStringMessage().c_str());
-                //        }
-                //        WaitTime(2);
-                //    }
-                //}
-                //		else if (ev == "ads")
-                //			{
-                //				
-                //		else if (ev == "liked") {
-                //			WaitTime(2);
-                //			if (ev.find("likes") != -1) {
-                //				CloseСhildBrowser();
-                //				continue;
-                //				WaitTime(5);
-                //				if (YouTubeLike(browsers[1]))
-                //					WaitTime(15);
-                //		SendJS(0, R"(var start_ln = surf_cl[n-1].querySelector('.youtube-button');
-                //					if(start_ln ! = null)
-                //		{
-                //			start_ln.querySelectorAll('span')[1].click();
-                //		})");
-                //			}
-                //}
-                //		else if (ev == "continue")
-                //{
-                //	CloseСhildBrowser();
-                //	continue;
-                //}
-                //else
-                //	CM(ev.c_str());
+                }                
                 Sleep(2);
                 CloseСhildBrowser();
                 Sleep(1);
@@ -215,7 +173,9 @@ function click_s()
     else if (surf_cl[n].innerText.length > 200) { n++; return 'continue'; }
     else
     {
-        surf_cl[n].querySelector('a').click(); return 'click';
+        if(!surf_cl[n].querySelector('[title = ""Стоимость просмотра""]')){ n++; return 'continue'; }
+        surf_cl[n].querySelector('a').click();
+        return 'click';
     }
 }";
             SendJS(mainFrame, jsSurf);
@@ -238,11 +198,16 @@ function click_s()
                         }
                         else if (ev == "surf")
                         {
-                            Sleep(2);
-                            List<long> frameIndif = browsers[1].GetFrameIdentifiers();
+                            IBrowser? click_browser = GetBrowser(1);
+                            if (click_browser == null)
+                            {
+                                CloseСhildBrowser();
+                                continue;
+                            }
+                            List<long> frameIndif = click_browser.GetFrameIdentifiers();
                             foreach (long id in frameIndif)
                             {
-                                IFrame frame = browsers[1].GetFrame(id);
+                                IFrame frame = click_browser.GetFrame(id);
                                 if (frame.Url.IndexOf("vlss") == -1)
                                 {
                                     continue;

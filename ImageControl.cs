@@ -316,7 +316,6 @@ namespace ClickMashine
     //        }
     //    }
     //}
-
     internal class MatControl
     {
         private Mat mat { get; set; }
@@ -637,7 +636,7 @@ namespace ClickMashine
         }
     }
 
-    class ImageConrolWmrClick : ImageControl
+    class ImageControlWmrClick : ImageControl
     {
         private int CheckImageCompareColor(Mat bitmap)
         {
@@ -692,7 +691,7 @@ namespace ClickMashine
             }
             return gray;
         }
-        public ImageConrolWmrClick(Size imgSize, string pathNN) : base(imgSize)
+        public ImageControlWmrClick(Size imgSize, string pathNN) : base(imgSize)
         {
             nn = new WmrFastNNClick(imgSize, pathNN);
         }

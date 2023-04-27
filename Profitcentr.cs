@@ -66,8 +66,7 @@ namespace ClickMashine
 				catch (Exception ex)
 				{
                     Error(ex.Message);
-				}
-				
+				}				
                 try
 				{
 					YouTubeSurf();
