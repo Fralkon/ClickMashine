@@ -6,8 +6,6 @@ namespace ClickMashine
 {
     class AutoClicker
     {
-        //TeleBot teleBot = new TeleBot();
-        //Router? router;
         public MySQL mySQL;
         public TCPControl TCPControl { get; private set; }
         List<Site> siteList = new List<Site>();
@@ -23,20 +21,8 @@ namespace ClickMashine
                 XElement? authX = authXML.Element("Auth");
                 if (authX == null)
                     throw new Exception("Нет файла логинов и паролей");
-                teleBotThread = new Thread(teleBot.Start);
-                teleBotThread.Start();
 
-                //List<Auth> authRouter = new List<Auth>() { new Auth(authX.Element("google")), new Auth(authX.Element("vk")) };
-                //router = new Router(form, teleBot);
-                //router.Initialize();
-                //router.Auth(authRouter);
-
-                //siteList.Add(new Losena(form, teleBot, new Auth(authX.Element("losena"))));
-                //siteList.Add(new WebofSar(form, teleBot, new Auth(authX.Element("webof-sar"))));
-                siteList.Add(new SeoFast(form, teleBot, new Auth(authX.Element("seo-fast"))));
-                //siteList.Add(new Profitcentr(form, teleBot, new Auth(authX.Element("profitcentr"))));
-                siteList.Add(new WmrFast(form, teleBot, new Auth(authX.Element("wmrfast"))));
-                using(DataTable authData = mySQL.GetDataTableSQL("SELECT login, password, site FROM auth WHERE id_object = " + form.ID.ToString() + " AND step = " + form.Step.ToString()))
+                using(DataTable authData = mySQL.GetDataTableSQL("SELECT login, password, site FROM auth WHERE id_object = " + form.ID.ToString() + " AND step = " + form.Step.ToString() + " AND status = 'Activate'"))
                 {
                     if(authData.Rows.Count > 0)
                     {
@@ -55,6 +41,11 @@ namespace ClickMashine
                                     case EnumTypeSite.Profitcentr:
                                         {
                                             siteList.Add(new Profitcentr(form, auth));
+                                            break;
+                                        }
+                                    case EnumTypeSite.WmrFast:
+                                        {
+                                            siteList.Add(new WmrFast(form, auth));
                                             break;
                                         }
                                     default:

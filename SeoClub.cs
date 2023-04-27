@@ -5,10 +5,9 @@ namespace ClickMashine
 {
     class SeoClub : Site
     {
-        public SeoClub(Form1 form, TeleBot teleBot, Auth auth) : base(form, teleBot, auth)
+        public SeoClub(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://profitcentr.com/";
-            type.enam = EnumTypeSite.Profitcentr;
         }
         public override bool Auth(Auth auth)
         {
@@ -36,7 +35,7 @@ namespace ClickMashine
             //}
             return true;
         }
-        public override void StartSurf()
+        protected override void StartSurf()
         {
             Initialize();
             if (!Auth(auth))
@@ -245,7 +244,7 @@ else 'ok';";
                 {
                     Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
+                    string answer_telebot = SendQuestion(img,"");
 
                     jsAntiBot = "";
                     foreach (char ch in answer_telebot)
@@ -356,7 +355,7 @@ else 'ok';";
                 {
                     Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
+                    string answer_telebot = SendQuestion(img,"");
 
                     jsAntiBot = "";
                     foreach (char ch in answer_telebot)
@@ -555,7 +554,7 @@ else 'ok';";
                 {
                     Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
 
-                    string answer_telebot = teleBot.SendQuestion(img);
+                    string answer_telebot = SendQuestion(img,"");
 
                     jsAntiBot = "";
                     foreach (char ch in answer_telebot)

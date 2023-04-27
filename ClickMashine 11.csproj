@@ -33,6 +33,7 @@
     <PackageReference Include="cef.redist.x86" Version="109.1.11" />
     <PackageReference Include="CefSharp.Common" Version="109.1.110" />
     <PackageReference Include="CefSharp.WinForms.NETCore" Version="109.1.110" />
+    <PackageReference Include="MySql.Data" Version="8.0.33" />
     <PackageReference Include="OpenCvSharp4" Version="4.7.0.20230115" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.7.0.20230115" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.7.0.20230115" />

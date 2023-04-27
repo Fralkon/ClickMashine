@@ -23,35 +23,6 @@ namespace ClickMashine
         Losena,
         SeoClub
     }
-    class TypeSite
-    {
-        public EnumTypeSite enam = EnumTypeSite.None;
-        public override string ToString()
-        {
-            switch (enam)
-            {
-                case EnumTypeSite.None:
-                    return "None";
-                case EnumTypeSite.Router:
-                    return "Router";
-                case EnumTypeSite.SeoFast:
-                    return "SeoFast";
-                case EnumTypeSite.Aviso:
-                    return "Aviso";
-                case EnumTypeSite.Profitcentr:
-                    return "Profitcentr";
-                case EnumTypeSite.WmrFast:
-                    return "WmrFast";
-                case EnumTypeSite.WebofSar:
-                    return "WebofSar";
-                case EnumTypeSite.Losena:
-                    return "Losena";
-                case EnumTypeSite.SeoClub:
-                    return "SeoClub";
-                default: return "Error";
-            }
-        }
-    }
     class Auth
     {
         public string Login { get; set; }
@@ -111,7 +82,6 @@ namespace ClickMashine
     {
         public Form1 form;
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();
-        protected TeleBot teleBot;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
@@ -155,7 +125,6 @@ namespace ClickMashine
                 form.tabControl1.TabPages.Add(newTabPage);
                 form.tabControl1.SelectedTab = newTabPage;
             }));
-            Sleep(1);
         }
 
         private void Main_browser_FrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
@@ -226,7 +195,6 @@ namespace ClickMashine
                 eventBrowserCreated.Reset();
                 if (!eventBrowserCreated.WaitOne(5000))
                     return null;
-                }
             }
             eventLoadPage.WaitOne(5000);
             Sleep(1);
@@ -322,7 +290,7 @@ namespace ClickMashine
             {
                 if (task.Result.Result.ToString() == "error")
                 {
-                    throw new Exception("Type: " + type.ToString() + "\nError JS");
+                    throw new Exception("Type: " + Type.ToString() + "\nError JS");
                 }
                 Console.WriteLine("Return: " + task.Result.Result.ToString());
                 Console.WriteLine("---------------------------");
