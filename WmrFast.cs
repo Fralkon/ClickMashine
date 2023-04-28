@@ -8,7 +8,7 @@ namespace ClickMashine
 	{
 		private Size sizeMatAuth = new(8, 10);
 		private Size sizeImgClick = new(20, 26);
-		ImageConrolWmrClick imageConrolWmrClick;
+		ImageControlWmrClick imageConrolWmrClick;
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
@@ -17,7 +17,7 @@ namespace ClickMashine
 		}
 		public override bool Auth(Auth auth)
 		{
-			LoadPage(0, "https://wmrfast.com/");
+			LoadPage(main_browser.GetBrowser(), "https://wmrfast.com/");
 			Sleep(2);
 			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(sizeMatAuth, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
@@ -26,15 +26,25 @@ namespace ClickMashine
 				if (ev == "login")
 				{
 					Sleep(2);
-                    string js =
-                            @"document.querySelector('#vhusername').value = '" + auth.Login + @"';
-										document.querySelector('#vhpass').value = '" + auth.Password + @"';
-										document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
-										document.querySelector('#vhod1').click();";
-                    eventLoadPage.Reset();
-                    SendJS(0, js);
-                    eventLoadPage.WaitOne();
-                    Sleep(3);
+                    ev = SendJSReturn(0,
+@"if(document.querySelector(""#h-captcha"")) 'h-captcha';
+else if(document.querySelector(""#login_cap"")) 'login_cap';");
+					if (ev == "login_cap")
+					{
+						string js =
+	@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
+document.querySelector('#vhpass').value = '" + auth.Password + @"';
+document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
+document.querySelector('#vhod1').click();";
+						eventLoadPage.Reset();
+						SendJS(0, js);
+						eventLoadPage.WaitOne();
+						Sleep(3);
+					}
+					else
+					{
+						return false;
+					}
                 }
 				else
 					break;
@@ -76,7 +86,8 @@ namespace ClickMashine
 		{
 			int Count = 0;
 			LoadPage(0, "https://wmrfast.com/serfing_ytn.php");
-			string js =
+            Sleep(2);
+            string js =
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
 function click_s()
 {
@@ -92,10 +103,16 @@ function click_s()
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
-					Sleep(3);
-					if (browsers.Count == 2)
+					IBrowser? browser = WaitCreateBrowser();
+					if (browser == null)
 					{
-						ev = SendJSReturn(1, "vs = true;timer.toString();");
+						CloseСhildBrowser();
+						continue;
+					}
+					Sleep(1);
+					if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
+					{
+						ev = SendJSReturn(browser, "vs = true;timer.toString();");
 						if (ev != "error")
 						{
 							Sleep(ev);
@@ -108,6 +125,7 @@ function click_s()
 				else if (ev == "end")
 					break;
 				CloseСhildBrowser();
+				Sleep(1);
 			}
 			return Count;
 		}
@@ -115,7 +133,8 @@ function click_s()
 		{
 			int Count = 0;
 			LoadPage("https://wmrfast.com/serfing.php");
-			string js =
+            Sleep(2);
+            string js =
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
 function click_s()
 {
@@ -201,10 +220,13 @@ return 'errorClick';}endClick();";
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
 function click_s()
 {
-	if (n >= surf_cl.length) return surf_cl[0].getAttribute('timer').toString();
+	if (n < surf_cl.length) {
+		surf_cl[n].click(); 
+		return surf_cl[n++].getAttribute('timer').toString();
+	}
 	else
 	{
-		surf_cl[n].click(); n++; return 'surf';
+		return 'end';
 	}
 }";
 			SendJS(0, js);

@@ -16,6 +16,8 @@ namespace ClickMashine
         WmrFast,
         WebofSar,
         Losena,
+        SeoClub
+        Losena,
         VipClick
     }
     class Auth
@@ -85,9 +87,11 @@ namespace ClickMashine
     abstract class Site : MyThread
     {
         public Form1 form;
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
+        protected IBrowser LastBrowser;
         protected string homePage;
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser main_browser;
@@ -113,7 +117,6 @@ namespace ClickMashine
             lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
             main_browser.LifeSpanHandler = lifeSplanHandler;
-            main_browser.LoadingStateChanged += Browser_LoadingStateChanged;
             form.Invoke(new Action(() =>
             {
                 TabPage newTabPage = new TabPage();
@@ -125,11 +128,19 @@ namespace ClickMashine
                 form.tabControl1.TabPages.Add(newTabPage);
                 form.tabControl1.SelectedTab = newTabPage;
             }));
-            Sleep(1);
         }
+
+        private void Main_browser_FrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
+        {
+            if (e.Frame.IsMain)
+                Console.WriteLine("-----------\nMainFrameEnd\n----------");
+        }
+
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
-            browsers.Add(browser);      
+            LastBrowser = browser;
+            browsers.Add(browser);
+            browserControl.LoadingStateChanged += Browser_LoadingStateChanged;
             eventBrowserCreated.Set();
         }
         public void CloseBrowser(IBrowser browser)
@@ -159,7 +170,7 @@ namespace ClickMashine
                                     throw new Exception("Ошибка удаления TabControl");
                             }
                         }));
-                        controlBrowser.Dispose();
+                        controlBrowser.Invoke(() => { controlBrowser.Dispose(); });
                     }
                     browsers.RemoveAt(i);
                     if (i != 0)
@@ -169,27 +180,26 @@ namespace ClickMashine
                 }
             }
         }
-        public void Browser_LoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
+        public void Browser_LoadingStateChanged(object? sender, LoadingStateChangedEventArgs e)
         {
             if (!e.IsLoading)
             {
+                Console.WriteLine("---------------\nloadEnd\n" +
+                    "Browser: " + e.Browser.Identifier.ToString() + "\n---------------");
                 eventLoadPage.Set();
             }
         }
         protected IBrowser? GetBrowser(int id)
         {
+            eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (browsers.Count <= id)
             {
                 eventBrowserCreated.Reset();
                 if (!eventBrowserCreated.WaitOne(5000))
-                {
-                    CM("End create wait ERRR");
                     return null;
-                }
             }
             eventLoadPage.WaitOne(5000);
-            CM("End create wait");
             Sleep(1);
             return browsers[id];
         }
@@ -204,6 +214,15 @@ namespace ClickMashine
                     }
             CM("End create wait");
             return true;
+        }
+        protected IBrowser? WaitCreateBrowser()
+        {
+            eventBrowserCreated.Reset();
+            eventLoadPage.Reset();
+            if (!eventBrowserCreated.WaitOne(3000))
+                return null;
+            eventLoadPage.WaitOne(5000);
+            return LastBrowser;
         }
         protected void LoadPage(int id_browser, string page)
         {
@@ -258,6 +277,10 @@ namespace ClickMashine
             Console.WriteLine("---------------------------");
             frame.ExecuteJavaScriptAsync(JS);
         }
+        protected void SendJS(IBrowser browser, string JS)
+        {
+            SendJS(browser.MainFrame, JS);
+        }
         protected string SendJSReturn(IFrame frame, string JS)
         {
             string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
@@ -280,6 +303,10 @@ namespace ClickMashine
             Console.WriteLine("Not return!!!!!!!");
             Console.WriteLine("---------------------------");
             return null;
+        }
+        protected string SendJSReturn(IBrowser browser, string JS)
+        {
+            return SendJSReturn(browser.MainFrame, JS);
         }
         protected void Error(string text)
         {
@@ -412,7 +439,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected bool WaitElement(IFrame frame, string element, int sec = 5)
+        protected bool WaitElement(IFrame frame, string element)
         {
             string js_wait =
 @"function waitElement()
@@ -448,7 +475,7 @@ get_mail();";
         }
         protected Bitmap GetImgBrowser(IFrame frame, string element)
         {
-            if( WaitElement(frame, element))
+            if (WaitElement(frame, element))
             {
                 string js = @"var elementImg = " + element + @";
 if(elementImg != null){

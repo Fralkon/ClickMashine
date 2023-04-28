@@ -6,8 +6,6 @@ namespace ClickMashine
 {
     class AutoClicker
     {
-        //TeleBot teleBot = new TeleBot();
-        //Router? router;
         public MySQL mySQL;
         public TCPControl TCPControl { get; private set; }
         List<Site> siteList = new List<Site>();

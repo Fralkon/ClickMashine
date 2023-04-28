@@ -316,7 +316,6 @@ namespace ClickMashine
     //        }
     //    }
     //}
-
     internal class MatControl
     {
         private Mat mat { get; set; }
@@ -638,7 +637,7 @@ namespace ClickMashine
         }
     }
 
-    class ImageConrolWmrClick : ImageControl
+    class ImageControlWmrClick : ImageControl
     {
         private int CheckImageCompareColor(Mat bitmap)
         {
