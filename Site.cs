@@ -16,8 +16,7 @@ namespace ClickMashine
         WmrFast,
         WebofSar,
         Losena,
-        SeoClub
-        Losena,
+        SeoClub,
         VipClick
     }
     class Auth
@@ -439,7 +438,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected bool WaitElement(IFrame frame, string element)
+        protected bool WaitElement(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
 @"function waitElement()
