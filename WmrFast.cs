@@ -19,11 +19,11 @@ namespace ClickMashine
 			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
-				string ev = SendJSReturn(0, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
+				string ev = SendJSReturn(browser, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
 				if (ev == "login")
 				{
 					Sleep(2);
-                    ev = SendJSReturn(0,
+                    ev = SendJSReturn(browser,
 @"if(document.querySelector(""#h-captcha"")) 'h-captcha';
 else if(document.querySelector(""#login_cap"")) 'login_cap';");
 					if (ev == "login_cap")
@@ -34,7 +34,7 @@ document.querySelector('#vhpass').value = '" + auth.Password + @"';
 document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
 document.querySelector('#vhod1').click();";
 						eventLoadPage.Reset();
-						SendJS(0, js);
+						SendJS(browser, js);
 						eventLoadPage.WaitOne();
 						Sleep(3);
 					}
