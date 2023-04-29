@@ -4,318 +4,7 @@ using Point = OpenCvSharp.Point;
 using Size = OpenCvSharp.Size;
 
 namespace ClickMashine
-{
-    // delegate bool CompareColor(Color color1);
-    //internal class MatrixImage
-    //{
-    //    public bool[] arr;
-    //    public int rows;
-    //    public int cols;
-    //    public MatrixImage(int rows, int cols)
-    //    {
-    //        this.cols = cols;
-    //        this.rows = rows;
-    //        arr = new bool[rows * cols];
-    //    }
-    //    public MatrixImage(Bitmap bitmap, CompareColor compare)
-    //    {
-    //        this.cols=bitmap.Width;
-    //        this.rows=bitmap.Height;
-    //        arr = new bool[rows * cols];
-    //        for (int i = 0; i < rows; i++)
-    //        {
-    //            for(int j = 0; j < cols; j++)
-    //            {
-    //                Color c = bitmap.GetPixel(j, i);
-    //                if (compare(c))
-    //                    arr[i * cols + j] = true;
-    //                else
-    //                    arr[i * cols + j] = false;
-    //            }
-    //        }
-    //    }
-    //    public bool this[int row,int col]
-    //    {
-    //        get
-    //        {
-    //            return arr[row * cols + col];
-    //        }
-
-    //        set
-    //        {
-    //            arr[row * cols + col] = value;
-    //        }
-    //    }
-    //    public void Calibrate(int row, int col)
-    //    {
-    //        if (row > rows)
-    //        {
-    //            int difference = row - rows;
-    //            if (difference % 2 == 1) //нечетное
-    //            {
-    //                AddRow(rows / 2);
-    //                difference--;
-    //            }
-    //            if(difference != 0)
-    //            {
-    //                int step = rows / difference;
-    //                int start = step / 2;
-    //                for(int d = 0; d < difference; d++)
-    //                {
-    //                    AddRow(start);
-    //                    start += step + 1;
-    //                }
-    //            }
-    //        }
-    //        else
-    //        {
-    //            int difference = rows - row;
-    //            if (difference % 2 == 1) //нечетное
-    //            {
-    //                DeleteRow(rows / 2);
-    //                difference--;
-    //            }
-    //            if (difference != 0)
-    //            {
-    //                int step = rows / difference;
-    //                int start = step / 2;
-    //                for (int d = 0; d < difference; d++)
-    //                {
-    //                    DeleteRow(start);
-    //                    start += step + 1;
-    //                }
-    //            }
-    //        }
-    //        if (col > cols)
-    //        {
-    //            int difference = col - cols;
-    //            if (difference % 2 == 1) //нечетное
-    //            {
-    //                AddCol(cols / 2);
-    //                difference--;
-    //            }
-    //            if (difference != 0)
-    //            {
-    //                int step = cols / difference;
-    //                int start = step / 2;
-    //                for (int d = 0; d < difference; d++)
-    //                {
-    //                    AddCol(start);
-    //                    start += step;
-    //                }
-    //            }
-    //        }
-    //        else
-    //        {
-    //            int difference = cols - col;
-    //            if (difference % 2 == 1) //нечетное
-    //            {
-    //                DeleteCol(cols / 2);
-    //                difference--;
-    //            }
-    //            if (difference != 0)
-    //            {
-    //                int step = cols / difference;
-    //                int start = step / 2;
-    //                for (int d = 0; d < difference; d++)
-    //                {
-    //                    DeleteCol(start);
-    //                    start += step;
-    //                }
-    //            }
-    //        }
-    //    }
-    //    private void AddRow(int position)
-    //    {
-    //        rows++;
-    //        bool [] newArr = new bool[rows * cols];
-    //        for(int row = 0; row < rows; row++)
-    //        {
-    //            for(int col = 0; col < cols; col++)
-    //            {
-    //                if(position < row)
-    //                    newArr[row * cols + col] = arr[(row-1) * cols + col];
-    //                else
-    //                    newArr[row * cols + col] = arr[row * cols + col];
-    //            }
-    //        }
-    //        arr = newArr;
-    //    }
-    //    private void AddCol(int position)
-    //    {
-    //        cols++;
-    //        bool[] newArr = new bool[rows * cols];
-    //        for (int col = 0; col < cols; col++)
-    //        {
-    //            for (int row = 0; row < rows; row++)
-    //            {
-    //                if (position < col)
-    //                    newArr[row * cols + col] = arr[row * (cols - 1) + (col-1)];
-    //                else
-    //                    newArr[row * cols + col] = arr[row * (cols - 1) + col];
-    //            }
-    //        }
-    //        arr = newArr;
-    //    }
-    //    private void DeleteRow(int position)
-    //    {
-    //        rows--;
-    //        bool[] newArr = new bool[rows * cols];
-    //        for (int row = 0; row < rows; row++)
-    //        {
-    //            for (int col = 0; col < cols; col++)
-    //            {
-    //                if (position < row)
-    //                    newArr[row * cols + col] = arr[(row + 1) * cols + col];
-    //                else
-    //                    newArr[row * cols + col] = arr[row * cols + col];
-    //            }
-    //        }
-    //        arr = newArr;
-    //    }
-    //    private void DeleteCol(int position)
-    //    {
-    //        cols--;
-    //        bool[] newArr = new bool[rows * cols];
-    //        for (int col = 0; col < cols; col++)
-    //        {
-    //            for (int row = 0; row < rows; row++)
-    //            {
-    //                if (position < col)
-    //                    newArr[row * cols + col] = arr[row * (cols + 1) + (col + 1)];
-    //                else
-    //                    newArr[row * cols + col] = arr[row * (cols + 1) + col];
-    //            }
-    //        }
-    //        arr = newArr;
-    //    }
-    //    public override string ToString()
-    //    {
-    //        string s = "";
-    //        for (int i = 0; i < rows; ++i)
-    //        {
-    //            for (int j = 0; j < cols; ++j)
-    //                if (arr[i * cols + j] == true)
-    //                    s += "1";
-    //                else
-    //                    s += "0";
-    //            s += Environment.NewLine;
-    //        }
-    //        return s;
-    //    }
-    //    public ModelInput GetModelInput(int row, int col)
-    //    {
-    //        Calibrate(row, col);
-    //        ModelInput modelInput = new ModelInput();
-    //        modelInput.PixelValues = new float[rows * cols];
-    //        for (int i = 0; arr.Length > i; i++)
-    //        {
-    //            if (arr[i] == true)
-    //                modelInput.PixelValues[i] = 1;
-    //            else
-    //                modelInput.PixelValues[i] = 0;
-    //        }
-    //        return modelInput;
-    //    }
-    //    public string GetStringDate()
-    //    {
-    //        string str = "";
-    //        for (int i = 0; arr.Length > i; i++)
-    //        {
-    //            if (arr[i] == true)
-    //                str += "1";
-    //            else
-    //                str += "0";
-    //            str += ",";
-    //        }
-    //        return str;
-    //    }
-    //    public void SaveToDateFile(string path, char number)
-    //    {
-    //        using (StreamWriter writer = new StreamWriter(path, true))
-    //        {
-    //            writer.WriteLine(GetStringDate() + number);
-    //        }
-    //    }
-    //}
-    //internal class ImageControl
-    //{
-    //    public Bitmap bitmap { get; set; }
-    //    public List<Bitmap> images = new List<Bitmap>();
-    //    public ImageControl(Bitmap bitmap)
-    //    {
-    //        this.bitmap = bitmap;
-    //    }
-    //    public void SplitImage(CompareColor compareColor, int minX = 5, int minY = 5)
-    //    {
-    //        bool bImage = false;
-    //        Point startImage = new Point(0, 0);
-    //        Point endImage = new Point(0, 0);
-    //        for (int x = 0; x < bitmap.Width; x++)
-    //        {
-    //            bool z = false;
-    //            for (int y = 0; y < bitmap.Height; y++)
-    //            {
-    //                Color color = bitmap.GetPixel(x, y);
-    //                if (compareColor(color))
-    //                {
-    //                    z = true;
-    //                    break;
-    //                }
-    //            }
-    //            if (z)
-    //            {
-    //                if (!bImage)
-    //                {
-    //                    startImage.X = x;
-    //                    bImage = true;
-    //                }
-    //            }
-    //            else
-    //            {
-    //                if (bImage)
-    //                {
-    //                    endImage.X = x;
-    //                    bool B = false;
-    //                    for (int j = 0; j < bitmap.Height; j++)
-    //                    {
-    //                        bool m = false;
-    //                        for (int i = startImage.X; i < endImage.X; i++)
-    //                        {
-    //                            Color color = bitmap.GetPixel(i, j);
-    //                            if (compareColor(color))
-    //                            {
-    //                                m = true;
-    //                                break;
-    //                            }
-    //                        }
-    //                        if(j == bitmap.Height - 1)
-    //                            m = false;
-    //                        if (m)
-    //                        {
-    //                            if (!B)
-    //                            {
-    //                                startImage.Y = j;
-    //                                B = true;
-    //                            }
-    //                        }
-    //                        else
-    //                        {
-    //                            if (B)
-    //                            {
-    //                                endImage.Y = j;
-    //                                if (endImage.X - startImage.X > minX && endImage.Y - startImage.Y > minY)
-    //                                    images.Add(bitmap.Clone(new Rectangle(startImage.X, startImage.Y, endImage.X - startImage.X, endImage.Y - startImage.Y), bitmap.PixelFormat));
-    //                                B = false;
-    //                            }
-    //                        }
-    //                    }
-    //                    bImage = false;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+{   
     internal class MatControl
     {
         private Mat mat { get; set; }
@@ -509,12 +198,7 @@ namespace ClickMashine
     abstract class ImageControl
     {
         public NN nn;
-        protected Size sizeImage;
-        public ImageControl(Size size, string pathNN)
-        {
-            this.sizeImage = new Size(size.Width, size.Height);
-            nn = new WmrFastNNAuth(sizeImage, pathNN);
-        }
+        //protected Size sizeImage;
         //public void SaveDate(string path, string name)
         //{
         //    if (images.Count != 0)
@@ -529,7 +213,7 @@ namespace ClickMashine
         //            }
         //        }
         //}
-        private int FindElements(Mat mat, out List<Mat> elements)
+        protected int FindElements(Mat mat, out List<Mat> elements)
         {
             elements = new List<Mat>();
             List<List<Point>> listElementsPoint = new List<List<Point>>();
@@ -571,7 +255,7 @@ namespace ClickMashine
             }
             return elements.Count;
         }
-        public virtual int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
+        protected virtual int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
             images = new List<Mat>();
             foreach (Mat mat in elements)
@@ -603,17 +287,17 @@ namespace ClickMashine
                 if (rPoints.IndexOf(newPoint) == -1)
                     CheckPoinAround(ref mat, newPoint, ref rPoints);
         }
-        //public void ShowImages()
-        //{
-        //    using (var srWindow = new Window("super resolution"))
-        //    {
-        //        foreach (var image in images)
-        //        {
-        //            srWindow.ShowImage(image);
-        //            Cv2.WaitKey();
-        //        }
-        //    }
-        //}
+        public void ShowImages(Mat[] images)
+        {
+            using (var srWindow = new Window("super resolution"))
+            {
+                foreach (var image in images)
+                {
+                    srWindow.ShowImage(image);
+                    Cv2.WaitKey();
+                }
+            }
+        }
         protected virtual Mat ImageNormalize(Bitmap bitmap)
         {
             Mat mat = BitmapConverter.ToMat(bitmap);
@@ -625,10 +309,10 @@ namespace ClickMashine
         protected virtual List<Mat> BitmapToPredict(Bitmap bitmap)
         {
             FindElements(ImageNormalize(bitmap), out List<Mat> elements);
-            ElementsToImages(sizeImage,elements,out List<Mat> images);
+            ElementsToImages(nn.Size,elements,out List<Mat> images);
             return images;
         }
-        public string Predict(Bitmap bitmap)
+        public virtual string Predict(Bitmap bitmap)
         {
             string predict = "";
             foreach (var image in BitmapToPredict(bitmap))
@@ -636,7 +320,6 @@ namespace ClickMashine
             return predict;
         }
     }
-
     class ImageControlWmrClick : ImageControl
     {
         private int CheckImageCompareColor(Mat bitmap)
@@ -692,10 +375,11 @@ namespace ClickMashine
             }
             return gray;
         }
-        public ImageConrolWmrClick(Size imgSize, string pathNN) : base(imgSize, pathNN)
+        public ImageControlWmrClick(string pathNN)
         {
+            nn = new WmrFastNNClick(pathNN);
         }
-        public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
+        protected override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
             images = new List<Mat>();
             foreach (Mat mat in elements)
@@ -709,10 +393,11 @@ namespace ClickMashine
     }
     class ImageControlWmrAuth : ImageControl
     {
-        public ImageControlWmrAuth(Size imgSize, string pathNN) : base(imgSize, pathNN)
+        public ImageControlWmrAuth(string pathNN) : base()
         {
+            nn = new WmrFastNNAuth(pathNN);
         }
-        public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
+        protected override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
             images = new List<Mat>();
             foreach (Mat mat in elements)
@@ -730,10 +415,11 @@ namespace ClickMashine
         }
     }
     class VipClickImageConrol : ImageControl {
-        public VipClickImageConrol(Size imgSize, string pathNN) : base(imgSize, pathNN)
+        public VipClickImageConrol(string pathNN) : base()
         {
+            nn = new VipClickNN(pathNN);
         }
-        public override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
+        protected override int ElementsToImages(Size sizeImage, List<Mat> elements, out List<Mat> images)
         {
             images = new List<Mat>();
             foreach (Mat mat in elements)
@@ -743,8 +429,32 @@ namespace ClickMashine
         protected override Mat ImageNormalize(Bitmap bitmap)
         {
             Mat mat = BitmapConverter.ToMat(bitmap);
-            Cv2.Threshold(mat, mat, 140, 255, ThresholdTypes.BinaryInv);
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2GRAY);
+            Cv2.Threshold(mat, mat, 140, 255, ThresholdTypes.Binary);
             return mat;
+        }
+        public override string Predict(Bitmap bitmap)
+        {
+            FindElements(ImageNormalize(bitmap), out List<Mat> elements);
+            if (elements.Count > 0)
+            {
+                Console.WriteLine(elements[0].Cols);
+                if (13 <= elements[0].Cols && elements[0].Cols <= 15)
+                    return elements.Count.ToString();
+                else if (elements.Count == 3)
+                {
+                    //ElementsToImages(nn.Size, new List<Mat>(new[] { elements[0], elements[2] }), out List<Mat> images);
+                    if(elements[1].Rows > 5)
+                        return (nn.Predict(elements[0]).Num + nn.Predict(elements[2]).Num + 1).ToString();
+                    else
+                        return (nn.Predict(elements[0]).Num - nn.Predict(elements[2]).Num + 1).ToString();
+                }
+            }
+            return "";
+        }
+        public void GetTrainingSet(string path)
+        {
+
         }
     }
 }

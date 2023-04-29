@@ -30,14 +30,17 @@ namespace ClickMashine
         protected Shape img_dim;
         protected IDatasetV2? train_ds, val_ds;
         protected Model model;
-        public NN(Size imgSize)
+        public Size Size{ get; set; }
+        public NN(Size size)
         {
-            img_dim = (imgSize.Height, imgSize.Width, 1);
+            Size = size;
+            img_dim = (Size.Height, Size.Width, 1);
             tf.enable_eager_execution();
             BuildModel();
         }
         public NN(Size imgSize, string path)
         {
+            Size = imgSize;
             img_dim = (imgSize.Height, imgSize.Width, 1);
             tf.enable_eager_execution();
             BuildModel();
@@ -50,8 +53,8 @@ namespace ClickMashine
         }
         protected NDArray ConvertToPredict(Mat mat)
         {
-            mat.ConvertTo(mat, MatType.CV_32SC1);
             mat.GetArray(out int[] arr);
+            mat.ConvertTo(mat, MatType.CV_32SC1);
             var numpy_array = np.array(arr);
             return numpy_array.reshape(new int[] { mat.Rows, mat.Cols, 1 });
         }
@@ -147,10 +150,7 @@ namespace ClickMashine
     }
     class WmrFastNNClick : NN
     {
-        public WmrFastNNClick(Size imgSize) : base(imgSize)
-        {
-        }
-        public WmrFastNNClick(Size imgSize, string path) : base(imgSize, path)
+        public WmrFastNNClick(string path) : base(new Size(20, 26),path)
         {
         }
         public override PredictNN Predict(Mat mat)
@@ -188,11 +188,9 @@ namespace ClickMashine
     }
     class WmrFastNNAuth : NN
     {
-        public WmrFastNNAuth(Size imgSize) : base(imgSize)
+        public WmrFastNNAuth(string path) : base(new Size(8, 10),path)
         {
-        }
-        public WmrFastNNAuth(Size imgSize, string path) : base(imgSize, path)
-        {
+
         }
         public override PredictNN Predict(Mat mat)
         {
@@ -229,6 +227,49 @@ namespace ClickMashine
                loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
                metrics: new[] { "accuracy" });
 
+        }
+    }
+    class VipClickNN : NN
+    {
+        public VipClickNN() : base(new Size(12, 18))
+        {
+        }
+        public VipClickNN(string path) : base(new Size(12, 18), path)
+        {
+            Size = new Size();
+        }
+        public override PredictNN Predict(Mat mat)
+        {
+            var arr = ConvertToPredict(mat);
+            return new PredictNN(model.predict(tf.expand_dims(arr, 0)));
+        }
+        protected override void BuildModel()
+        {
+            var layers = new LayersApi();
+
+            // input layer
+            var inputs = keras.layers.Input(shape: img_dim, name: "img");
+
+            // convolutional layer
+            var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
+            x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
+            x = layers.GlobalAveragePooling2D().Apply(x);
+            x = layers.Dense(256, activation: "relu").Apply(x);
+            x = layers.Dropout(0.5f).Apply(x);
+
+            // output layer
+            var outputs = layers.Dense(10).Apply(x);
+
+            // build keras model
+            model = keras.Model(inputs, outputs, name: "VipClick");
+            model.summary();
+
+            // compile keras model in tensorflow static graph
+            model.compile(optimizer: keras.optimizers.Adam(),
+               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+               metrics: new[] { "accuracy" });
         }
     }
 }

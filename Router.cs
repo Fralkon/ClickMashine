@@ -28,6 +28,7 @@ namespace ClickMashine
             AuthGoogle(auth[0]);
             AuthVK(auth[1]);
         }
+        
         private bool AuthGoogle(Auth auth)
         {
             LoadPage(0, "https://www.google.com/");
@@ -76,6 +77,10 @@ namespace ClickMashine
             else
                 CM("VK AUTH");
             return true;
+        }
+
+        protected override void StartSurf()
+        {
         }
     }
 }

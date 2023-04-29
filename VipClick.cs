@@ -6,7 +6,7 @@ namespace ClickMashine
 {
 	class VipClick : Site
 	{
-		VipClickImageConrol imageConrol = new VipClickImageConrol(new(12,18), @"C:/ClickMashine/Settings/Net/VipClick.h5");
+		VipClickImageConrol imageConrol = new VipClickImageConrol( @"C:/ClickMashine/Settings/Net/VipClick.h5");
 		public VipClick(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://vip-click.com/";
@@ -35,6 +35,8 @@ namespace ClickMashine
 		}
 		protected override void StartSurf()
 		{
+			Console.WriteLine(imageConrol.Predict(new Bitmap(@"C:/Users/Boyarkin/Desktop/captcha.png")));
+			Console.ReadLine();
 			Initialize();
 			if (!Auth(auth))
 				return;
@@ -148,7 +150,7 @@ function click_s()
 									string value;
 									try
 									{
-										value = imageConrolWmrClick.Predict(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));
+										value = imageConrol.Predict(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));
 									}
 									catch (Exception ex)
 									{
@@ -227,7 +229,7 @@ function click_s()
 				string predict = imageConrol.Predict(GetImgBrowser(browser.MainFrame, img));
 				if(predict == "error")
 					return false;
-				SendJS(browser.MainFrame, @"document.querySelectorAll('[nowrap=""nowrap""] span')["+predict+@"5-1].click();");
+				SendJS(browser.MainFrame, @"document.querySelectorAll('[nowrap=""nowrap""] span')["+predict+@"-1].click();");
 				return true;
 			}
 			return false;

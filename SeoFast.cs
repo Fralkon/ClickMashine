@@ -22,64 +22,74 @@ namespace ClickMashine
                 return;
             while (true)
             {
+                int youTube = 0;
+                int click = 0;
+                int mail = 0;
+                int visit = 0;
                 try
                 {
-                    YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");
+                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
                     Error("Error youtube1\n" + ex.Message);
                 }
                 try
                 {
-                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
+                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
                     Error("Error youtube1\n" + ex.Message);
                 }
                 try
                 {
-                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple");
+                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple");
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
                     Error("Error youtube2\n" + ex.Message);
                 }
                 try
                 {
-                    YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
+                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
                     Error("Error youtube3\n" + ex.Message);
                 }
                 try
                 {
-                    MailSurf();
+                    mail = MailSurf();
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
                     Error("Error mail\n" + ex.Message);
                 }
-                //try
-                //{
-                //    ClickSurf();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Error("Error Click\n" + ex.Message);
-                //}
                 try
                 {
-                    VisitSurf();
+                    click += ClickSurf();
                 }
                 catch (Exception ex)
                 {
+                    CloseAllBrowser();
+                    Error("Error Click\n" + ex.Message);
+                }
+                try
+                {
+                    visit = VisitSurf();
+                }
+                catch (Exception ex)
+                {
+                    CloseAllBrowser();
                     Error("Error visit\n" + ex.Message);
                 }
             }
-            CloseAllBrowser();
         }
         public override bool Auth(Auth auth)
         {
@@ -117,6 +127,8 @@ namespace ClickMashine
                         Sleep(7);
                         if(WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
                         {
+                            SendJS(browser.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
+                            Sleep(2);
                             return true;
                         }
                         eventLoadPage.Reset();
@@ -236,8 +248,9 @@ else 'ok';";
                 }
             }
         }
-        private void YouTubeSurf(string url)
+        private int YouTubeSurf(string url)
         {
+            int count = 0;
             LoadPage(0, url);
             Sleep(5);
             //CheckCaptcha();
@@ -273,10 +286,12 @@ function click_s()
                         continue;
                     }
                     YouTubeWatch(LastBrowser);
+                    count++;
                     Sleep(5);
                 }
                 Sleep(1);
             }
+            return count;
         }
         private async void YouTubeWatch(IBrowser browserYouTube)
         {
@@ -306,6 +321,7 @@ else {
         {
             int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_surfing?go");
+            Sleep(2);
             //CheckCaptcha();
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
@@ -622,23 +638,6 @@ else 'notAntiBot';";
                 CloseСhildBrowser();
                 LoadPage(0, oldURL);
             }
-        }
-        private async void YouTubeTab(IBrowser browser)
-        {
-            await Task.Run(() => {
-                string js =
-@"b = true;
-var timer_youtube = document.querySelector('#tmr');
-if (timer_youtube != null) timer_youtube.innerText;
-else 'error_youtube';";
-                string ev = SendJSReturn(browser.MainFrame, js);
-                if (ev != "error_youtube")
-                {
-                    Sleep(ev);
-                    Sleep(2);
-                }
-                CloseBrowser(browser);
-            });
         }
     }
 }

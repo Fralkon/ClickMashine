@@ -308,7 +308,7 @@ namespace ClickMashine
                 TabPage tab = new TabPage()
                 {
                     Dock = DockStyle.Fill,
-                    Text = site.ToString(),
+                    Text = site.Type.ToString(),
                     BorderStyle = BorderStyle.None
                 };
                 site.form.tabControl1.TabPages.Add(tab);

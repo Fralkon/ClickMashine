@@ -6,20 +6,17 @@ namespace ClickMashine
 {
     class WmrFast : Site
 	{
-		private Size sizeMatAuth = new(8, 10);
-		private Size sizeImgClick = new(20, 26);
 		ImageControlWmrClick imageConrolWmrClick;
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
 			Type = EnumTypeSite.WmrFast; 
-			imageConrolWmrClick = new ImageConrolWmrClick(sizeImgClick, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
+			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
 		public override bool Auth(Auth auth)
 		{
-			LoadPage(main_browser.GetBrowser(), "https://wmrfast.com/");
-			Sleep(2);
-			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(sizeMatAuth, @"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
+			LoadPage("https://wmrfast.com/");
+			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
 				string ev = SendJSReturn(0, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
@@ -32,7 +29,7 @@ else if(document.querySelector(""#login_cap"")) 'login_cap';");
 					if (ev == "login_cap")
 					{
 						string js =
-	@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
+@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
 document.querySelector('#vhpass').value = '" + auth.Password + @"';
 document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
 document.querySelector('#vhod1').click();";
@@ -56,6 +53,7 @@ document.querySelector('#vhod1').click();";
 			Initialize();
 			if (!Auth(auth))
 				return;
+			CM("123123123");
 			try
 			{
 				while(ClickSurf()>5);
@@ -216,6 +214,7 @@ return 'errorClick';}endClick();";
         {
 			int Count = 0;
 			LoadPage("https://wmrfast.com/serfing.php");
+			Sleep(2);
 			string js =
 @"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
 function click_s()

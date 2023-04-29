@@ -312,8 +312,7 @@ else 'end';");
                             if (ev != "error")
                             {
                                 Sleep(ev);
-                                ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-                                if (ev == "errorWait")
+                                if(WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
                                     Error("Error end youtube watch");
                                 Sleep(2);
                             }
@@ -424,8 +423,7 @@ else 'end';");
                             {
                                 Sleep(ev);
 
-                                ev = WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');");
-                                if (ev == "errorWait")
+                                if(WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
                                 {
                                     Error("Error end youtube watch");
                                 }

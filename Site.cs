@@ -16,8 +16,7 @@ namespace ClickMashine
         WmrFast,
         WebofSar,
         Losena,
-        SeoClub
-        Losena,
+        SeoClub,
         VipClick
     }
     class Auth
@@ -87,7 +86,6 @@ namespace ClickMashine
     abstract class Site : MyThread
     {
         public Form1 form;
-        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
@@ -96,7 +94,6 @@ namespace ClickMashine
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
-        protected Task Task;
         protected Auth auth;
         public TCPMessageManager TCPMessageManager = new TCPMessageManager();
         public Site(Form1 form, Auth auth)
@@ -129,13 +126,6 @@ namespace ClickMashine
                 form.tabControl1.SelectedTab = newTabPage;
             }));
         }
-
-        private void Main_browser_FrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
-        {
-            if (e.Frame.IsMain)
-                Console.WriteLine("-----------\nMainFrameEnd\n----------");
-        }
-
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
             LastBrowser = browser;
@@ -183,11 +173,7 @@ namespace ClickMashine
         public void Browser_LoadingStateChanged(object? sender, LoadingStateChangedEventArgs e)
         {
             if (!e.IsLoading)
-            {
-                Console.WriteLine("---------------\nloadEnd\n" +
-                    "Browser: " + e.Browser.Identifier.ToString() + "\n---------------");
                 eventLoadPage.Set();
-            }
         }
         protected IBrowser? GetBrowser(int id)
         {
@@ -249,7 +235,7 @@ namespace ClickMashine
                 Console.WriteLine("---------------------------");
                 eventLoadPage.Reset();
                 browser.MainFrame.LoadUrl(page);
-                eventLoadPage.WaitOne();
+                eventLoadPage.WaitOne(5000);
             }
         }
         protected string SendJSReturn(int id_browser, string JS)
@@ -439,7 +425,7 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected bool WaitElement(IFrame frame, string element)
+        protected bool WaitElement(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
 @"function waitElement()
