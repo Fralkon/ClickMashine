@@ -125,6 +125,7 @@ namespace ClickMashine
                 form.tabControl1.TabPages.Add(newTabPage);
                 form.tabControl1.SelectedTab = newTabPage;
             }));
+            eventLoadPage.WaitOne(5000);
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
@@ -214,13 +215,24 @@ namespace ClickMashine
         {
             if (browsers.Count > id_browser)
             {
-                Console.WriteLine("---------------------------\nOpen: " + page);
-                Console.WriteLine("Type: " + Type.ToString());
-                Console.WriteLine("---------------------------");
-                eventLoadPage.Reset();
-                browsers[id_browser].MainFrame.LoadUrl(page);
-                eventLoadPage.WaitOne();
+                LoadPage(browsers[id_browser], page);
             }
+        }
+        private void Active(IBrowser browser)
+        {
+            for (int i = 0; i < 10; i++)
+                if (browser.IsValid)
+                    return;
+                else Thread.Sleep(500);
+            throw new Exception("No valid browser");
+        }
+        private void Active(IFrame frame)
+        {
+            for (int i = 0; i < 10; i++)
+                if (frame.IsValid)
+                    return;
+                else Thread.Sleep(500);
+            throw new Exception("No valid browser");
         }
         protected void LoadPage(string page)
         {
@@ -230,12 +242,14 @@ namespace ClickMashine
         {
             if (browsers.Find(item => item.Identifier == browser.Identifier) != null)
             {
+                Active(browser);
                 Console.WriteLine("---------------------------\nOpen: " + page);
                 Console.WriteLine("Type: " + Type.ToString());
                 Console.WriteLine("---------------------------");
                 eventLoadPage.Reset();
+                Active(browser.MainFrame);
                 browser.MainFrame.LoadUrl(page);
-                eventLoadPage.WaitOne(5000);
+                eventLoadPage.WaitOne();
             }
         }
         protected string SendJSReturn(int id_browser, string JS)

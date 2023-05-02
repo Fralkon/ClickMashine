@@ -12,9 +12,30 @@
             Initialize();
             if (!Auth(auth))
                 return;
-            ClickSurf(); 
-            VisitSites(); 
-            AutoClick();
+            try
+            {
+                ClickSurf();
+            }
+            catch (Exception ex)
+            {
+                Error("Ошибка Click: " + ex.Message);
+            }
+            try
+            {
+                VisitSites();
+            }
+            catch (Exception ex)
+            {
+                Error("Ошибка Visit: " + ex.Message);
+            }
+            try
+            {
+                AutoClick();
+            }
+            catch (Exception ex)
+            {
+                Error("Ошибка AutoClick: " + ex.Message);
+            }
             CloseAllBrowser();
         }
         public override bool Auth(Auth auth)
@@ -50,7 +71,7 @@
 @"var surf_cl = document.querySelectorAll('.wfsts');var n = 0;
 function surf()
 {
-    var start_ln = surf_cl[n].querySelector('[type=""button""]');
+    var start_ln = surf_cl[n].querySelector('button');
     if (start_ln != null) { start_ln.click(); n++; return 'click'; }
     else { return 'wait'; }
 }
@@ -59,7 +80,7 @@ function click_s()
     if (n >= surf_cl.length) return 'end_surf';
     else
     {
-        surf_cl[n].querySelector('[class=""td-serfm work-surf-start""]').click(); return 'surf';
+        surf_cl[n].querySelector('.work-surf-start').click(); return 'surf';
     }
 }";
             SendJS(0, js);

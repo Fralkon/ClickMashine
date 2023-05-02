@@ -21,7 +21,6 @@ namespace ClickMashine
         public void Start()
         {
             thread.Start();
-            thread.Join();
         }
         protected abstract void StartSurf();
         public void Stop()
