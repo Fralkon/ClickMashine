@@ -271,6 +271,7 @@ namespace ClickMashine
         }
         protected void SendJS(IFrame frame, string JS)
         {
+            Active(frame);
             Console.WriteLine("---------------------------\nSend JS: \n");
             Console.WriteLine(JS);
             Console.WriteLine("Type: " + Type.ToString());
@@ -279,10 +280,12 @@ namespace ClickMashine
         }
         protected void SendJS(IBrowser browser, string JS)
         {
+            Active(browser);
             SendJS(browser.MainFrame, JS);
         }
         protected string SendJSReturn(IFrame frame, string JS)
         {
+            Active(frame);
             string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS_TRY);
@@ -306,6 +309,7 @@ namespace ClickMashine
         }
         protected string SendJSReturn(IBrowser browser, string JS)
         {
+            Active(browser);
             return SendJSReturn(browser.MainFrame, JS);
         }
         protected void Error(string text)
