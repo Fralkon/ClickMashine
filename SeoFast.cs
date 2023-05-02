@@ -32,7 +32,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error youtube1\n" + ex.Message);
                 }
                 try
@@ -41,7 +41,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error youtube1\n" + ex.Message);
                 }
                 try
@@ -50,7 +50,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error youtube2\n" + ex.Message);
                 }
                 try
@@ -59,7 +59,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error youtube3\n" + ex.Message);
                 }
                 try
@@ -68,7 +68,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error mail\n" + ex.Message);
                 }
                 try
@@ -77,7 +77,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error Click\n" + ex.Message);
                 }
                 try
@@ -86,7 +86,7 @@ namespace ClickMashine
                 }
                 catch (Exception ex)
                 {
-                    CloseAllBrowser();
+                    CloseСhildBrowser();
                     Error("Error visit\n" + ex.Message);
                 }
             }
