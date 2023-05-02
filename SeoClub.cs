@@ -423,7 +423,7 @@ else 'end';");
                             {
                                 Sleep(ev);
 
-                                if(WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+                               if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
                                 {
                                     Error("Error end youtube watch");
                                 }

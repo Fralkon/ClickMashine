@@ -82,9 +82,12 @@ namespace ClickMashine
             }
         }
         public void ClickSurf()
-        {       
-            foreach (var site in siteList)
-                site.Start();
+        {
+            foreach (var site in siteList) 
+            {                 
+                site.Start(); 
+                Thread.Sleep(2000); 
+            }
         }
         public void Close()
         {

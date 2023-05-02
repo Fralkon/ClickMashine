@@ -16,6 +16,7 @@ namespace ClickMashine
 		public override bool Auth(Auth auth)
 		{
 			LoadPage("https://wmrfast.com/");
+			Sleep(2);
 			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{

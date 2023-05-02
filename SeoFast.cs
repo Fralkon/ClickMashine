@@ -295,7 +295,8 @@ function click_s()
         }
         private async void YouTubeWatch(IBrowser browserYouTube)
         {
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 string js =
 @"if(rutube == '0')
 {
@@ -308,14 +309,21 @@ else {
     timer();
     timer_v;
 }";
-                string ev = SendJSReturn(browserYouTube.MainFrame, js);
-                if (ev != "error_youtube")
+                try
                 {
-                    Sleep(ev);
+                    string ev = SendJSReturn(browserYouTube.MainFrame, js);
+                    if (ev != "error_youtube")
+                    {
+                        Sleep(ev);
+                    }
+                    Sleep(2);
                 }
-                Sleep(2);
+                catch (Exception ex)
+                {
+                    Error("Error watch youtube task.");
+                }
                 browserYouTube.GetHost().CloseBrowser(true);
-            });           
+            });
         }
         private int ClickSurf()
         {
