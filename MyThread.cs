@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 
 namespace ClickMashine
 {
-    class MyThread
+    abstract class MyThread
     {
         protected CancellationToken cancellationToken = new CancellationToken();
+        Thread thread;
         public MyThread()
         {
+            thread = new Thread(StartSurf);
         }
         protected bool CheckCancellationToken()
         {
@@ -18,12 +20,10 @@ namespace ClickMashine
         }
         public void Start()
         {
-            Task.Run(() => StartSurf());
+            thread.Start();
+            thread.Join();
         }
-        protected virtual void StartSurf()
-        {
-
-        }
+        protected abstract void StartSurf();
         public void Stop()
         {
             cancellationToken.ThrowIfCancellationRequested();
