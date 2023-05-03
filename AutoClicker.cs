@@ -53,6 +53,11 @@ namespace ClickMashine
                                             siteList.Add(new VipClick(form, auth));
                                             break;
                                         }
+                                    case EnumTypeSite.SeoClub:
+                                        {
+                                            siteList.Add(new SeoClub(form, auth));
+                                            break;
+                                        }
                                 default:
                                         throw new Exception("Нет такого сайта.");
                                 }

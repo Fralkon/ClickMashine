@@ -99,6 +99,7 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
@@ -108,7 +109,6 @@ function click_s()
 						CloseСhildBrowser();
 						continue;
 					}
-					Sleep(1);
 					if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
 					{
 						ev = SendJSReturn(browser, "vs = true;timer.toString();");
@@ -146,10 +146,11 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
-					IBrowser? browser = GetBrowser(1);
+					IBrowser? browser = WaitCreateBrowser();
 					if (browser!= null)
 					{
 						ev = SendJSReturn(browser, "counter.toString();");
@@ -227,12 +228,13 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "end")
 					break;
                 else
                 {
-					WaitCreateBrowser(1);
+					WaitCreateBrowser();
 					Sleep(2);					
 					Sleep(ev);
 					Count++;

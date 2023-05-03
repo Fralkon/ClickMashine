@@ -178,7 +178,6 @@ namespace ClickMashine
         }
         protected IBrowser? GetBrowser(int id)
         {
-            eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (browsers.Count <= id)
             {
@@ -192,7 +191,6 @@ namespace ClickMashine
         }
         protected bool WaitCreateBrowser(int id)
         {
-            eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (browsers.Count <= id)
                 if (!eventBrowserCreated.WaitOne(3000))
@@ -204,7 +202,6 @@ namespace ClickMashine
         }
         protected IBrowser? WaitCreateBrowser()
         {
-            eventBrowserCreated.Reset();
             eventLoadPage.Reset();
             if (!eventBrowserCreated.WaitOne(3000))
                 return null;
