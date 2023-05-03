@@ -168,6 +168,7 @@ function click_s()
             SendJS(0, js);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
                     break;

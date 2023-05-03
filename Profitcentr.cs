@@ -122,6 +122,7 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "end_surf")
 					break;
@@ -136,30 +137,27 @@ function click_s()
 							Sleep(1);
 						else if (ev == "surf")
 						{
-							IBrowser? browserSurf = GetBrowser(1);
-							if (browserSurf == null)
+							IBrowser? browserSurf = WaitCreateBrowser();
+							if (browserSurf != null)
 							{
-								CloseСhildBrowser();
-								continue;
-							}
-							IFrame frame = browserSurf.GetFrame("frminfo");
-							if (WaitElement(frame, "document.querySelector('#timer_inp')"))
-							{
-								ev = SendJSReturn(frame,
-@"b = false;
+								IFrame frame = browserSurf.GetFrame("frminfo");
+								if (WaitElement(frame, "document.querySelector('#timer_inp')"))
+								{
+									ev = SendJSReturn(frame,
+	@"b = false;
 window.top.start = 0;
 var timer_s = document.querySelector('#timer_inp');
 if (timer_s != null)
 	timer_s.innerText;
 else 'error_surf';");
-								if (ev != "error_surf")
-								{
-									Sleep(ev);
-									frame = browserSurf.GetFrame("frminfo");
-									if (WaitElement(frame, @"document.querySelector('[type=""range""]')"))
+									if (ev != "error_surf")
 									{
-										SendJSReturn(frame,
-@"var range = document.querySelector('[type=""range""]');
+										Sleep(ev);
+										frame = browserSurf.GetFrame("frminfo");
+										if (WaitElement(frame, @"document.querySelector('[type=""range""]')"))
+										{
+											SendJSReturn(frame,
+	@"var range = document.querySelector('[type=""range""]');
 if (range != null)
 {
 	range.value = range.max;
@@ -171,10 +169,11 @@ else
 	location.replace(""vlss?view=ok"");
 	'error_surf';
 }");
-										Count++;
-										Sleep(2);
+											Count++;
+											Sleep(2);
+										}
+										break;
 									}
-									break;
 								}
 							}
                         }
