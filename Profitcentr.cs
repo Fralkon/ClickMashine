@@ -403,7 +403,7 @@ else 'end';");
 					surf_cl[n].querySelector('span').click(); return 'click';
 				}
 			}
-			function cl()
+			function surf()
 			{
 				var start_ln = surf_cl[n].querySelector('.youtube-button');
 				if (start_ln != null) { 
@@ -424,28 +424,29 @@ else 'end';");
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        ev = SendJSReturn(main_frame, "cl();");
+						eventBrowserCreated.Reset();
+                        ev = SendJSReturn(main_frame, "surf();");
                         if (ev == "surf")
                         {
-                            var browserYouTube = GetBrowser(1);
-                            if (browserYouTube == null)
-                                break;
-                            Sleep(2);
-                            IFrame yotube_frame = browserYouTube.MainFrame;
-                            ev = SendJSReturn(yotube_frame,
-@"c = true; b = true; document.querySelector('#tmr').innerText;");
-                            if (ev != "error")
-                            {
-                                Sleep(ev);
+                            var browserYouTube = WaitCreateBrowser();
+							if (browserYouTube != null)
+							{
+								IFrame yotube_frame = browserYouTube.MainFrame;
+								ev = SendJSReturn(yotube_frame,
+	@"c = true; b = true; document.querySelector('#tmr').innerText;");
+								if (ev != "error")
+								{
+									Sleep(ev);
 
-                                if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
-                                {
-                                    Error("Error end youtube watch");
-                                }
-								Count++;
-								Sleep(2);
-                            }
-                            break;
+									if (!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+									{
+										Error("Error end youtube watch");
+									}
+									Count++;
+									Sleep(2);
+								}
+								break;
+							}
                         }
                         else if (ev == "sec_wait")
                             Sleep(1);

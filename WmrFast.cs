@@ -99,6 +99,7 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
@@ -108,7 +109,6 @@ function click_s()
 						CloseСhildBrowser();
 						continue;
 					}
-					Sleep(1);
 					if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
 					{
 						ev = SendJSReturn(browser, "vs = true;timer.toString();");
@@ -146,62 +146,58 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
-					IBrowser? browser = GetBrowser(1);
+					IBrowser? browser = WaitCreateBrowser();
 					if (browser!= null)
 					{
-						ev = SendJSReturn(1, "counter.toString();");
+						ev = SendJSReturn(browser, "counter.toString();");
 						if (ev != "error")
 						{
 							Sleep(ev);
-							js =
-@"function waitCounter(){
-	if(counter == -1) return 'ok';
-	else return 'wait';
-}";
-							ev = WaitFunction(browsers[1].MainFrame, "waitCounter();", js);
-							if (ev == "ok")
+							ev = SendJSReturn(browser, "counter.toString();");
+							if(ev != "-1")
 							{
-								for (int i = 0; i < 10; i++)
-								{
-									string evClick = "";
-									Sleep(1);
-									string value;
-									try
-									{
-										value = imageConrolWmrClick.Predict(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));
-									}
-									catch (Exception ex)
-                                    {
-										Console.WriteLine(ex.ToString()); 
-										SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-										Sleep(2);
-										continue;
-                                    }
-									if (value.Length == 3)
-									{
-										js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
+								SendJS(browser, "counter = 0;flag = 1;");
+								Sleep(2);
+                            }
+                            for (int i = 0; i < 10; i++)
+                            {
+                                Sleep(1);
+                                string value;
+                                try
+                                {
+                                    value = imageConrolWmrClick.Predict(GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha-image')"));
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex.ToString());
+                                    SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+                                    Sleep(2);
+                                    continue;
+                                }
+                                if (value.Length == 3)
+                                {
+                                    js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
 for (var i = 0; i < butRet.length; i++)
 {
 	if (butRet[i].querySelector('.submit').value == " + value + @")
 	{ butRet[i].querySelector('.submit').click(); return 'ok'}
 }
 return 'errorClick';}endClick();";
-										evClick = SendJSReturn(1, js);
-									}
-									if (evClick == "ok")
+									if (SendJSReturn(browser, js) == "ok")
 									{
-										Sleep(2);
-										Count++;
-										break;
-									}
-									SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-									Sleep(2);
-								}
-							}
-						}
+                                        Sleep(2);
+                                        Count++;
+                                        break;
+                                    }
+                                }
+                                SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+                                Sleep(2);
+                            }
+                        }
 					}
 				}
 				else if (ev == "end")
@@ -232,12 +228,13 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "end")
 					break;
                 else
                 {
-					WaitCreateBrowser(1);
+					WaitCreateBrowser();
 					Sleep(2);					
 					Sleep(ev);
 					Count++;
