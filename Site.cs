@@ -168,6 +168,7 @@ namespace ClickMashine
                     {
                         form.FocusTab(browsers[i - 1]);
                     }
+                    return;
                 }
             }
         }
@@ -230,7 +231,7 @@ namespace ClickMashine
                 if (frame.IsValid)
                     return;
                 else Thread.Sleep(500);
-            throw new Exception("No valid browser");
+            throw new Exception("No valid frame");
         }
         protected void LoadPage(string page)
         {

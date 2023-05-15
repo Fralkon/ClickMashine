@@ -1,5 +1,6 @@
 ﻿using OpenCvSharp;
 using Tensorflow;
+using Tensorflow.Keras.ArgsDefinition;
 using Tensorflow.Keras.Engine;
 using Tensorflow.Keras.Layers;
 using Tensorflow.NumPy;
@@ -25,7 +26,7 @@ namespace ClickMashine
         public Tensor Tensor { get; private set; }
         public int Num { get; set; }
     }
-    class NN
+    abstract class NN
     {
         protected Shape img_dim;
         protected IDatasetV2? train_ds, val_ds;
@@ -66,62 +67,7 @@ namespace ClickMashine
         {
             model.load_weights(path);
         }
-        protected virtual void BuildModel()
-        {
-            //throw new NotImplementedException();
-            //var layers = new LayersApi();
-
-            //// input layer
-            //var inputs = keras.layers.Input(shape: img_dim, name: "img");
-
-            //// convolutional layer
-            //var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
-            //x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
-            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            //x = layers.GlobalAveragePooling2D().Apply(x);
-            //x = layers.Dense(256, activation: "relu").Apply(x);
-            //x = layers.Dropout(0.5f).Apply(x);
-
-            //// output layer
-            //var outputs = layers.Dense(9).Apply(x);
-
-            //// build keras model
-            //model = keras.Model(inputs, outputs, name: "toy_resnet");
-            //model.summary();
-
-            //// compile keras model in tensorflow static graph
-            //model.compile(optimizer: keras.optimizers.Adam(),
-            //   loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
-            //   metrics: new[] { "accuracy" });
-
-            //LayersApi layers = new LayersApi();
-
-            //// input layer
-            //var inputs = keras.layers.Input(shape: img_dim, name: "img");
-
-            //// convolutional layer
-            //var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
-            //x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
-            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            //x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
-            //x = layers.GlobalAveragePooling2D().Apply(x);
-            //x = layers.Dense(256, activation: "relu").Apply(x);
-            //x = layers.Dropout(0.5f).Apply(x);
-
-            //// output layer
-            //var outputs = layers.Dense(10).Apply(x);
-
-            //// build keras model
-            //model = keras.Model(inputs, outputs, name: "toy_resnet");
-            //model.summary();
-
-            //// compile keras model in tensorflow static graph
-            //model.compile(optimizer: keras.optimizers.Adam(),
-            //   loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
-            //   metrics: new[] { "accuracy" });
-
-        }
+        protected abstract void BuildModel();
         public void Train(string path, int epochs)
         {
             PrepareData(path);
@@ -178,7 +124,7 @@ namespace ClickMashine
             var outputs = layers.Dense(10).Apply(x);
 
             // build keras model
-            model = keras.Model(inputs, outputs, name: "WmrClick");
+            model = (Model)keras.Model(inputs, outputs, name: "WmrClick");
             model.summary();
 
             model.compile(optimizer: keras.optimizers.Adam(),
@@ -219,7 +165,7 @@ namespace ClickMashine
             var outputs = layers.Dense(9).Apply(x);
 
             // build keras model
-            model = keras.Model(inputs, outputs, name: "toy_resnet");
+            model = (Model)keras.Model(inputs, outputs, name: "WmrAuth");
             model.summary();
 
             // compile keras model in tensorflow static graph
@@ -263,7 +209,7 @@ namespace ClickMashine
             var outputs = layers.Dense(10).Apply(x);
 
             // build keras model
-            model = keras.Model(inputs, outputs, name: "VipClick");
+            model = (Model)keras.Model(inputs, outputs, name: "VipClick");
             model.summary();
 
             // compile keras model in tensorflow static graph

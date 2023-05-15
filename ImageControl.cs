@@ -1,5 +1,6 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System.Formats.Asn1;
 using Point = OpenCvSharp.Point;
 using Size = OpenCvSharp.Size;
 
@@ -249,15 +250,21 @@ namespace ClickMashine
             if (elements.Count > 0)
             {
                 Console.WriteLine(elements[0].Cols);
-                if (13 <= elements[0].Cols && elements[0].Cols <= 15)
+                if (13 <= elements[0].Cols && elements[0].Cols <= 15 && 13<=elements[0].Rows && elements[0].Cols <=15)
                     return elements.Count.ToString();
                 else if (elements.Count == 3)
                 {
+                    ShowImages(elements.ToArray());
+                    int numberOne = nn.Predict(elements[0]).Num + 1;
+                    int numberTwo = nn.Predict(elements[2]).Num + 1;
+                    Console.WriteLine("Number one = " + numberOne);
+                    Console.WriteLine("Number two = " + numberTwo);
+                    Console.ReadLine();
                     //ElementsToImages(nn.Size, new List<Mat>(new[] { elements[0], elements[2] }), out List<Mat> images);
-                    if(elements[1].Rows > 5)
-                        return (nn.Predict(elements[0]).Num + nn.Predict(elements[2]).Num + 1).ToString();
+                    if (elements[1].Rows > 5)
+                        return (numberOne + numberTwo).ToString();
                     else
-                        return (nn.Predict(elements[0]).Num - nn.Predict(elements[2]).Num + 1).ToString();
+                        return (numberOne - numberTwo).ToString();
                 }
             }
             return "";

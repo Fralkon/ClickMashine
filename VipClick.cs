@@ -6,17 +6,18 @@ namespace ClickMashine
 {
 	class VipClick : Site
 	{
-		VipClickImageConrol imageConrol = new VipClickImageConrol( @"C:/ClickMashine/Settings/Net/VipClick.h5");
+		VipClickImageConrol imageConrol;
 		public VipClick(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://vip-click.com/";
 			Type = EnumTypeSite.VipClick;
-		}
+			imageConrol = new VipClickImageConrol(@"C:/ClickMashine/Settings/Net/VipClick.h5");
+        }
 		public override bool Auth(Auth auth)
 		{
 			IBrowser loginBrowser = browsers[0];
 			LoadPage(loginBrowser, "https://vip-click.com/login");
-			string ev = SendJSReturn(0, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
+			string ev = SendJSReturn(0, "var but_log = document.querySelector('#login-form'); if(but_log != null) 'login'; else 'end';");
 			if (ev == "login")
 			{
 				Sleep(2);
@@ -35,8 +36,6 @@ namespace ClickMashine
 		}
 		protected override void StartSurf()
 		{
-			Console.WriteLine(imageConrol.Predict(new Bitmap(@"C:/Users/Boyarkin/Desktop/captcha.png")));
-			Console.ReadLine();
 			Initialize();
 			if (!Auth(auth))
 				return;
@@ -83,10 +82,10 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
-					Sleep(3);
 					IBrowser? youTube = GetBrowser(1);
 					if(youTube != null)
 					{
@@ -125,60 +124,20 @@ function click_s()
 			SendJS(0, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(0, "click_s();");
 				if (ev == "surf")
 				{
 					IBrowser? browser = GetBrowser(1);
 					if (browser != null)
 					{
-						ev = SendJSReturn(1, "counter.toString();");
+						ev = SendJSReturn(1, "time.toString();");
 						if (ev != "error")
 						{
 							Sleep(ev);
-							js =
-@"function waitCounter(){
-	if(counter == -1) return 'ok';
-	else return 'wait';
-}";
-							ev = WaitFunction(browsers[1].MainFrame, "waitCounter();", js);
-							if (ev == "ok")
+							if (Captcha(browser, "document.querySelector('#blockverify > table > tbody > tr > td:nth-child(1) > img')"))
 							{
-								for (int i = 0; i < 10; i++)
-								{
-									string evClick = "";
-									Sleep(1);
-									string value;
-									try
-									{
-										value = imageConrol.Predict(GetImgBrowser(browsers[1].MainFrame, "document.querySelector('#captcha-image')"));
-									}
-									catch (Exception ex)
-									{
-										Console.WriteLine(ex.ToString());
-										SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-										Sleep(2);
-										continue;
-									}
-									if (value.Length == 3)
-									{
-										js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
-for (var i = 0; i < butRet.length; i++)
-{
-	if (butRet[i].querySelector('.submit').value == " + value + @")
-	{ butRet[i].querySelector('.submit').click(); return 'ok'}
-}
-return 'errorClick';}endClick();";
-										evClick = SendJSReturn(1, js);
-									}
-									if (evClick == "ok")
-									{
-										Sleep(2);
-										Count++;
-										break;
-									}
-									SendJS(1, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-									Sleep(2);
-								}
+								Count++;
 							}
 						}
 					}
