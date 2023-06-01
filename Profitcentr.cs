@@ -51,42 +51,78 @@ namespace ClickMashine
 				//{
 				//	MessageBox.Show(ex.Message);
 				//}
+		
 				try
 				{
-					ClickSurf();
+					YouTubeSurf();
 				}
+
 				catch (Exception ex)
 				{
-                    Error(ex.Message);
+					Error(ex.Message);
 				}
 				try
 				{
-					VisitSurf();
+					YouTubeSurf();
+				}
+
+				catch (Exception ex)
+				{
+					Error(ex.Message);
+				}
+
+				try
+				{
+					YouTubeSurf();
+				}
+
+				catch (Exception ex)
+				{
+					Error(ex.Message);
+				}
+				try
+				{
+					YouTubeSurf();
+
 				}
 				catch (Exception ex)
 				{
-                    Error(ex.Message);
-				}				
-                try
+					Error(ex.Message);
+				}
+
+				try
 				{
-					YouTubeSurf();
-					YouTubeSurf();
 					YouTubeSurf();
 				}
 				catch (Exception ex)
 				{
-                    Error(ex.Message);
+					Error(ex.Message);
 				}
+				try
+				{
+					RuTubeSurf();
+				}
+				catch (Exception ex)
+				{
+					Error(ex.Message);
+                }
                 try
                 {
-                    RuTubeSurf();
+                    ClickSurf();
                 }
                 catch (Exception ex)
                 {
                     Error(ex.Message);
                 }
-                Sleep(200);
-			}
+                try
+                {
+                    VisitSurf();
+                }
+                catch (Exception ex)
+                {
+                    Error(ex.Message);
+                }
+            }
 			CloseAllBrowser();
 		}
 		private int ClickSurf()

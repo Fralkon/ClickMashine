@@ -29,9 +29,17 @@ namespace ClickMashine
                 {
                     if (!WaitElement(loginBrowser.MainFrame, "document.querySelector('#new-money-ballans')"))
                     {
-                        Error(loginBrowser, "NOT AUTH");
+                        Error("NOT AUTH");
                     }
-                    CM("Money : " + SendJSReturn(loginBrowser, "document.querySelector('#new-money-ballans').innerText"));
+                    try
+                    {
+                        CM("Money : " + SendJSReturn(loginBrowser, "document.querySelector('#new-money-ballans').innerText"));
+                    }
+                    catch (Exception ex)
+                    {
+                        Error(ex.ToString());
+                        return false;
+                    }
                     return true;
                 }
             }

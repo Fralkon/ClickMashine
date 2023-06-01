@@ -93,7 +93,7 @@ namespace ClickMashine
         }
         public override bool Auth(Auth auth)
         {
-            LoadPage(0, "https://seo-fast.ru/");
+            LoadPage(0, "https://seo-fast.ru/main");
             Sleep(5);
             eventLoadPage.Reset();
             string ev = SendJSReturn(0, "var l_b = document.querySelector('.loginbutton');" +

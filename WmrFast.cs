@@ -9,6 +9,8 @@ namespace ClickMashine
 		ImageControlWmrClick imageConrolWmrClick;
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
+
+
 			homePage = "https://wmrfast.com/";
 			Type = EnumTypeSite.WmrFast; 
 			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
@@ -54,31 +56,33 @@ document.querySelector('#vhod1').click();";
 			Initialize();
 			if (!Auth(auth))
 				return;
-			CM("123123123");
-			try
+			while (true)
 			{
-				while(ClickSurf()>5);
-			}
-			catch (Exception ex)
-			{
-				Error("Ошибка Click: " + ex.Message);
-			}
-			try
-			{
-				while(VisitSurf()>5);
-			}
-			catch (Exception ex)
-			{
-                Error("Ошибка Visit: " + ex.Message);
-			}
-			try
-			{
-				while(YouTubeSurf()>5);
-			}
-			catch (Exception ex)
-			{
-				Error("Ошибка YouTube: " + ex.Message);
-			}
+				//try
+				//{
+				//	while (ClickSurf() > 5) ;
+				//}
+				//catch (Exception ex)
+				//{
+				//	Error("Ошибка Click: " + ex.Message);
+				//}
+				try
+				{
+					while (YouTubeSurf() > 5);
+				}
+				catch (Exception ex)
+				{
+					Error("Ошибка YouTube: " + ex.Message);
+                }
+                //try
+                //{
+                //    while (VisitSurf() > 5);
+                //}
+                //catch (Exception ex)
+                //{
+                //    Error("Ошибка Visit: " + ex.Message);
+                //}
+            }
 			CloseAllBrowser();
 		}
 		private int YouTubeSurf()
