@@ -96,6 +96,7 @@ namespace ClickMashine
         public MyLifeSplanHandler lifeSplanHandler;
         protected Auth auth;
         public TCPMessageManager TCPMessageManager = new TCPMessageManager();
+        protected MySQL mySQL = new MySQL("clicker");
         public Site(Form1 form, Auth auth)
         {
             this.auth = auth;
@@ -126,6 +127,10 @@ namespace ClickMashine
                 form.tabControl1.SelectedTab = newTabPage;
             }));
             eventLoadPage.WaitOne(5000);
+        }
+        protected void SetBDInfo(int val)
+        {
+            mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + "WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {

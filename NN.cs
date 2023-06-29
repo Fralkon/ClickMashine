@@ -206,10 +206,10 @@ namespace ClickMashine
             x = layers.Dropout(0.5f).Apply(x);
 
             // output layer
-            var outputs = layers.Dense(10).Apply(x);
+            var outputs = layers.Dense(9).Apply(x);
 
             // build keras model
-            model = (Model)keras.Model(inputs, outputs, name: "VipClick");
+            model = (Model)keras.Model(inputs, outputs, name: "VipClickNN");
             model.summary();
 
             // compile keras model in tensorflow static graph

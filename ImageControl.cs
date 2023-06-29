@@ -249,23 +249,17 @@ namespace ClickMashine
             FindElements(ImageNormalize(bitmap), out List<Mat> elements);
             if (elements.Count > 0)
             {
-                Console.WriteLine(elements[0].Cols);
-                if (13 <= elements[0].Cols && elements[0].Cols <= 15 && 13<=elements[0].Rows && elements[0].Cols <=15)
+                if (elements.Count != 3)
                     return elements.Count.ToString();
-                else if (elements.Count == 3)
-                {
-                    ShowImages(elements.ToArray());
-                    int numberOne = nn.Predict(elements[0]).Num + 1;
-                    int numberTwo = nn.Predict(elements[2]).Num + 1;
-                    Console.WriteLine("Number one = " + numberOne);
-                    Console.WriteLine("Number two = " + numberTwo);
-                    Console.ReadLine();
-                    //ElementsToImages(nn.Size, new List<Mat>(new[] { elements[0], elements[2] }), out List<Mat> images);
-                    if (elements[1].Rows > 5)
-                        return (numberOne + numberTwo).ToString();
-                    else
-                        return (numberOne - numberTwo).ToString();
-                }
+                int numberOne = nn.Predict(elements[0]).Num + 1;
+                int numberTwo = nn.Predict(elements[2]).Num + 1;
+                if (numberOne == 9 && numberTwo == 9)
+                    return elements.Count.ToString();
+                if (elements[1].Rows > 5)
+                    return (numberOne + numberTwo).ToString();
+                else
+                    return (numberOne - numberTwo).ToString();
+
             }
             return "";
         }

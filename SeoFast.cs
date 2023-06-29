@@ -28,7 +28,7 @@ namespace ClickMashine
                 int visit = 0;
                 try
                 {
-                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");
+                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");                    
                 }
                 catch (Exception ex)
                 {
@@ -62,6 +62,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error youtube3\n" + ex.Message);
                 }
+                SetBDInfo(youTube);
                 try
                 {
                     mail = MailSurf();
@@ -71,15 +72,17 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error mail\n" + ex.Message);
                 }
+                SetBDInfo(mail);
                 try
                 {
-                    click += ClickSurf();
+                    click = ClickSurf();
                 }
                 catch (Exception ex)
                 {
                     CloseСhildBrowser();
                     Error("Error Click\n" + ex.Message);
                 }
+                SetBDInfo(click);
                 try
                 {
                     visit = VisitSurf();
@@ -89,6 +92,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error visit\n" + ex.Message);
                 }
+                SetBDInfo(visit);
             }
         }
         public override bool Auth(Auth auth)
@@ -254,7 +258,7 @@ else 'ok';";
             LoadPage(0, url);
             Sleep(5);
             //CheckCaptcha();
-            AntiBot(browsers[0]);
+            AntiBotImage(browsers[0]);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function click_s()
@@ -646,6 +650,28 @@ else 'notAntiBot';";
                 CloseСhildBrowser();
                 LoadPage(0, oldURL);
             }
+        }
+        private bool AntiBotImage(IBrowser browser)
+        {
+            //captcha_new
+            string oldURL = browser.MainFrame.Url;
+            string js = @"var img_captcha = document.querySelector('#captcha_new');
+if(img_captcha != null)
+    'antiBot';
+else 'notAntiBot';";
+            for (int i = 0; i < 5; i++)
+            {
+                if (SendJSReturn(browser.MainFrame, js) == "antiBot")
+                {
+                    Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha_new')");
+                    string answer_telebot = SendQuestion(img, "");
+                    SendJS(browser.MainFrame, "document.querySelector('#code').value = " + answer_telebot + ";document.querySelector('.sf_button').click();");
+                    Sleep(3);
+                }
+                else
+                    return true;
+            }
+            return false;
         }
     }
 }

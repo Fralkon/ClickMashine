@@ -89,22 +89,30 @@ function click_s()
 					IBrowser? youTube = GetBrowser(1);
 					if(youTube != null)
 					{
-						ev = SendJSReturn(youTube.MainFrame, "vtime");
+						ev = SendJSReturn(youTube.MainFrame, "timers_w");
 						if (ev != "error")
 						{
 							Sleep(ev);
 							if (Captcha(youTube, "document.querySelector('.clocktable img')"))
 							{
 								Count++;
-								Sleep(2);
 							}
+							else
+							{
+								SendJS(youTube, "getCaptcha();");
+                                if (Captcha(youTube, "document.querySelector('.clocktable img')"))
+                                {
+                                    Count++;
+                                }
+                            }
 						}
 					}
 				}
 				else if (ev == "end")
 					break;
 				CloseСhildBrowser();
-			}
+                Sleep(1);
+            }
 			return Count;
 		}
 		private int ClickSurf()
@@ -183,12 +191,13 @@ function click_s()
 		}
 		private bool Captcha(IBrowser browser, string img)
 		{
-			if (WaitElement(browser.MainFrame, img))
+			if (WaitElement(browser.MainFrame, img,5))
 			{
 				string predict = imageConrol.Predict(GetImgBrowser(browser.MainFrame, img));
 				if(predict == "error")
 					return false;
 				SendJS(browser.MainFrame, @"document.querySelectorAll('[nowrap=""nowrap""] span')["+predict+@"-1].click();");
+				Sleep(2);
 				return true;
 			}
 			return false;
