@@ -9,8 +9,6 @@ namespace ClickMashine
 		ImageControlWmrClick imageConrolWmrClick;
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
-
-
 			homePage = "https://wmrfast.com/";
 			Type = EnumTypeSite.WmrFast; 
 			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
