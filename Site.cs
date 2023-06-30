@@ -3,6 +3,7 @@ using CefSharp.WinForms;
 using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using OpenCvSharp.Internal.Vectors;
 
 namespace ClickMashine
 {
@@ -130,7 +131,15 @@ namespace ClickMashine
         }
         protected void SetBDInfo(int val)
         {
-            mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + "WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+            mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        }
+        protected void SetBDInfoStart()
+        {
+            mySQL.SendSQL("UPDATE auth SET status = 'Surf' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        }
+        protected void SetBDInfoStop()
+        {
+            mySQL.SendSQL("UPDATE auth SET status = 'Activate' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {

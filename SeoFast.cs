@@ -655,7 +655,7 @@ else 'notAntiBot';";
         {
             //captcha_new
             string oldURL = browser.MainFrame.Url;
-            string js = @"var img_captcha = document.querySelector('#captcha_new');
+            string js = @"var img_captcha = document.querySelector('.out-capcha');
 if(img_captcha != null)
     'antiBot';
 else 'notAntiBot';";
@@ -663,9 +663,11 @@ else 'notAntiBot';";
             {
                 if (SendJSReturn(browser.MainFrame, js) == "antiBot")
                 {
-                    Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha_new')");
-                    string answer_telebot = SendQuestion(img, "");
-                    SendJS(browser.MainFrame, "document.querySelector('#code').value = " + answer_telebot + ";document.querySelector('.sf_button').click();");
+                    string jsAntiBot = String.Empty;
+                    foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), ""))
+                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                    jsAntiBot += "document.querySelector('.sf_button').click();";
+                    SendJS(browser.MainFrame, jsAntiBot);
                     Sleep(3);
                 }
                 else
