@@ -17,8 +17,8 @@ namespace ClickMashine
         }
         public override bool Auth(Auth auth)
         {
-            Sleep(2);
             LoadPage(0, "https://aviso.bz/login");
+            Sleep(2);
             string js_auth = "var login_box = document.querySelector('.login-box');" +
             "if (login_box != null) {document.querySelector('[name=\"username\"]').value = '" + auth.Login + "';" +
             "document.querySelector('[name=\"password\"]').value = '" + auth.Password + "';" +
@@ -27,12 +27,24 @@ namespace ClickMashine
             "else { 'is_auth' };";
             string ev_lodin = SendJSReturn(0, js_auth);
             CM(ev_lodin);
-            Sleep(7);
+            if (ev_lodin == "login")
+                Sleep(7);
             CM("Auth Aviso");
             return true;
         }
         protected override void StartSurf()
         {
+            Initialize();
+            if (!Auth(auth))
+                return;
+            try
+            {
+                YouTubeSurf();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
             try
             {
                 MailSurf();
@@ -49,14 +61,6 @@ namespace ClickMashine
             {
                 MessageBox.Show(ex.Message);
             }
-            //try
-            //{
-            //    YouTubeSurf();
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show(ex.Message);
-            //}
             CloseAllBrowser();
         }
         private void YouTubeSurf()
@@ -122,10 +126,22 @@ function click_s()
                         else if (ev == "ads")
                         {
                             CM("See youtube");
-                            Sleep(2);
-                            IFrame youTubeFrame = browsers[1].MainFrame;
-                            ev = SendJSReturn(youTubeFrame, @"player.setVolume(0); b = true; player.seekTo(0, true); timerInitial;");
+                            var browserYouTube = GetBrowser(1);
+                            if (browserYouTube == null)
+                            {
+                                CloseСhildBrowser();
+                                continue;
+                            }
+                            ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); b = true; player.seekTo(0, true); timerInitial;");
                             Sleep(ev);
+                            string jsWaitYouTube = 
+@"function WaitEnd(){
+if(document.querySelector('#capcha-tr-block').innerText.length > 3)
+    return 'ok';
+else
+    return 'wait';}";
+                            WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
+                            break;                        
                         }
                     }
                 }
@@ -193,7 +209,7 @@ function click_s()
                 //}
                 //else
                 //	CM(ev.c_str());
-                Sleep(2);
+                Sleep(1);
                 CloseСhildBrowser();
                 Sleep(1);
             }
