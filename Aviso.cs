@@ -66,6 +66,7 @@ namespace ClickMashine
         private void YouTubeSurf()
         {
             CM("YouTUbeSurf");
+            int error = 0;
             LoadPage(0, "https://aviso.bz/work-youtube");
             IFrame mainFrame = browsers[0].MainFrame;
             string start_surf_js =
@@ -125,22 +126,30 @@ function click_s()
                         }
                         else if (ev == "ads")
                         {
-                            CM("See youtube");
-                            var browserYouTube = GetBrowser(1);
-                            if (browserYouTube == null)
+                            try
                             {
-                                CloseСhildBrowser();
-                                continue;
-                            }
-                            ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); b = true; player.seekTo(0, true); timerInitial;");
-                            Sleep(ev);
-                            string jsWaitYouTube = 
-@"function WaitEnd(){
+                                CM("See youtube");
+                                var browserYouTube = GetBrowser(1);
+                                if (browserYouTube == null)
+                                {
+                                    CloseСhildBrowser();
+                                    continue;
+                                }
+                                WaitElement(browserYouTube.MainFrame, "player");
+                                ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;");
+                                Sleep(ev);
+                                string jsWaitYouTube =
+    @"function WaitEnd(){
 if(document.querySelector('#capcha-tr-block').innerText.length > 3)
     return 'ok';
 else
     return 'wait';}";
-                            WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
+                                form.FocusTab(browserYouTube);
+
+                                WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
+                            }
+                            catch (Exception e) { Error(e.Message); error++; }
+                            
                             break;                        
                         }
                     }
@@ -211,6 +220,8 @@ else
                 //	CM(ev.c_str());
                 Sleep(1);
                 CloseСhildBrowser();
+                if (error > 8)
+                    throw new Exception("Error YouTube");
                 Sleep(1);
             }
         }
