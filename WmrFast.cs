@@ -100,31 +100,35 @@ function click_s()
 }";
 			SendJS(0, js);
 			while (true)
-			{
-				eventBrowserCreated.Reset();
-				string ev = SendJSReturn(0, "click_s();");
-				if (ev == "surf")
+            {
+                eventBrowserCreated.Reset();
+				try
 				{
-					IBrowser? browser = WaitCreateBrowser();
-					if (browser == null)
+					string ev = SendJSReturn(0, "click_s();");
+					if (ev == "surf")
 					{
-						CloseСhildBrowser();
-						continue;
-					}
-					if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
-					{
-						ev = SendJSReturn(browser, "vs = true;timer.toString();");
-						if (ev != "error")
+						IBrowser? browser = WaitCreateBrowser();
+						if (browser == null)
 						{
-							Sleep(ev);
-							WaitButtonClick(browsers[1].MainFrame, "document.querySelector('a');");
-							Count++;
-							Sleep(2);
+							CloseСhildBrowser();
+							continue;
+						}
+						if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
+						{
+							ev = SendJSReturn(browser, "vs = true;timer.toString();");
+							if (ev != "error")
+							{
+								Sleep(ev);
+								WaitButtonClick(browsers[1].MainFrame, "document.querySelector('a');");
+								Count++;
+								Sleep(2);
+							}
 						}
 					}
+					else if (ev == "end")
+						break;
 				}
-				else if (ev == "end")
-					break;
+				catch (Exception ex) { CM(ex.Message); }
 				CloseСhildBrowser();
 				Sleep(1);
 			}

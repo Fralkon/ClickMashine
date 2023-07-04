@@ -313,7 +313,7 @@ if(loadPage != null) loadPage.click();");
 				string goBottom = SendJSReturn(main_frame, @"var goBottom = document.querySelector('#Go_Bottom');
 if(goBottom.style.display != ""none"") {goBottom.click(); 'reply';}
 else 'end';");
-				Sleep(1);
+				Sleep(2);
 				if (goBottom == "end")
 					break;
 			}

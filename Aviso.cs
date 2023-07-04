@@ -118,6 +118,11 @@ function click_s()
                         if (ev == "wait")
                         {
                             Sleep(1);
+                            if(i == 9)
+                            {
+                                SendJS(mainFrame, "n++");
+                                break;
+                            }
                             continue;
                         }
                         else if (ev == "error_link")
@@ -249,6 +254,7 @@ function click_s()
             SendJS(mainFrame, jsSurf);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(mainFrame, "click_s();");
                 if (ev == "end_surf")
                     break;

@@ -283,13 +283,21 @@ function click_s()
                     continue;
                 else if (ev == "surf")
                 {
-                    IBrowser? browser = WaitCreateBrowser();
-                    if (browser == null)
+                    IBrowser? browserYouTube = WaitCreateBrowser();
+                    if (browserYouTube == null)
                     {
                         CloseСhildBrowser();
                         continue;
                     }
-                    YouTubeWatch(LastBrowser);
+                    try
+                    {
+                        YouTubeWatch(browserYouTube);
+                    }
+                    catch (Exception ex)
+                    {
+                        Error("Error watch youtube task.");
+                        browserYouTube.GetHost().CloseBrowser(true);
+                    }
                     count++;
                     Sleep(5);
                 }
@@ -313,19 +321,19 @@ else {
     timer();
     timer_v;
 }";
-                try
+                string ev = SendJSReturn(browserYouTube.MainFrame, js);
+                if (ev != "error_youtube")
                 {
-                    string ev = SendJSReturn(browserYouTube.MainFrame, js);
-                    if (ev != "error_youtube")
-                    {
-                        Sleep(ev);
-                    }
-                    Sleep(2);
+                    Sleep(ev);
                 }
-                catch (Exception ex)
-                {
-                    Error("Error watch youtube task.");
-                }
+                string jsWaitYouTube =
+@"function WaitEnd(){
+if(document.querySelector('#capcha-tr-block').innerText.indexOf(""засчитан"") != -1)
+    return 'ok';
+else
+    return 'wait';}";
+                form.FocusTab(browserYouTube);
+                WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
                 browserYouTube.GetHost().CloseBrowser(true);
             });
         }

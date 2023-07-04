@@ -392,6 +392,7 @@ namespace ClickMashine
             {
                 browsers[i].CloseBrowser(false);
             }
+            Sleep(1);
         }
         protected void CloseAllBrowser()
         {

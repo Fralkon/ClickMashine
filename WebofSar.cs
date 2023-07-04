@@ -86,6 +86,7 @@ function click_s()
             SendJS(0, js);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
                     break;
@@ -101,9 +102,12 @@ function click_s()
                     }
                     else if (ev == "click")
                     {
-                        WaitCreateBrowser(1);
+                        var browserClick = GetBrowser(1);
+                        if (browserClick == null)
+                            break;
                         Sleep(2);
-                        SendJS(browsers[1].MainFrame, @"loadFrame();
+                        SendJS(browserClick, 
+@"loadFrame();
 $(window).on(""focus"", function () {   
     wFocus = true;
     dFocus = true;
@@ -113,15 +117,15 @@ $(window).on(""blur"", function() {
     dFocus = true;
 });
 $(window).focus();");
-                        browsers[1].GetHost().SetFocus(true);
+                        browserClick.GetHost().SetFocus(true);
                         Sleep(1);
-                        if (WaitElement(browsers[1].MainFrame, "document.querySelector('#Timer')"))
+                        if (WaitElement(browserClick.MainFrame, "document.querySelector('#Timer')"))
                         {
-                            ev = SendJSReturn(browsers[1].MainFrame, @"document.querySelector('#Timer').innerText;");
+                            ev = SendJSReturn(browserClick.MainFrame, @"document.querySelector('#Timer').innerText;");
                             Sleep(ev);
-                            if (WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
+                            if (WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
                             {
-                                SendJS(browsers[1].MainFrame,
+                                SendJS(browserClick.MainFrame,
 @"clearInterval(idInterval[""Timer""]);
 $(""#BlockWait"").remove();
 $(""#BlockTimer"").fadeIn(""fast"");
@@ -136,12 +140,12 @@ statusTimer = 1;
 clearTimeout(idTimeout[""Timer""]);
 clearInterval(idInterval[""Timer""]);
 fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
-                                WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')");
+                                WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')");
                             }
-                            Sleep(3);
                         }
                     }
                 }
+                Sleep(3);
                 CloseСhildBrowser();
             }
         }
