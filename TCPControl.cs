@@ -47,6 +47,7 @@ namespace ClickMashine
         private void SendTCPMesage(TCPMessage message)
         {
             TcpClient ControlServer = new TcpClient();
+            //ControlServer.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"),1000));
             ControlServer.Connect(endPointTelebot);
             ControlServer.GetStream().Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize<TCPMessage>(message) + "\0"));
             ControlServer.Close();

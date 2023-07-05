@@ -62,7 +62,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error youtube3\n" + ex.Message);
                 }
-                SetBDInfo(youTube);
+                //SetBDInfo(youTube);
                 try
                 {
                     mail = MailSurf();
@@ -72,7 +72,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error mail\n" + ex.Message);
                 }
-                SetBDInfo(mail);
+              //  SetBDInfo(mail);
                 try
                 {
                     click = ClickSurf();
@@ -82,7 +82,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error Click\n" + ex.Message);
                 }
-                SetBDInfo(click);
+             //   SetBDInfo(click);
                 try
                 {
                     visit = VisitSurf();
@@ -92,7 +92,7 @@ namespace ClickMashine
                     CloseСhildBrowser();
                     Error("Error visit\n" + ex.Message);
                 }
-                SetBDInfo(visit);
+             //   SetBDInfo(visit);
             }
         }
         public override bool Auth(Auth auth)

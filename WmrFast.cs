@@ -56,6 +56,7 @@ document.querySelector('#vhod1').click();";
 				return;
 			while (true)
 			{
+				int YouTube = 0;
 				//try
 				//{
 				//	while (ClickSurf() > 5) ;
@@ -64,22 +65,27 @@ document.querySelector('#vhod1').click();";
 				//{
 				//	Error("Ошибка Click: " + ex.Message);
 				//}
-				try
-				{
-					while (YouTubeSurf() > 5);
-				}
-				catch (Exception ex)
-				{
-					Error("Ошибка YouTube: " + ex.Message);
+				
+				//try
+				//{
+				//	while (VisitSurf() > 5) ;
+				//}
+				//catch (Exception ex)
+				//{
+				//	Error("Ошибка Visit: " + ex.Message);
+				//}
+                try
+                {
+                    YouTube = YouTubeSurf();
                 }
-                //try
-                //{
-                //    while (VisitSurf() > 5);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Error("Ошибка Visit: " + ex.Message);
-                //}
+                catch (Exception ex)
+                {
+                    Error("Ошибка YouTube: " + ex.Message);
+                }
+                if (YouTube < 3)
+                {
+					Sleep(300);
+                }
             }
 			CloseAllBrowser();
 		}
