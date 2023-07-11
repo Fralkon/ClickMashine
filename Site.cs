@@ -96,15 +96,17 @@ namespace ClickMashine
         public ChromiumWebBrowser main_browser;
         public MyLifeSplanHandler lifeSplanHandler;
         protected Auth auth;
-        public TCPMessageManager TCPMessageManager = new TCPMessageManager();
+        public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL = new MySQL("clicker");
         public Site(Form1 form, Auth auth)
         {
             this.auth = auth;
             this.form = form;
+            TCPMessageManager= new TCPMessageManager(form.ID);
         }
         public Site(Form1 form)
         {
+            TCPMessageManager = new TCPMessageManager(form.ID);
             this.form = form;
         }
         public abstract bool Auth(Auth auth);

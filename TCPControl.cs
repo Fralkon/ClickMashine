@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ClickMashine
 {
@@ -40,8 +41,10 @@ namespace ClickMashine
     {
         TCPMessage bufferMessage = new TCPMessage();
         IPEndPoint endPointTelebot;
-        public TCPMessageManager()
+        int IDMashine;
+        public TCPMessageManager(int IDMashine)
         {
+            this.IDMashine = IDMashine;
             endPointTelebot = IPManager.GetEndPoint(new MySQL("clicker"),1);
         }
         private void SendTCPMesage(TCPMessage message)
@@ -54,7 +57,7 @@ namespace ClickMashine
         }
         public string SendQuestion(Bitmap image, string text, EnumTypeSite site)
         {
-            TCPMessage message = new TCPMessage(text, TypeMessage.CaptchaImage,site);
+            TCPMessage message = new TCPMessage(text, IDMashine, TypeMessage.CaptchaImage,site);
             using (MemoryStream ms = new MemoryStream())
             {
                 image.Save(ms, format: ImageFormat.Png);
@@ -72,7 +75,7 @@ namespace ClickMashine
         }
         public void SendError(string text, EnumTypeSite site)
         {
-            TCPMessage message = new TCPMessage(text, TypeMessage.Error, site);
+            TCPMessage message = new TCPMessage(text, IDMashine, TypeMessage.Error, site);
             SendTCPMesage(message);
         }
         
@@ -87,14 +90,16 @@ namespace ClickMashine
         {
 
         }
-        public TCPMessage(string text, TypeMessage type, EnumTypeSite typeSite)
+        public TCPMessage(string text, int IDMashine, TypeMessage type, EnumTypeSite typeSite)
         {
+            this.IDMashine = IDMashine;
             Type = type;
             Text = text;
             Site = typeSite;
         }
         public TypeMessage Type { get; set; }
         public EnumTypeSite Site { get; set; }
+        public int IDMashine { get; set; }
     }
     class EventArgTCPClient: EventArgs
     {
