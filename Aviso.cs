@@ -37,34 +37,15 @@ namespace ClickMashine
             Initialize();
             if (!Auth(auth))
                 return;
-            try
-            {
-                YouTubeSurf();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            try
-            {
-                MailSurf();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            try
-            {
-                ClickSurf();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            mSurf.AddFunction(YouTubeSurf);
+            mSurf.AddFunction(MailSurf);
+            mSurf.AddFunction(ClickSurf);
+            mSurf.GoSurf();
             CloseAllBrowser();
         }
-        private void YouTubeSurf()
+        private int YouTubeSurf()
         {
+            int LinkCount = 0;
             CM("YouTUbeSurf");
             int error = 0;
             LoadPage(0, "https://aviso.bz/work-youtube");
@@ -93,11 +74,6 @@ function click_s()
 {
 	if (n >= surf_cl.length) return 'end_surf';
 	else{
-	    if (surf_cl[n].attributes.id.value.at(0) == 'p' || surf_cl[n].attributes.id.value.at(0) == 'l')
-	    {
-		    n++;
-			return 'continue';
-		}
 		surf_cl[n].querySelector('span').click();    
         return 'click';
 	}
@@ -134,7 +110,7 @@ function click_s()
                             try
                             {
                                 CM("See youtube");
-                                var browserYouTube = GetBrowser(1);
+                                var browserYouTube = WaitCreateBrowser();
                                 if (browserYouTube == null)
                                 {
                                     CloseСhildBrowser();
@@ -152,6 +128,7 @@ else
                                 form.FocusTab(browserYouTube);
 
                                 WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
+                                LinkCount++;
                             }
                             catch (Exception e) { Error(e.Message); error++; }
                             
@@ -229,9 +206,11 @@ else
                     throw new Exception("Error YouTube");
                 Sleep(1);
             }
+            return LinkCount;
         }
-        private void ClickSurf()
+        private int ClickSurf()
         {
+            int LinkCount = 0;
             LoadPage(0, "https://aviso.bz/work-serf");
             IFrame mainFrame = browsers[0].MainFrame;
             string jsSurf =
@@ -290,6 +269,7 @@ function click_s()
                                         SendJS(frame, "document.getElementById('time').innerText = 0;");
                                         Sleep(1);
                                         ev = SendJSReturn(frame, @"var button_finish = document.querySelector('.btn_capt'); if (button_finish == null) { 'error_click'; } else { button_finish.click(); 'end'; }");
+                                        LinkCount++;
                                     }
                                     step = 10;
                                     break;
@@ -301,9 +281,11 @@ function click_s()
                 Sleep(2);
                 CloseСhildBrowser();
             }
+            return LinkCount;
         }
-        private void MailSurf()
+        private int MailSurf()
         {
+            int LinkCount = 0;
             LoadPage(0, "https://aviso.bz/mails_new");
             Sleep(2);
             IFrame mainFrame = browsers[0].MainFrame;
@@ -381,6 +363,7 @@ if (range != null)
 else { 'error_mail'; }";
 
                                 SendJSReturn(1, js);
+                                LinkCount++;
                             }
                             Sleep(2);
                             break;
@@ -389,6 +372,7 @@ else { 'error_mail'; }";
                 }
                 CloseСhildBrowser();
             }
+            return LinkCount;
         }
     }
 }

@@ -84,8 +84,51 @@ namespace ClickMashine
 
         }
     }
+    class Surf {
+        public Surf(FunctionSurf function)
+        {
+            Count = 10;
+            Function = function;
+        }
+        public int Count { get; set; }
+        public FunctionSurf Function { get; set; }
+        public delegate int FunctionSurf();
+    }
+    class ManagerSurf {
+        public ManagerSurf() { }
+        private List<Surf> ListSurf = new List<Surf>();
+        public void AddFunction(Surf.FunctionSurf functionSurf)
+        {
+            ListSurf.Add(new Surf(functionSurf));
+        }
+        public void GoSurf()
+        {
+            bool b;
+            do
+            {
+                b = false;
+                foreach (Surf tuple in ListSurf)
+                {
+                    if (tuple.Count > 5)
+                    {
+                        try{
+                            tuple.Count = tuple.Function();
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e.ToString());
+                        }
+                        b = true;
+                    }
+                }
+            }
+            while (b);
+        }
+    }
+    
     abstract class Site : MyThread
     {
+        protected ManagerSurf mSurf = new ManagerSurf();
         public Form1 form;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -220,9 +263,9 @@ namespace ClickMashine
         protected IBrowser? WaitCreateBrowser()
         {
             eventLoadPage.Reset();
-            if (!eventBrowserCreated.WaitOne(3000))
+            if (!eventBrowserCreated.WaitOne(10000))
                 return null;
-            eventLoadPage.WaitOne(5000);
+            eventLoadPage.WaitOne(10000);
             return LastBrowser;
         }
         protected void LoadPage(int id_browser, string page)
