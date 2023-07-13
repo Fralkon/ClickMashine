@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using OpenCvSharp.Internal.Vectors;
+using ClickMashine_11;
 
 namespace ClickMashine
 {
@@ -126,19 +127,19 @@ namespace ClickMashine
         }
     }
     
-    abstract class Site : MyThread
+    abstract class Site : MyTask
     {
         protected ManagerSurf mSurf = new ManagerSurf();
         public Form1 form;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<IBrowser> browsers = new List<IBrowser>();
-        protected IBrowser LastBrowser;
-        protected string homePage;
+        protected IBrowser ?LastBrowser;
+        protected string homePage = String.Empty;
         public EnumTypeSite Type { get; protected set; }
-        public ChromiumWebBrowser main_browser;
-        public MyLifeSplanHandler lifeSplanHandler;
-        protected Auth auth;
+        public ChromiumWebBrowser ?main_browser;
+        public MyLifeSplanHandler ?lifeSplanHandler;
+        protected Auth ?auth;
         public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL = new MySQL("clicker");
         public Site(Form1 form, Auth auth)
