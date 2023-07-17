@@ -50,56 +50,20 @@ namespace ClickMashine
             Initialize();
             if (!Auth(auth))
                 return;
+            mSurf.AddFunction(YouTubeSurf);
+            mSurf.AddFunction(MailSurf);
+            mSurf.AddFunction(ClickSurf);
             while (true)
             {
-                //try
-                //{
-                //	MailSurf();
-                //}
-                //catch (Exception ex)
-                //{
-                //	MessageBox.Show(ex.Message);
-                //}
-                try
-                {
-                    ClickSurf();
-                }
-                catch (Exception ex)
-                {
-                    Error(ex.Message);
-                }
-                //try
-                //{
-                //    VisitSurf();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Error(ex.Message);
-                //}
-                try
-                {
-                    YouTubeSurf();
-                    YouTubeSurf();
-                    YouTubeSurf();
-                }
-                catch (Exception ex)
-                {
-                    Error(ex.Message);
-                }
-                //try
-                //{
-                //    RuTubeSurf();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Error(ex.Message);
-                //}
-                Sleep(200);
+                mSurf.GoSurf();
+                Sleep(600);
             }
+
             CloseAllBrowser();
         }
-        private void ClickSurf()
+        private int ClickSurf()
         {
+            int Count = 0;
             LoadPage("https://seoclub.su/");
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
             Sleep(4);
@@ -172,6 +136,7 @@ else
 	location.replace(""vlss?view=ok"");
 	'error_surf';
 }");
+                                    Count++;
                                     Sleep(2);
                                 }
                             }
@@ -183,10 +148,11 @@ else
                 CloseСhildBrowser();
                 Sleep(2);
             }
+            return Count;
         }
-        private void VisitSurf()
+        private int  VisitSurf()
         {
-
+            int Count = 0;
             LoadPage(0, "https://profitcentr.com/");
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
             Sleep(4);
@@ -214,19 +180,26 @@ function click_s()
                     continue;
                 else
                 {
-                    int pointStart = ev.IndexOf("Таймер: ") + 8;
-                    int pointEnd = ev.IndexOf(' ', pointStart);
-                    int countText = pointEnd - pointStart;
-                    if (pointStart == -1 || pointEnd == -1 || countText > 0)
-                        Sleep(ev.Substring(pointStart, pointEnd - pointStart));
-                    Sleep(2);
+                    if (WaitCreateBrowser() != null)
+                    {
+                        int pointStart = ev.IndexOf("Таймер: ") + 8;
+                        int pointEnd = ev.IndexOf(' ', pointStart);
+                        int countText = pointEnd - pointStart;
+                        if (pointStart == -1 || pointEnd == -1 || countText > 0)
+                            Sleep(ev.Substring(pointStart, pointEnd - pointStart));
+                        Sleep(2);
+                        Count++;
+                    }
                 }
+                Sleep(2);
                 CloseСhildBrowser();
                 Sleep(2);
             }
+            return Count;
         }
-        private void YouTubeSurf()
+        private int  YouTubeSurf()
         {
+            int Count = 0;
             SendJS(0,"document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
             Sleep(4);
             IBrowser mainBrowser = browsers[0];
@@ -268,30 +241,32 @@ function click_s()
                         if (ev == "surf")
                         {
                             var browserYouTube = WaitCreateBrowser();
-                            if (browserYouTube == null)
+                            if (browserYouTube != null){
+                                IFrame yotube_frame = browserYouTube.MainFrame;
+                                ev = SendJSReturn(yotube_frame,
+    @"c = true;  b = true; document.querySelector('#tmr').innerText;");
+                                if (ev != "error")
+                                {
+                                    Sleep(ev);
+                                    if (!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+                                        Error("Error end youtube watch");
+                                    Count++;
+                                    Sleep(2);
+                                }
                                 break;
-                            IFrame yotube_frame = browserYouTube.MainFrame;
-                            ev = SendJSReturn(yotube_frame,
-@"c = true;  b = true; document.querySelector('#tmr').innerText;");
-                            if (ev != "error")
-                            {
-                                Sleep(ev);
-                                if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
-                                    Error("Error end youtube watch");
-                                Sleep(2);
                             }
-                            break;
+                            else if (ev == "sec_wait")
+                                Sleep(1);
+                            else if (ev == "continue")
+                                break;
                         }
-                        else if (ev == "sec_wait")
-                            Sleep(1);
-                        else if (ev == "continue")
-                            break;
                     }
                 }
                 else Error("Ошибка блять");
                 CloseСhildBrowser();
                 Sleep(1);
             }
+            return Count;
         }
 //        private void RuTubeSurf()
 //        {
@@ -406,8 +381,9 @@ function click_s()
 //                Sleep(1);
 //            }
 //        }
-        private void MailSurf()
+        private int MailSurf()
         {
+            int Count = 0;
             LoadPage(0, "https://profitcentr.com/");
             Sleep(2);
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').click();");
@@ -416,7 +392,7 @@ function click_s()
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
 function surf()
 {
-	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
+	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
 	if (start_ln != null) { start_ln.click(); n++; return 'surf'; }
 	else { return 'wait' }
 }
@@ -433,8 +409,8 @@ function click_s()
             {
                 string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
-                    return;
-                else if (ev == "contionue")
+                    return Count;
+                else if (ev == "continue")
                     continue;
                 else if (ev == "click")
                 {
@@ -445,8 +421,8 @@ function click_s()
                             Sleep(1);
                         else if (ev == "click")
                         {
-                            ev = GetMailAnswer(browsers[0].MainFrame, "document.querySelector('.taskdescription')",
-                                "document.querySelector('.taskquestion')",
+                            ev = GetMailAnswer(browsers[0].MainFrame, "document.querySelector('#js-popup > div:nth-child(3)')",
+                                "document.querySelector('#js-popup > div:nth-child(4)')",
                                 "document.querySelectorAll('.mails-otvet-new a')");
                             if (ev == "errorMail")
                             {
@@ -454,24 +430,20 @@ function click_s()
                                 ev = rnd.Next(0, 3).ToString();
                             }
                             SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
-                            Sleep(5);
-                            IFrame frame = browsers[1].GetFrame("frminfo");
-                            ev = SendJSReturn(frame,
+                            var browser = WaitCreateBrowser();
+                            if (browser != null) {
+                                ev = SendJSReturn(browser,
 @"b = false;
 window.top.start = 0;
-var timer1 = document.querySelector('#time');
-var timer2 = document.querySelector('#timer_inp');
+var timer1 = document.querySelector('.timer');
 if (timer1 != null)
 	return timer1.innerText;
-else if (timer2 != null)
-	return timer2.innerText;
 else 'error_surf';");
-                            if (ev != "error")
-                            {
-                                Sleep(ev);
-                                Sleep(2);
-                                frame = browsers[1].GetFrame("frminfo");
-                                SendJSReturn(frame,
+                                if (ev != "error")
+                                {
+                                    Sleep(ev);
+                                    WaitElement(browser.MainFrame, "document.querySelector('[type=\"range\"]');");
+                                    SendJSReturn(browser,
 @"var range = document.querySelector('[type=""range""]');
 if (range != null)
 {
@@ -484,11 +456,13 @@ else
 	'error_surf';
 	location.replace(""vlss?view=ok"");
 }");
-                                Sleep(2);
+                                    Count++;
+                                }
                             }
                         }
                     }
                 }
+                Sleep(2);
                 CloseСhildBrowser();
             }
         }

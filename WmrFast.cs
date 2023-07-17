@@ -54,40 +54,13 @@ document.querySelector('#vhod1').click();";
 			Initialize();
 			if (!Auth(auth))
 				return;
+			mSurf.AddFunction(YouTubeSurf);
+			//mSurf.AddFunction(ClickSurf);
 			while (true)
 			{
-				int YouTube = 0;
-				//try
-				//{
-				//	while (ClickSurf() > 5) ;
-				//}
-				//catch (Exception ex)
-				//{
-				//	Error("Ошибка Click: " + ex.Message);
-				//}
-				
-				//try
-				//{
-				//	while (VisitSurf() > 5) ;
-				//}
-				//catch (Exception ex)
-				//{
-				//	Error("Ошибка Visit: " + ex.Message);
-				//}
-                try
-                {
-                    YouTube = YouTubeSurf();
-                }
-                catch (Exception ex)
-                {
-                    Error("Ошибка YouTube: " + ex.Message);
-                }
-                if (YouTube < 3)
-                {
-					Sleep(300);
-                }
-            }
-			CloseAllBrowser();
+				mSurf.GoSurf();
+				Sleep(300);
+			}
 		}
 		private int YouTubeSurf()
 		{

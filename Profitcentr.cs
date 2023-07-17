@@ -19,21 +19,6 @@ namespace ClickMashine
 
             SendJS(0, auth_js);
             AntiBot();
-			//while (true)
-			//{
-			//	Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-			//	string answer_telebot = teleBot.SendQuestion(img);
-
-			//	string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
-			//	"document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
-			//	foreach (char ch in answer_telebot)
-			//		auth_js += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-			//	auth_js += "document.querySelector('.btn_big_green').click();";
-			//	eventLoadPage.Reset();
-			//	SendJS(0, auth_js);
-			//	if (eventLoadPage.WaitOne(10000))
-			//		break;
-			//}
 			return true;
 		}
 		protected override void StartSurf()
@@ -41,89 +26,15 @@ namespace ClickMashine
 			Initialize();
 			if (!Auth(auth))
 				return;
+			mSurf.AddFunction(YouTubeSurf);
+			mSurf.AddFunction(RuTubeSurf);
+			mSurf.AddFunction(ClickSurf);
+			mSurf.AddFunction(VisitSurf);
 			while (true)
 			{
-				//try
-				//{
-				//	MailSurf();
-				//}
-				//catch (Exception ex)
-				//{
-				//	MessageBox.Show(ex.Message);
-				//}
-		
-				try
-				{
-					YouTubeSurf();
-				}
-
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
-				try
-				{
-					YouTubeSurf();
-				}
-
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
-
-				try
-				{
-					YouTubeSurf();
-				}
-
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
-				try
-				{
-					YouTubeSurf();
-
-				}
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
-
-				try
-				{
-					YouTubeSurf();
-				}
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-				}
-				try
-				{
-					RuTubeSurf();
-				}
-				catch (Exception ex)
-				{
-					Error(ex.Message);
-                }
-                try
-                {
-                    ClickSurf();
-                }
-                catch (Exception ex)
-                {
-                    Error(ex.Message);
-                }
-                try
-                {
-                    VisitSurf();
-                }
-                catch (Exception ex)
-                {
-                    Error(ex.Message);
-                }
-            }
-			CloseAllBrowser();
+				mSurf.GoSurf();
+				Sleep(600);
+			}
 		}
 		private int ClickSurf()
 		{

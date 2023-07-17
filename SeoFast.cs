@@ -20,79 +20,54 @@ namespace ClickMashine
             Initialize();
             if (!Auth(auth))
                 return;
+            mSurf.AddFunction(MailSurf);
+            mSurf.AddFunction(ClickSurf);
+            mSurf.AddFunction(VisitSurf);
             while (true)
             {
-                int youTube = 0;
-                int click = 0;
-                int mail = 0;
-                int visit = 0;
-                try
+                int youTube = 10;
+                while (youTube > 9)
                 {
-                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");                    
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error youtube1\n" + ex.Message);
-                }
-                try
-                {
-                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error youtube1\n" + ex.Message);
-                }
-                try
-                {
-                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple");
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error youtube2\n" + ex.Message);
-                }
-                try
-                {
-                    youTube+=YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error youtube3\n" + ex.Message);
+                    youTube = 0;
+                    try
+                    {
+                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");
+                    }
+                    catch (Exception ex)
+                    {
+                        CloseСhildBrowser();
+                        Error("Error youtube1\n" + ex.Message);
+                    }
+                    try
+                    {
+                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
+                    }
+                    catch (Exception ex)
+                    {
+                        CloseСhildBrowser();
+                        Error("Error youtube1\n" + ex.Message);
+                    }
+                    try
+                    {
+                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple");
+                    }
+                    catch (Exception ex)
+                    {
+                        CloseСhildBrowser();
+                        Error("Error youtube2\n" + ex.Message);
+                    }
+                    try
+                    {
+                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
+                    }
+                    catch (Exception ex)
+                    {
+                        CloseСhildBrowser();
+                        Error("Error youtube3\n" + ex.Message);
+                    }
                 }
                 //SetBDInfo(youTube);
-                try
-                {
-                    mail = MailSurf();
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error mail\n" + ex.Message);
-                }
-              //  SetBDInfo(mail);
-                try
-                {
-                    click = ClickSurf();
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error Click\n" + ex.Message);
-                }
-             //   SetBDInfo(click);
-                try
-                {
-                    visit = VisitSurf();
-                }
-                catch (Exception ex)
-                {
-                    CloseСhildBrowser();
-                    Error("Error visit\n" + ex.Message);
-                }
-             //   SetBDInfo(visit);
+                mSurf.GoSurf();
             }
         }
         public override bool Auth(Auth auth)
@@ -129,7 +104,7 @@ namespace ClickMashine
 
                         SendJS(0, jsAntiBot);
                         Sleep(7);
-                        if(WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
+                        if (WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
                         {
                             SendJS(browser.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
                             Sleep(2);
@@ -399,7 +374,7 @@ go();";
                             Sleep(ev);
                             if (!WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
                             {
-                                ev = 
+                                ev =
 @"$.ajax({
 	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
 	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
@@ -407,7 +382,7 @@ go();";
     success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
 });";
                                 ev = SendJSReturn(browserSurf.MainFrame, ev);
-                                if(WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
+                                if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
                                 {
                                     Count++;
                                 }
@@ -630,12 +605,12 @@ else 'ok';";
                 }
                 else
                 {
-                   
+
                 }
             }
             Error("Ошибка ввода капчи");
             return false;
-        }  
+        }
         private void AntiBot(IBrowser browser)
         {
             string oldURL = browser.MainFrame.Url;
@@ -662,26 +637,27 @@ else 'notAntiBot';";
         private bool AntiBotImage(IBrowser browser)
         {
             //captcha_new
-            string oldURL = browser.MainFrame.Url;
             string js = @"var img_captcha = document.querySelector('.out-capcha');
 if(img_captcha != null)
     'antiBot';
 else 'notAntiBot';";
-            for (int i = 0; i < 5; i++)
+            int iteration = 0;
+            while (SendJSReturn(browser.MainFrame, js) != "antiBot")
             {
-                if (SendJSReturn(browser.MainFrame, js) == "antiBot")
-                {
-                    string jsAntiBot = String.Empty;
-                    foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), ""))
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "document.querySelector('.sf_button').click();";
-                    SendJS(browser.MainFrame, jsAntiBot);
-                    Sleep(3);
-                }
-                else
-                    return true;
+                if (iteration == 10)
+                    return false;
+                string jsAntiBot = String.Empty;
+                foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), ""))
+                    jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                jsAntiBot += "document.querySelector('.sf_button').click();";
+                SendJS(browser.MainFrame, jsAntiBot);
+                Sleep(4);
+                iteration++;
+                eventLoadPage.Reset();
+                browser.Reload();
+                eventLoadPage.WaitOne(5000);
             }
-            return false;
+            return true;
         }
     }
 }

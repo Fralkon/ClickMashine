@@ -12,31 +12,13 @@
             Initialize();
             if (!Auth(auth))
                 return;
-            try
+            mSurf.AddFunction(ClickSurf);
+            mSurf.AddFunction(VisitSites);
+            mSurf.AddFunction(AutoClick);
+            while (true)
             {
-                ClickSurf();
+                mSurf.GoSurf();
             }
-            catch (Exception ex)
-            {
-                Error("Ошибка Click: " + ex.Message);
-            }
-            try
-            {
-                VisitSites();
-            }
-            catch (Exception ex)
-            {
-                Error("Ошибка Visit: " + ex.Message);
-            }
-            try
-            {
-                AutoClick();
-            }
-            catch (Exception ex)
-            {
-                Error("Ошибка AutoClick: " + ex.Message);
-            }
-            CloseAllBrowser();
         }
         public override bool Auth(Auth auth)
         {
@@ -64,8 +46,9 @@
             }
             return true;
         }
-        private void ClickSurf()
+        private int ClickSurf()
         {
+            int Count = 0;
             LoadPage("https://webof-sar.ru/work-surfings");
             string js =
 @"var surf_cl = document.querySelectorAll('.wfsts');var n = 0;
@@ -102,12 +85,11 @@ function click_s()
                     }
                     else if (ev == "click")
                     {
-                        var browserClick = GetBrowser(1);
-                        if (browserClick == null)
-                            break;
-                        Sleep(2);
-                        SendJS(browserClick, 
-@"loadFrame();
+                        var browserClick = WaitCreateBrowser();
+                        if (browserClick != null)
+                        {
+                            SendJS(browserClick,
+    @"loadFrame();
 $(window).on(""focus"", function () {   
     wFocus = true;
     dFocus = true;
@@ -117,16 +99,16 @@ $(window).on(""blur"", function() {
     dFocus = true;
 });
 $(window).focus();");
-                        browserClick.GetHost().SetFocus(true);
-                        Sleep(1);
-                        if (WaitElement(browserClick.MainFrame, "document.querySelector('#Timer')"))
-                        {
-                            ev = SendJSReturn(browserClick.MainFrame, @"document.querySelector('#Timer').innerText;");
-                            Sleep(ev);
-                            if (WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
+                            browserClick.GetHost().SetFocus(true);
+                            Sleep(1);
+                            if (WaitElement(browserClick.MainFrame, "document.querySelector('#Timer')"))
                             {
-                                SendJS(browserClick.MainFrame,
-@"clearInterval(idInterval[""Timer""]);
+                                ev = SendJSReturn(browserClick.MainFrame, @"document.querySelector('#Timer').innerText;");
+                                Sleep(ev);
+                                if (WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')", 5))
+                                {
+                                    SendJS(browserClick.MainFrame,
+    @"clearInterval(idInterval[""Timer""]);
 $(""#BlockWait"").remove();
 $(""#BlockTimer"").fadeIn(""fast"");
 var aDefOpts = {
@@ -140,17 +122,21 @@ statusTimer = 1;
 clearTimeout(idTimeout[""Timer""]);
 clearInterval(idInterval[""Timer""]);
 fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
-                                WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')");
+                                    WaitButtonClick(browserClick.MainFrame, "document.querySelector('[class=\"block-success work-check\"]')");
+                                }
+                                Count++;
                             }
                         }
                     }
                 }
-                Sleep(3);
+                Sleep(2);
                 CloseСhildBrowser();
             }
+            return Count;
         }
-        private void VisitSites()
+        private int VisitSites()
         {
+            int Count = 0;
             LoadPage("https://webof-sar.ru/work-pay-visits");
             Sleep(2);
             string js =
@@ -190,13 +176,16 @@ function click_s()
                     {
                         WaitCreateBrowser(1);
                         Sleep(7);
+                        Count++;
                     }
                 }
                 CloseСhildBrowser();
             }
+            return Count;
         }
-        private void MailSurf()
+        private int MailSurf()
         {
+            int Count = 0;
             LoadPage("https://webof-sar.ru/read-mails");
             string js =
 @"var surf_cl = document.querySelector('.table-serf').querySelectorAll('td a');var n = 0;
@@ -269,35 +258,47 @@ clearInterval(idInterval[""Timer""]);
 fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
                                 WaitButtonClick(browsers[1].MainFrame, "document.querySelector('[class=\"block-success work-check\"]')");
                             }
-                            Sleep(3);
+                            Count++;
                         }
                     }
                 }
+                Sleep(3);
                 CloseСhildBrowser();
             }
+            return Count;
         }
-        private void AutoClick()
+        private int AutoClick()
         {
+            int Count = 0;
             LoadPage(main_browser.GetBrowser(), "https://webof-sar.ru/work-auto-surfings");
             string ev = SendJSReturn(browsers[0], "document.querySelector('.text-bold').innerText");
             if(ev != "0")
             {
                 SendJS(browsers[0], "document.querySelector('.btn-block').click()");
-                while (true)
+                var browser = WaitCreateBrowser();
+                if (browser != null)
                 {
-                    Sleep(5);
-                    ev = SendJSReturn(browsers[1],
-@"var timer_r = document.querySelector('.timer');
-if(timer_r != null) timer.innerText;
-else 'none';");
-
-                    if (ev == "none")
+                    while (true)
                     {
-                        break;
+                        if (WaitElement(browser.MainFrame, "document.querySelector('.timer')"))
+                        {
+                            ev = SendJSReturn(browser,
+@"var timer_r = document.querySelector('.timer');
+if(timer_r != null) timer_r.innerText;
+else 'none';");
+                            Count++;
+                            if (ev == "none" || ev == "")
+                            {
+                                break;
+                            }
+                            else { Sleep(TimeSpan.Parse(ev).TotalMinutes.ToString()); }
+                        }
+                        else
+                            break;
                     }
-                    else { Sleep(ev); }
                 }
             }
+            return Count;
         }
     }
 }

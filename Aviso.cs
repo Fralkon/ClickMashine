@@ -40,7 +40,11 @@ namespace ClickMashine
             mSurf.AddFunction(YouTubeSurf);
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
-            mSurf.GoSurf();
+            while (true)
+            {
+                mSurf.GoSurf();
+                Sleep(600);
+            }
             CloseAllBrowser();
         }
         private int YouTubeSurf()
