@@ -406,7 +406,7 @@ namespace ClickMashine
             Console.WriteLine("Sleep: " + sec.ToString());
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
-            Thread.Sleep(sec * 1000);
+            Task.Delay(sec * 1000).Wait();
         }
         protected void Sleep(string sec)
         {

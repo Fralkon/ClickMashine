@@ -115,24 +115,28 @@ function click_s()
                             {
                                 CM("See youtube");
                                 var browserYouTube = WaitCreateBrowser();
-                                if (browserYouTube == null)
+                                if (browserYouTube != null)
                                 {
-                                    CloseСhildBrowser();
-                                    continue;
-                                }
-                                WaitElement(browserYouTube.MainFrame, "player");
-                                ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;");
-                                Sleep(ev);
-                                string jsWaitYouTube =
-    @"function WaitEnd(){
+                                    WaitElement(browserYouTube.MainFrame, "player");
+                                    ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;");
+                                    Sleep(ev);
+                                    string jsWaitYouTube =
+@"function WaitEnd(){
 if(document.querySelector('#capcha-tr-block').innerText.length > 3)
     return 'ok';
 else
     return 'wait';}";
-                                form.FocusTab(browserYouTube);
-
-                                WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
-                                LinkCount++;
+                                    form.FocusTab(browserYouTube);
+                                    if("ok" != WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube))
+                                    {
+                                        WaitElement(browserYouTube.MainFrame, "player");
+                                        ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;");
+                                        Sleep(ev);
+                                        form.FocusTab(browserYouTube);
+                                        WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube);
+                                    }
+                                    LinkCount++;
+                                }
                             }
                             catch (Exception e) { Error(e.Message); error++; }
                             
@@ -207,7 +211,7 @@ else
                 Sleep(1);
                 CloseСhildBrowser();
                 if (error > 8)
-                    throw new Exception("Error YouTube");
+                    return LinkCount;
                 Sleep(1);
             }
             return LinkCount;
@@ -250,33 +254,44 @@ function click_s()
                         ev = SendJSReturn(mainFrame, "surf();");
                         if (ev == "sec_wait")
                         {
+                            if(step == 9)
+                            {
+                                SendJS(mainFrame, "n++");
+                                CloseСhildBrowser();
+                                break;
+                            }
                             Sleep(1);
                             continue;
                         }
                         else if (ev == "surf")
                         {
-                            Sleep(2);
-                            List<long> frameIndif = browsers[1].GetFrameIdentifiers();
-                            foreach (long id in frameIndif)
+                            var browserClick = WaitCreateBrowser();
+                            if (browserClick != null)
                             {
-                                IFrame frame = browsers[1].GetFrame(id);
-                                if (frame.Url.IndexOf("vlss") == -1)
+                                List<long> frameIndif = browserClick.GetFrameIdentifiers();
+                                foreach (long id in frameIndif)
                                 {
-                                    continue;
-                                }
-                                else
-                                {
-                                    ev = SendJSReturn(frame, @"var timer_inp = document.querySelector('.timer'); if (timer_inp != null) timer_inp.innerText; else 'error_timer';");
-                                    if (ev != "error")
+                                    IFrame frame = browserClick.GetFrame(id);
+                                    if (frame.Url.IndexOf("vlss") == -1)
                                     {
-                                        Sleep(ev);
-                                        SendJS(frame, "document.getElementById('time').innerText = 0;");
-                                        Sleep(1);
-                                        ev = SendJSReturn(frame, @"var button_finish = document.querySelector('.btn_capt'); if (button_finish == null) { 'error_click'; } else { button_finish.click(); 'end'; }");
-                                        LinkCount++;
+                                        continue;
                                     }
-                                    step = 10;
-                                    break;
+                                    else
+                                    {
+                                        if (WaitElement(frame, "document.querySelector('.timer')", 5))
+                                        {
+                                            ev = SendJSReturn(frame, "document.querySelector('.timer').innerText");
+                                            Sleep(ev);
+                                            if(!WaitButtonClick(frame, "document.querySelector('.btn_capt')", 5))
+                                            {
+                                                SendJS(frame, "document.querySelector('.timer').innerText = 0");
+                                                WaitButtonClick(frame, "document.querySelector('.btn_capt')", 5);
+                                            }
+                                            LinkCount++;
+                                        }
+                                        step = 10;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -342,9 +357,11 @@ function click_s()
                                 Random rnd = new Random();
                                 ev = rnd.Next(0, 3).ToString();
                             }
-                            SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
-                            Sleep(5);
-                            js =
+                            SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();"); 
+                            var browserClick = WaitCreateBrowser();
+                            if (browserClick != null)
+                            {
+                                js =
 @"var timer_page = document.querySelector('#tmr');
 var timer_end_page;
 if (timer_page != null)
@@ -352,13 +369,13 @@ if (timer_page != null)
     timer_page.innerText;
 }
 else 'error_mail';";
-                            ev = SendJSReturn(1, js);
+                                ev = SendJSReturn(1, js);
 
-                            if (ev != "error_mail")
-                            {
-                                Sleep(ev);
-                                js =
-@"var range = document.querySelector('[type=""range""]');
+                                if (ev != "error_mail")
+                                {
+                                    Sleep(ev);
+                                    js =
+    @"var range = document.querySelector('[type=""range""]');
 if (range != null)
 {
     range.value = range.max;
@@ -366,8 +383,9 @@ if (range != null)
 }
 else { 'error_mail'; }";
 
-                                SendJSReturn(1, js);
-                                LinkCount++;
+                                    SendJSReturn(1, js);
+                                    LinkCount++;
+                                }
                             }
                             Sleep(2);
                             break;
