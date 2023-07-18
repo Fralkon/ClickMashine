@@ -98,9 +98,10 @@ function click_s()
                         if (ev == "wait")
                         {
                             Sleep(1);
-                            if(i == 9)
+                            if (i == 9)
                             {
                                 SendJS(mainFrame, "n++");
+                                error++;
                                 break;
                             }
                             continue;
@@ -127,7 +128,7 @@ if(document.querySelector('#capcha-tr-block').innerText.length > 3)
 else
     return 'wait';}";
                                     form.FocusTab(browserYouTube);
-                                    if("ok" != WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube))
+                                    if ("ok" != WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube))
                                     {
                                         WaitElement(browserYouTube.MainFrame, "player");
                                         ev = SendJSReturn(browserYouTube.MainFrame, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;");
@@ -139,8 +140,8 @@ else
                                 }
                             }
                             catch (Exception e) { Error(e.Message); error++; }
-                            
-                            break;                        
+
+                            break;
                         }
                     }
                 }

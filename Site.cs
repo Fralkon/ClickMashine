@@ -108,12 +108,12 @@ namespace ClickMashine
             do
             {
                 b = false;
-                foreach (Surf tuple in ListSurf)
+                for (int i = 0; i < ListSurf.Count; i++)
                 {
-                    if (tuple.Count > 5)
+                    if (ListSurf[i].Count > 5)
                     {
                         try{
-                            tuple.Count = tuple.Function();
+                            ListSurf[i].Count = ListSurf[i].Function();
                         }
                         catch(Exception e)
                         {
@@ -124,9 +124,10 @@ namespace ClickMashine
                 }
             }
             while (b);
+            for (int i = 0; i < ListSurf.Count; i++)
+                ListSurf[i].Count = 10;
         }
-    }
-    
+    }    
     abstract class Site : MyTask
     {
         protected ManagerSurf mSurf = new ManagerSurf();

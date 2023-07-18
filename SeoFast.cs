@@ -22,7 +22,7 @@ namespace ClickMashine
                 return;
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
-            mSurf.AddFunction(VisitSurf);
+            //mSurf.AddFunction(VisitSurf);
             while (true)
             {
                 int youTube = 10;
