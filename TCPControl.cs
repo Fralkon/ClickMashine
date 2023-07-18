@@ -110,12 +110,26 @@ namespace ClickMashine
     }
     class TCPControl
     {
+        public const int Port = 7000;
         public event EventHandler<EventArgTCPClient> MessageReceived;
         TcpListener Listener;
-        public TCPControl(IPEndPoint pEndPoint)
+        public TCPControl(MySQL mySQL, int IDMashine)
         {
-            Listener = new TcpListener(pEndPoint);
-            Listener.Start();            
+            IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork);
+            if (iP == null)
+                throw new Exception("Error IP server");
+
+            mySQL.SendSQL("UPDATE object SET status = 'online' , ip = '" + iP.ToString() + "' , port = " + Port.ToString() + " WHERE id = " + IDMashine.ToString());
+
+            Listener = new TcpListener(iP,Port);
+            Listener.Start();
+        }
+        ~TCPControl()
+        {
+            if (Listener != null)
+            {
+                Listener.Stop();
+            }
         }
         public async void StartListing()
         {
@@ -126,13 +140,6 @@ namespace ClickMashine
                     ClientThread(Listener.AcceptTcpClient());
                 }
             });
-        }
-        ~TCPControl()
-        {
-            if (Listener != null)
-            {
-                Listener.Stop();
-            }
         }
         private async void ClientThread(TcpClient client)
         {

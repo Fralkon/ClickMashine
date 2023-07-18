@@ -442,34 +442,31 @@ function click_s()
                             Sleep(1);
                         else if (ev == "click")
                         {
-                            Sleep(2);
-                            var browserVisit = GetBrowser(1);
-                            if (browserVisit == null)
+                            var browserVisit = WaitCreateBrowser();
+                            if (browserVisit != null)
                             {
-                                CloseСhildBrowser();
-                                continue;
-                            }
-                            js =
-@"function w() {
+                                js =
+    @"function w() {
 if(counter == 0) {
 	return timer.toString();
 }
 else { return 'wait' }};";
-                            ev = WaitFunction(browserVisit.MainFrame, "w();", js);
-                            if (ev != "errorWait")
-                            {
-                                Sleep(ev);
-                                Sleep(1);
-                                var browserVisit2 = GetBrowser(2);
-                                if (browserVisit2 == null)
+                                ev = WaitFunction(browserVisit.MainFrame, "w();", js);
+                                if (ev != "errorWait")
                                 {
-                                    CloseСhildBrowser();
-                                    continue;
+                                    Sleep(ev);
+                                    Sleep(1);
+                                    var browserVisit2 = WaitCreateBrowser();
+                                    if (browserVisit2 != null)
+                                    {
+                                        Sleep(SendJSReturn(browserVisit, "document.title.toString();"));
+                                        Sleep(1);
+                                        CloseBrowser(browserVisit2);
+                                        Count++;
+                                        Sleep(1);
+                                        break;
+                                    }
                                 }
-                                CloseBrowser(browserVisit2);
-                                Count++;
-                                Sleep(1);
-                                break;
                             }
                         }
                     }
@@ -642,7 +639,7 @@ if(img_captcha != null)
     'antiBot';
 else 'notAntiBot';";
             int iteration = 0;
-            while (SendJSReturn(browser.MainFrame, js) != "antiBot")
+            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
             {
                 if (iteration == 10)
                     return false;

@@ -9,6 +9,8 @@ using OpenCvSharp.Extensions;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Data;
+using System.Net;
+using System.Net.Sockets;
 
 namespace ClickMashine
 {
@@ -32,7 +34,7 @@ namespace ClickMashine
             }
             using (DataTable settingData = new MySQL("clicker").GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
             {
-                if(settingData.Rows.Count > 0)
+                if (settingData.Rows.Count > 0)
                 {
                     settings.UserAgent = settingData.Rows[0]["user_agent"].ToString();
                     settings.AcceptLanguageList = settingData.Rows[0]["language"].ToString();
@@ -58,6 +60,7 @@ namespace ClickMashine
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             autoClicker.Close();
+            new MySQL("clicker").SendSQL("UPDATE object SET status = 'offline' WHERE id = " + ID.ToString());
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -70,7 +73,7 @@ namespace ClickMashine
             lock (lockTabFocus)
             {
                 if (this.WindowState == FormWindowState.Minimized)
-                    this.WindowState = FormWindowState.Maximized;                
+                    this.WindowState = FormWindowState.Maximized;
                 browser.GetHost().SetFocus(true);
                 var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
                 if (controlBrowser != null)
@@ -92,7 +95,7 @@ namespace ClickMashine
         {
             lock (lockTabFocus)
             {
-                if(this.WindowState == FormWindowState.Minimized)
+                if (this.WindowState == FormWindowState.Minimized)
                     this.WindowState = FormWindowState.Maximized;
                 browser.GetHost().SetFocus(true);
                 var controlBrowser = Control.FromChildHandle(browser.GetHost().GetWindowHandle());
@@ -125,7 +128,8 @@ namespace ClickMashine
             int width = 0, height = 0;
             IntPtr hwnd = IntPtr.Zero;
             IntPtr dc = IntPtr.Zero;
-            c.Invoke(new MethodInvoker(() => {
+            c.Invoke(new MethodInvoker(() =>
+            {
                 width = c.ClientSize.Width;
                 height = c.ClientSize.Height;
                 hwnd = c.Handle;
@@ -161,7 +165,8 @@ namespace ClickMashine
             int width = 0, height = 0;
             IntPtr hwnd = IntPtr.Zero;
             IntPtr dc = IntPtr.Zero;
-            c.Invoke(new MethodInvoker(() => {
+            c.Invoke(new MethodInvoker(() =>
+            {
                 width = c.ClientSize.Width;
                 height = c.ClientSize.Height;
                 hwnd = c.Handle;

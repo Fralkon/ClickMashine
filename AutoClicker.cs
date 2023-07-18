@@ -11,8 +11,8 @@ namespace ClickMashine
         List<Site> siteList = new List<Site>();
         public AutoClicker(Form1 form)
         {
-            mySQL = new MySQL("clicker"); 
-            TCPControl = new TCPControl(IPManager.GetEndPoint(mySQL, form.ID));
+            mySQL = new MySQL("clicker");
+            TCPControl = new TCPControl(mySQL, form.ID);
             TCPControl.MessageReceived += TCPControl_MessageReceived;
             TCPControl.StartListing();
             try
