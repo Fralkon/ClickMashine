@@ -23,6 +23,7 @@ namespace ClickMashine
         public string PATH_SETTING = @"C:/ClickMashine/Settings/";
         public Form1(string[] args)
         {
+
             InitializeComponent();
             CefSettings settings = new CefSettings();
             if (args.Length > 0) { Step = int.Parse(args[0]); }

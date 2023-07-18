@@ -22,7 +22,7 @@ namespace ClickMashine
                 return;
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
-            //mSurf.AddFunction(VisitSurf);
+            mSurf.AddFunction(VisitSurf);
             while (true)
             {
                 int youTube = 10;
@@ -381,7 +381,7 @@ go();";
     beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
     success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
 });";
-                                ev = SendJSReturn(browserSurf.MainFrame, ev);
+                                SendJS(browserSurf.MainFrame, ev);
                                 if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
                                 {
                                     Count++;
