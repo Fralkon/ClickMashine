@@ -25,7 +25,7 @@ namespace ClickMashine
 				{
 					Sleep(2);
                     ev = SendJSReturn(browsers[0],
-@"if(document.querySelector(""#h-captcha"")) 'h-captcha';
+@"if(document.querySelector(""#anchor"")) 'anchor';
 else if(document.querySelector(""#login_cap"")) 'login_cap';");
 					if (ev == "login_cap")
 					{
@@ -38,6 +38,10 @@ document.querySelector('#vhod1').click();";
 						SendJS(browsers[0], js);
 						eventLoadPage.WaitOne();
 						Sleep(3);
+					}
+					else if(ev == "anchor")
+					{
+
 					}
 					else
 					{
@@ -229,5 +233,36 @@ function click_s()
 			}
 			return Count;
 		}
-	}
+
+        protected bool Anchor(IBrowser browser, string captcha, string picture, string input, string button)
+        {
+            string js =
+@"var img_captcha = " + captcha + @";
+if(img_captcha != null)
+    'antiBot';
+else 'notAntiBot';";
+            int iteration = 0;
+            SendJS(browser, captcha + ".click();");
+            if (!WaitElement(browser, picture))
+                return false;
+            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
+            {
+
+                if (iteration == 10)
+                    return false;
+                string jsAntiBot = String.Empty;
+                foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, picture), ""))
+                    jsAntiBot += input + "[" + ch + "].click();";
+                jsAntiBot += button + ";";
+                SendJS(browser.MainFrame, jsAntiBot);
+                Sleep(4);
+                iteration++;
+
+                eventLoadPage.Reset();
+                browser.Reload();
+                eventLoadPage.WaitOne(5000);
+            }
+            return true;
+        }
+    }
 }

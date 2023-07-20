@@ -181,39 +181,13 @@ function click_s()
 			int Count = 0;
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
-            for (int i = 0; i < 5; i++)
-            {
-                string jsAntiBot =
-@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
-if(captha_lab.length != 0){
-    'captcha';
-}
-else 'ok';";
-                string evAntiBot = SendJSReturn(0, jsAntiBot);
-                CM(evAntiBot);
-				if (evAntiBot == "ok")
-					break;
-                else if (evAntiBot == "error")
-                {
-                    CM("ERROR");
-                    Error("Ошибка капчи");
-					return -1;
-                }
-                else
-                {
-                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-					
-                    string answer_telebot = SendQuestion(img, "");
 
-					jsAntiBot = "";
-                    foreach (char ch in answer_telebot)
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "document.querySelector('.btn').click();";
-
-                    SendJS(0, jsAntiBot);
-                    Sleep(5);
-                }
-            }
+			if(!OutCaptchaLab(browsers[0], "document.querySelectorAll('.out-capcha-lab')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+			{
+				Error("Error captcha youtube");
+				return Count;
+			}
+			
             IFrame main_frame = browsers[0].MainFrame;
 			SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
 if(loadPage != null) loadPage.click();");

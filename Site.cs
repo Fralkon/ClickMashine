@@ -505,17 +505,17 @@ get_mail();";
         }
         protected bool WaitElement(IFrame frame, string element, int sec = 10)
         {
-            string js_wait =
-@"function waitElement()
+            string JS =
+@"function WaitElement()
 {
     var element = " + element + @";
     if (element != null) { return 'end'; }
     else return 'wait';
-}";
-            SendJS(frame, js_wait);
+}
+WaitElement();";
             for (int i = 0; i < sec; i++)
             {
-                string? ev_js_wait = SendJSReturn(frame, "waitElement();");
+                string? ev_js_wait = SendJSReturn(frame, JS);
                 if (ev_js_wait == null)
                     continue;
                 if (ev_js_wait == "end")
@@ -523,6 +523,10 @@ get_mail();";
                 Thread.Sleep(1000);
             }
             return false;
+        }
+        protected bool WaitElement(IBrowser browser, string element, int sec = 10)
+        {
+            return WaitElement(browser.MainFrame, element, sec);
         }
         protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
         {
@@ -562,6 +566,31 @@ else 'errorImg';";
         protected string SendQuestion(Bitmap image, string text)
         {
             return TCPMessageManager.SendQuestion(image, text, Type);
+        }
+        protected bool OutCaptchaLab(IBrowser browser,string captcha, string input, string button)
+        {
+            string js = 
+@"var img_captcha = "+captcha+@";
+if(img_captcha != null)
+    'antiBot';
+else 'notAntiBot';";
+            int iteration = 0;
+            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
+            {
+                if (iteration == 10)
+                    return false;
+                string jsAntiBot = String.Empty;
+                foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, captcha), ""))
+                    jsAntiBot += input + "[" + ch + "].checked = true;";
+                jsAntiBot += button +";";
+                SendJS(browser.MainFrame, jsAntiBot);
+                Sleep(4);
+                iteration++;
+                eventLoadPage.Reset();
+                browser.Reload();
+                eventLoadPage.WaitOne(5000);
+            }
+            return true;
         }
     }
 }

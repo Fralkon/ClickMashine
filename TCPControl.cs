@@ -111,7 +111,7 @@ namespace ClickMashine
     class TCPControl
     {
         public const int Port = 7000;
-        public event EventHandler<EventArgTCPClient> MessageReceived;
+        public event EventHandler<EventArgTCPClient> ?MessageReceived;
         TcpListener Listener;
         public TCPControl(MySQL mySQL, int IDMashine)
         {
