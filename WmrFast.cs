@@ -57,7 +57,9 @@ document.querySelector('#vhod1').click();";
 		{
 			Initialize();
 			if (!Auth(auth))
-				return;
+			{
+				waitHandle.WaitOne();
+			}
 			mSurf.AddFunction(YouTubeSurf);
 			//mSurf.AddFunction(ClickSurf);
 			while (true)

@@ -76,8 +76,7 @@ namespace ClickMashine
         {
             TCPMessage message = new TCPMessage(text, IDMashine, TypeMessage.Error, site);
             SendTCPMesage(message);
-        }
-        
+        }        
         private EventWaitHandle eventTCPHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
     }
     class TCPMessage

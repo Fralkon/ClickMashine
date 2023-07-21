@@ -19,7 +19,10 @@ namespace ClickMashine
         {
             Initialize();
             if (!Auth(auth))
-                return;
+            {
+                if (!waitHandle.WaitOne())
+                    return;
+            }
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
             mSurf.AddFunction(VisitSurf);

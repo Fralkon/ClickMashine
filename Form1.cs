@@ -16,7 +16,6 @@ namespace ClickMashine
 {
     public partial class Form1 : Form
     {
-        object lockTabFocus = new object();
         AutoClicker? autoClicker;
         public int Step { private set; get; }
         public int ID { private set; get; }
@@ -70,7 +69,7 @@ namespace ClickMashine
         }
         public void FocusTab(IBrowser browser)
         {
-            lock (lockTabFocus)
+            lock (tabControl1)
             {
                 if (this.WindowState == FormWindowState.Minimized)
                     this.WindowState = FormWindowState.Maximized;
@@ -93,7 +92,7 @@ namespace ClickMashine
         }
         public Bitmap MakeScreenshot(IBrowser browser, Rectangle rect)
         {
-            lock (lockTabFocus)
+            lock (tabControl1)
             {
                 if (this.WindowState == FormWindowState.Minimized)
                     this.WindowState = FormWindowState.Maximized;
@@ -110,13 +109,13 @@ namespace ClickMashine
             if (parentControl != null)
             {
                 tabControl1.SelectedTab = parentControl;
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 return ControlSnapshot.Snapshot(parentControl, rect);
             }
             else
             {
                 tabControl1.SelectedTab = (TabPage)control;
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 return ControlSnapshot.Snapshot(control, rect);
             }
         }

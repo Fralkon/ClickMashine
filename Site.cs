@@ -5,9 +5,18 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using OpenCvSharp.Internal.Vectors;
 using ClickMashine_11;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ClickMashine
 {
+    enum StatusSite { 
+        online,
+        offline,
+        wait,
+        error,
+        login
+    }
     enum EnumTypeSite
     {
         None,
@@ -143,6 +152,9 @@ namespace ClickMashine
         protected Auth ?auth;
         public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL = new MySQL("clicker");
+        private ToolStripMenuItem menuItemSite;
+        private ToolStripComboBox siteStripComboBox;
+        protected EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         public Site(Form1 form, Auth auth)
         {
             this.auth = auth;
@@ -163,8 +175,29 @@ namespace ClickMashine
             lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
             main_browser.LifeSpanHandler = lifeSplanHandler;
+
+            menuItemSite = new ToolStripMenuItem();
+            menuItemSite.Name = Type.ToString();
+            menuItemSite.Size = new Size(180, 22);
+            menuItemSite.Text = Type.ToString();
+
+            siteStripComboBox = new ToolStripComboBox()
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Name = Type.ToString(),
+                Size = new Size(121, 23)
+            };
+            foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
+            {
+                siteStripComboBox.Items.Add(flavourName);
+            }
+            siteStripComboBox.SelectedIndexChanged += SiteStripComboBox_TextChanged;
+
+            menuItemSite.DropDownItems.Add(siteStripComboBox);
+
             form.Invoke(new Action(() =>
             {
+                form.waitToolStripMenuItem.DropDownItems.Add(menuItemSite);
                 TabPage newTabPage = new TabPage();
                 newTabPage.Text = Type.ToString();
                 newTabPage.BorderStyle = BorderStyle.None;
@@ -174,8 +207,27 @@ namespace ClickMashine
                 form.tabControl1.TabPages.Add(newTabPage);
                 form.tabControl1.SelectedTab = newTabPage;
             }));
+
             eventLoadPage.WaitOne(5000);
         }
+        private void SiteStripComboBox_TextChanged(object? sender, EventArgs e)
+        {
+            ToolStripComboBox? item = sender as ToolStripComboBox;
+            if(item != null)
+            {
+                switch ((StatusSite)item.SelectedIndex)
+                {
+                    case StatusSite.online:
+                        waitHandle.Set();
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Error");
+            }
+        }
+
         protected void SetBDInfo(int val)
         {
             mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());

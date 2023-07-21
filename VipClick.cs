@@ -22,9 +22,9 @@ namespace ClickMashine
 			{
 				Sleep(2);
 				string js =
-						@"document.querySelector('#login').value = '" + auth.Login + @"';
-										document.querySelector('#pwd').value = '" + auth.Password + @"';
-										document.querySelector('#login-form > center > button').click();";
+@"document.querySelector('#login').value = '" + auth.Login + @"';
+document.querySelector('#pwd').value = '" + auth.Password + @"';
+document.querySelector('#login-form > center > button').click();";
 				eventLoadPage.Reset();
 				SendJS(0, js);
 				eventLoadPage.WaitOne(5000);
