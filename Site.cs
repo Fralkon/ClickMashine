@@ -146,6 +146,7 @@ namespace ClickMashine
         protected List<IBrowser> browsers = new List<IBrowser>();
         protected IBrowser ?LastBrowser;
         protected string homePage = String.Empty;
+        protected string HostName = String.Empty;
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser ?main_browser;
         public MyLifeSplanHandler ?lifeSplanHandler;
@@ -227,7 +228,6 @@ namespace ClickMashine
                 MessageBox.Show("Error");
             }
         }
-
         protected void SetBDInfo(int val)
         {
             mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
@@ -239,6 +239,10 @@ namespace ClickMashine
         protected void SetBDInfoStop()
         {
             mySQL.SendSQL("UPDATE auth SET status = 'Activate' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        }
+        protected void WaitConnect()
+        {
+
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {

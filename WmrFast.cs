@@ -1,5 +1,6 @@
 ﻿using CefSharp;
 using OpenCvSharp;
+using Windows.Networking;
 using Size = OpenCvSharp.Size;
 
 namespace ClickMashine
@@ -10,7 +11,8 @@ namespace ClickMashine
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
-			Type = EnumTypeSite.WmrFast; 
+			HostName = "wmrfast.com";
+            Type = EnumTypeSite.WmrFast; 
 			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
 		public override bool Auth(Auth auth)
@@ -40,9 +42,9 @@ document.querySelector('#vhod1').click();";
 						Sleep(3);
 					}
 					else if(ev == "anchor")
-					{
-
-					}
+                    {
+                        return false;
+                    }
 					else
 					{
 						return false;
@@ -55,6 +57,7 @@ document.querySelector('#vhod1').click();";
 		}
 		protected override void StartSurf()
 		{
+			base.StartSurf();
 			Initialize();
 			if (!Auth(auth))
 			{
