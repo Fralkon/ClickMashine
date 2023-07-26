@@ -27,9 +27,9 @@ namespace ClickMashine
 			if (!Auth(auth))
 				return;
 			mSurf.AddFunction(YouTubeSurf);
-			mSurf.AddFunction(RuTubeSurf);
-			mSurf.AddFunction(ClickSurf);
-			mSurf.AddFunction(VisitSurf);
+			//mSurf.AddFunction(RuTubeSurf);
+			//mSurf.AddFunction(ClickSurf);
+			//mSurf.AddFunction(VisitSurf);
 			while (true)
 			{
 				mSurf.GoSurf();
@@ -42,8 +42,14 @@ namespace ClickMashine
 			LoadPage(0, "https://profitcentr.com/");
 			SendJS(0, "document.querySelectorAll('#mnu_tblock1 > a')[0].click();");
 			Sleep(4);
-			//AntiBot();
-			string js =
+
+            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+            {
+                Error("Error captcha youtube");
+                return Count;
+            }
+
+            string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function surf()
 {
@@ -137,8 +143,14 @@ else
 			LoadPage(0, "https://profitcentr.com/");
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
 			Sleep(4);
-			//AntiBot();
-			string js =
+
+            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+            {
+                Error("Error captcha youtube");
+                return Count;
+            }
+
+            string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function click_s()
 {
@@ -182,12 +194,12 @@ function click_s()
 			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
 			Sleep(4);
 
-			if(!OutCaptchaLab(browsers[0], "document.querySelectorAll('.out-capcha-lab')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
-			{
-				Error("Error captcha youtube");
-				return Count;
-			}
-			
+            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+            {
+                Error("Error captcha youtube");
+                return Count;
+            }
+
             IFrame main_frame = browsers[0].MainFrame;
 			SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
 if(loadPage != null) loadPage.click();");
@@ -269,38 +281,45 @@ else 'end';");
 			int Count = 0;
             SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').click();");
             Sleep(4);
-            for (int i = 0; i < 5; i++)
+//            for (int i = 0; i < 5; i++)
+//            {
+//                string jsAntiBot =
+//@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
+//if(captha_lab.length != 0){
+//    'captcha';
+//}
+//else 'ok';";
+//                string evAntiBot = SendJSReturn(0, jsAntiBot);
+//                CM(evAntiBot);
+//                if (evAntiBot == "ok")
+//                    break;
+//                else if (evAntiBot == "error")
+//                {
+//                    Error("Ошибка капчи");
+//                    return -1;
+//                }
+//                else
+//                {
+//                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+
+//                    string answer_telebot = SendQuestion(img,"");
+
+//                    jsAntiBot = "";
+//                    foreach (char ch in answer_telebot)
+//                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+//                    jsAntiBot += "document.querySelector('.btn').click();";
+
+//                    SendJS(0, jsAntiBot);
+//                    Sleep(5);
+//                }
+//            }
+
+            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
-                string jsAntiBot =
-@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
-if(captha_lab.length != 0){
-    'captcha';
-}
-else 'ok';";
-                string evAntiBot = SendJSReturn(0, jsAntiBot);
-                CM(evAntiBot);
-                if (evAntiBot == "ok")
-                    break;
-                else if (evAntiBot == "error")
-                {
-                    Error("Ошибка капчи");
-                    return -1;
-                }
-                else
-                {
-                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-
-                    string answer_telebot = SendQuestion(img,"");
-
-                    jsAntiBot = "";
-                    foreach (char ch in answer_telebot)
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "document.querySelector('.btn').click();";
-
-                    SendJS(0, jsAntiBot);
-                    Sleep(5);
-                }
+                Error("Error captcha youtube");
+                return Count;
             }
+
             IFrame main_frame = browsers[0].MainFrame;
             SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
 if(loadPage != null) loadPage.click();");
@@ -380,7 +399,6 @@ else 'end';");
                 Sleep(1);
             }
 			return Count;
-
 		}
 		private int MailSurf()
 		{

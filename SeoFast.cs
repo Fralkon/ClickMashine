@@ -32,6 +32,7 @@ namespace ClickMashine
                 int youTube = 10;
                 while (youTube > 9)
                 {
+                    //mSurf.GoSurf();
                     youTube = 0;
                     try
                     {
@@ -321,7 +322,7 @@ else
             int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_surfing?go");
             Sleep(2);
-            //CheckCaptcha();
+            AntiBotImage(browsers[0]);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -408,7 +409,8 @@ go();";
         {
             int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_transitions");
-            Sleep(5);
+            Sleep(2);
+            AntiBotImage(browsers[0]);
             string js =
            @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -484,8 +486,8 @@ else { return 'wait' }};";
         {
             int Count = 0;
             LoadPage(0, "https://seo-fast.ru/work_mails");
-            Sleep(5);
-            //CheckCaptcha();
+            Sleep(2);
+            AntiBotImage(browsers[0]);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function surf()
