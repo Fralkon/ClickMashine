@@ -57,7 +57,6 @@ document.querySelector('#vhod1').click();";
 		}
 		protected override void StartSurf()
 		{
-			base.StartSurf();
 			Initialize();
 			if (!Auth(auth))
 			{
@@ -238,7 +237,6 @@ function click_s()
 			}
 			return Count;
 		}
-
         protected bool Anchor(IBrowser browser, string captcha, string picture, string input, string button)
         {
             string js =
@@ -268,6 +266,26 @@ else 'notAntiBot';";
                 eventLoadPage.WaitOne(5000);
             }
             return true;
+        }
+        private void TakeMoney(IBrowser browser)
+        {
+            int money = int.Parse(SendJSReturn(browser, "document.querySelector('#osn_money').innerText;"));
+            if (money >= 30)
+            {
+                LoadPage(browser, "https://wmrfast.com/convert_wm.php");
+                string js =
+@"var payeer_box = document.querySelector('#echoall > table > tbody > tr:nth-child(2) > td:nth-child(2) a');
+if(payeer_box != null) payeer_box.click(); 'online';
+else 'offline';";
+                if (SendJSReturn(browser, js) == "online")
+                {
+                    eventLoadPage.Reset();
+                    if (eventLoadPage.WaitOne(10000))
+                    {
+                        js = "all_money();i_not_robot();payment_money();";
+                    }
+                }
+            }
         }
     }
 }

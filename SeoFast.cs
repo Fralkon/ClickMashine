@@ -23,6 +23,7 @@ namespace ClickMashine
                 if (!waitHandle.WaitOne())
                     return;
             }
+            TakeMoney(browsers[0]);
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
             mSurf.AddFunction(VisitSurf);
@@ -658,6 +659,26 @@ else 'notAntiBot';";
                 eventLoadPage.WaitOne(5000);
             }
             return true;
+        }
+        private void TakeMoney(IBrowser browser)
+        {
+            int money = int.Parse(SendJSReturn(browser, "document.querySelector('#ajax_load > div > div:nth-child(3) > span > span:nth-child(1)').innerText"));
+            if (money >= 30)
+            {
+                LoadPage(browser, "https://seo-fast.ru/payment_user");
+                string js =
+@"var payeer_box = document.querySelector('#echoall > table > tbody > tr:nth-child(2) > td:nth-child(2) a');
+if(payeer_box != null) payeer_box.click(); 'online';
+else 'offline';";
+                if (SendJSReturn(browser, js) == "online")
+                {
+                    eventLoadPage.Reset();
+                    if (eventLoadPage.WaitOne(10000))
+                    {
+                        js = "all_money();i_not_robot();payment_money();";
+                    }
+                }
+            }
         }
     }
 }

@@ -189,9 +189,8 @@ namespace ClickMashine
                 Size = new Size(121, 23)
             };
             foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
-            {
                 siteStripComboBox.Items.Add(flavourName);
-            }
+
             siteStripComboBox.SelectedIndexChanged += SiteStripComboBox_TextChanged;
 
             menuItemSite.DropDownItems.Add(siteStripComboBox);
