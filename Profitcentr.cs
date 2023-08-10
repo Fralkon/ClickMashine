@@ -191,10 +191,10 @@ function click_s()
 		private int YouTubeSurf()
 		{
 			int Count = 0;
-			SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').click();");
+			var mainBrowser = browsers[0];
+			LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href"));
 			Sleep(4);
-
-            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+            if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
                 Error("Error captcha youtube");
                 return Count;
@@ -223,7 +223,7 @@ else 'end';");
 					surf_cl[n].querySelector('span').click(); return 'click';
 				}
 			}
-			function cl()
+			function surf()
 			{
 				var start_ln = surf_cl[n].querySelector('.youtube-button');
 				if (start_ln != null) { 
@@ -235,6 +235,7 @@ else 'end';");
 			SendJS(main_frame, js_links);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(main_frame, "click_s();");
 				if (ev == "end_surf")
 				{
@@ -244,22 +245,20 @@ else 'end';");
 				{
 					for (int i = 0; i < 10; i++)
 					{
-						ev = SendJSReturn(main_frame, "cl();");
+						ev = SendJSReturn(main_frame, "surf();");
 						if (ev == "surf")
                         {
-                            Sleep(2);
-                            var browserYouTube = GetBrowser(1);
+                            var browserYouTube = WaitCreateBrowser();
 							if (browserYouTube == null)
-								break ;
+								break;
 							IFrame yotube_frame = browserYouTube.MainFrame;
 							ev = SendJSReturn(yotube_frame,
 @"c = true;  b = true; document.querySelector('#tmr').innerText;");
 							if (ev != "error")
 							{
 								Sleep(ev);
-								if(!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
-									Error("Error end youtube watch");
-								Count++;
+								if(WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+									Count++;
 								Sleep(2);
 							}
 							break;
@@ -268,9 +267,16 @@ else 'end';");
 							Sleep(1);
 						else if (ev == "continue")
 							break;
+						if(i == 9)
+						{
+							SendJS(main_frame, "n++;");
+						}
 					}
 				}
-				else MessageBox.Show("Ошибка блять");
+				else
+				{
+					Sleep(1);
+				}
 				CloseСhildBrowser();
 				Sleep(1);
 			}

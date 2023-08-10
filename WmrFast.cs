@@ -1,7 +1,4 @@
 ﻿using CefSharp;
-using OpenCvSharp;
-using Windows.Networking;
-using Size = OpenCvSharp.Size;
 
 namespace ClickMashine
 {
@@ -28,13 +25,15 @@ namespace ClickMashine
 					Sleep(2);
                     ev = SendJSReturn(browsers[0],
 @"if(document.querySelector(""#anchor"")) 'anchor';
-else if(document.querySelector(""#login_cap"")) 'login_cap';");
+else if(document.querySelector(""#login_cap"")) 'login_cap';
+else 'wait_login';");
+					SendJS(browsers[0],
+@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
+document.querySelector('#vhpass').value = '" + auth.Password + @"';");
 					if (ev == "login_cap")
 					{
 						string js =
-@"document.querySelector('#vhusername').value = '" + auth.Login + @"';
-document.querySelector('#vhpass').value = '" + auth.Password + @"';
-document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
+@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
 document.querySelector('#vhod1').click();";
 						eventLoadPage.Reset();
 						SendJS(browsers[0], js);
@@ -62,12 +61,13 @@ document.querySelector('#vhod1').click();";
 			{
 				waitHandle.WaitOne();
 			}
+			TakeMoney(browsers[0]);
 			mSurf.AddFunction(YouTubeSurf);
-			//mSurf.AddFunction(ClickSurf);
-			while (true)
-			{
-				mSurf.GoSurf();
-				Sleep(300);
+            //mSurf.AddFunction(ClickSurf);
+            while (true)
+            {
+                mSurf.GoSurf();
+                Sleep(300);
 			}
 		}
 		private int YouTubeSurf()
@@ -269,12 +269,14 @@ else 'notAntiBot';";
         }
         private void TakeMoney(IBrowser browser)
         {
-            int money = int.Parse(SendJSReturn(browser, "document.querySelector('#osn_money').innerText;"));
+			string ret = SendJSReturn(browsers[0], "document.querySelector('#osn_money').innerText;");
+			CM(ret);
+            double.TryParse(ret,out double money);
             if (money >= 30)
             {
                 LoadPage(browser, "https://wmrfast.com/convert_wm.php");
                 string js =
-@"var payeer_box = document.querySelector('#echoall > table > tbody > tr:nth-child(2) > td:nth-child(2) a');
+@"var payeer_box = document.querySelector('#pay_payeer');
 if(payeer_box != null) payeer_box.click(); 'online';
 else 'offline';";
                 if (SendJSReturn(browser, js) == "online")
@@ -282,7 +284,8 @@ else 'offline';";
                     eventLoadPage.Reset();
                     if (eventLoadPage.WaitOne(10000))
                     {
-                        js = "all_money();i_not_robot();payment_money();";
+                        SendJS(browser,"document.querySelector('#pay_payeer').click();");
+						Sleep(10);
                     }
                 }
             }

@@ -174,7 +174,7 @@ function click_s()
                     }
                     else if (ev == "click")
                     {
-                        WaitCreateBrowser(1);
+                        WaitCreateBrowser();
                         Sleep(7);
                         Count++;
                     }
@@ -221,7 +221,7 @@ function click_s()
                     }
                     else if (ev == "click")
                     {
-                        WaitCreateBrowser(1);
+                        WaitCreateBrowser();
                         Sleep(2);
                         SendJS(browsers[1].MainFrame, @"loadFrame();
 $(window).on(""focus"", function () {   

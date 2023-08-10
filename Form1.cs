@@ -1,16 +1,8 @@
-﻿using System;
-using System.Windows.Forms;
-using CefSharp;
+﻿using CefSharp;
 using CefSharp.WinForms;
-using System.Threading;
-using System.Xml.Linq;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Data;
-using System.Net;
-using System.Net.Sockets;
 
 namespace ClickMashine
 {

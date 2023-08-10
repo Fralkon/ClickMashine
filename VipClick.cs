@@ -179,7 +179,7 @@ function click_s()
 					break;
 				else
 				{
-					WaitCreateBrowser(1);
+					WaitCreateBrowser();
 					Sleep(2);
 					Sleep(ev);
 					Count++;

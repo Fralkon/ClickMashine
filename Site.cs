@@ -306,17 +306,6 @@ namespace ClickMashine
             Sleep(1);
             return browsers[id];
         }
-        protected bool WaitCreateBrowser(int id)
-        {
-            eventLoadPage.Reset();
-            if (browsers.Count <= id)
-                if (!eventBrowserCreated.WaitOne(3000))
-                    if (!eventLoadPage.WaitOne(5000))
-                    {
-                    }
-            CM("End create wait");
-            return true;
-        }
         protected IBrowser? WaitCreateBrowser()
         {
             eventLoadPage.Reset();

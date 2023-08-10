@@ -72,7 +72,8 @@ namespace ClickMashine
                     }
                 }
                 //SetBDInfo(youTube);
-                mSurf.GoSurf();
+                //mSurf.GoSurf();
+                Sleep(600);
             }
         }
         public override bool Auth(Auth auth)
@@ -265,10 +266,7 @@ function click_s()
                 {
                     IBrowser? browserYouTube = WaitCreateBrowser();
                     if (browserYouTube == null)
-                    {
-                        CloseСhildBrowser();
                         continue;
-                    }
                     try
                     {
                         YouTubeWatch(browserYouTube);
@@ -283,6 +281,7 @@ function click_s()
                 }
                 Sleep(1);
             }
+            CloseСhildBrowser();
             return count;
         }
         private async void YouTubeWatch(IBrowser browserYouTube)
@@ -360,8 +359,7 @@ function click_s()
                             Sleep(1);
                         else if (ev == "click")
                         {
-                            Sleep(2);
-                            var browserSurf = GetBrowser(1);
+                            var browserSurf = WaitCreateBrowser();
                             if (browserSurf == null)
                                 continue;
                             js =
@@ -677,7 +675,7 @@ else 'offline';";
                     eventLoadPage.Reset();
                     if (eventLoadPage.WaitOne(10000))
                     {
-                        js = "all_money();i_not_robot();payment_money();";
+                        SendJS(browser,"all_money();i_not_robot();payment_money();");
                     }
                 }
             }
