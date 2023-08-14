@@ -242,6 +242,7 @@ else 'ok';";
             AntiBotImage(browsers[0]);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
+var youtube_premium = null;
 function click_s()
 {
     if (n >= surf_cl.length) return 'end_surf';
@@ -249,8 +250,30 @@ function click_s()
     {
         n++; return 'continue';
     }
-    else { surf_cl[n].click(); n++; return 'surf'; }
-}";
+    else { 
+        if(surf_cl[n].parentElement.className.indexOf('area_y') != -1){
+            youtube_premium = surf_cl[n].parentElement.parentElement;
+            if(youtube_premium == null){n++;return 'continue';}
+            surf_cl[n].click(); 
+            n++; 
+            return 'surf_premium';
+        }       
+        else{
+            surf_cl[n].click(); 
+            n++; 
+            return 'surf'; 
+        }
+    }
+}
+function surf(){
+    var start_ln = youtube_premium.querySelector('.start_link_youtube');
+	if (start_ln != null) { 
+		if(start_ln.innerText != 'Приступить к просмотру') {n++; return 'continue';}
+		else {start_ln.click(); n++; return 'surf'; }
+	}
+	else { return 'sec_wait'; }
+}
+";
 
             SendJS(0, js);
             Thread.Sleep(200);
@@ -278,6 +301,40 @@ function click_s()
                     }
                     count++;
                     Sleep(5);
+                }
+                else if(ev == "surf_premium")
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ev = SendJSReturn(0, "surf();");
+                        if (ev == "surf")
+                        {
+                            IBrowser? browserYouTube = WaitCreateBrowser();
+                            if (browserYouTube == null)
+                                continue;
+                            try
+                            {
+                                YouTubeWatch(browserYouTube);
+                            }
+                            catch (Exception ex)
+                            {
+                                Error("Error watch youtube task.");
+                                browserYouTube.GetHost().CloseBrowser(true);
+                            }
+                            count++;
+                            Sleep(5);
+                            break;
+                        }
+                        else if (ev == "sec_wait")
+                            Sleep(1);
+                        else if (ev == "continue")
+                            break;
+                        if (i == 9)
+                        {
+                            SendJS(0, "n++;");
+                            break;
+                        }
+                    }
                 }
                 Sleep(1);
             }
