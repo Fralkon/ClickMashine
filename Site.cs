@@ -30,6 +30,10 @@ namespace ClickMashine
         SeoClub,
         VipClick
     }
+    enum EnumAnswerBot { 
+        replace,
+        exit
+    }
     class Auth
     {
         public string Login { get; set; }
@@ -624,11 +628,15 @@ else 'notAntiBot';";
                 if (iteration == 10)
                     return false;
                 string jsAntiBot = String.Empty;
-                foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, captcha), ""))
-                    jsAntiBot += input + "[" + ch + "].checked = true;";
-                jsAntiBot += button +";";
-                SendJS(browser.MainFrame, jsAntiBot);
-                Sleep(4);
+                string answerBot = SendQuestion(GetImgBrowser(browser.MainFrame, captcha), "");
+                if (answerBot != "upload")
+                {
+                    foreach (char ch in answerBot)
+                        jsAntiBot += input + "[" + ch + "].checked = true;";
+                    jsAntiBot += button + ";";
+                    SendJS(browser.MainFrame, jsAntiBot);
+                    Sleep(4);
+                }
                 iteration++;
                 eventLoadPage.Reset();
                 browser.Reload();

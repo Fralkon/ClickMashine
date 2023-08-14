@@ -173,7 +173,7 @@ function click_s()
 	else
 	{
 		var link = surf_cl[n];
-		if(link.querySelectorAll('td')[2].querySelector('a')==null || link.getBoundingClientRect().height == 0)
+		if(link.querySelectorAll('td')[2]==null || link.getBoundingClientRect().height == 0)
 					{n++; return 'continue';}
 		else {link.querySelector('a').click(); n++; return link.querySelectorAll('td')[1].querySelectorAll('div')[1].innerText;}
 	}
@@ -325,7 +325,7 @@ function click_s()
                             if (ev == "errorMail")
                             {
                                 Random rnd = new Random();
-                                ev = rnd.Next(0, 3).ToString();
+                                ev = rnd.Next(0, 2).ToString();
                             }
                             SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
                             var browser = WaitCreateBrowser();

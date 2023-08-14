@@ -704,11 +704,15 @@ else 'notAntiBot';";
                 if (iteration == 10)
                     return false;
                 string jsAntiBot = String.Empty;
-                foreach (char ch in SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), ""))
-                    jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                jsAntiBot += "document.querySelector('.sf_button').click();";
-                SendJS(browser.MainFrame, jsAntiBot);
-                Sleep(4);
+                string answerBot = SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), "");
+                if (answerBot != "replace")
+                {
+                    foreach (char ch in answerBot)
+                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+                    jsAntiBot += "document.querySelector('.sf_button').click();";
+                    SendJS(browser.MainFrame, jsAntiBot);
+                    Sleep(4);
+                }
                 iteration++;
                 eventLoadPage.Reset();
                 browser.Reload();
