@@ -26,11 +26,11 @@ namespace ClickMashine
 			Initialize();
 			if (!Auth(auth))
 				return;
-			mSurf.AddFunction(YouTubeSurf);
-			//mSurf.AddFunction(RuTubeSurf);
-			//mSurf.AddFunction(ClickSurf);
-			//mSurf.AddFunction(VisitSurf);
-			while (true)
+			mSurf.AddFunction(ClickSurf);
+			mSurf.AddFunction(VisitSurf);
+            mSurf.AddFunction(YouTubeSurf);
+            mSurf.AddFunction(RuTubeSurf);
+            while (true)
 			{
 				mSurf.GoSurf();
 				Sleep(600);
@@ -377,17 +377,23 @@ else 'end';");
                             var browserYouTube = WaitCreateBrowser();
 							if (browserYouTube != null)
 							{
-								IFrame yotube_frame = browserYouTube.MainFrame;
-								ev = SendJSReturn(yotube_frame,
+								IFrame youtubeFrame = browserYouTube.MainFrame;
+								if(!WaitElement(youtubeFrame, "document.querySelector('#tmr')"))
+								{
+									Error("YouTube error");
+									break;
+								}
+								ev = SendJSReturn(youtubeFrame,
 	@"c = true; b = true; document.querySelector('#tmr').innerText;");
 								if (ev != "error")
 								{
 									Sleep(ev);
 
-									if (!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+									if (!WaitButtonClick(youtubeFrame, "document.querySelector('.butt-nw');"))
 									{
 										Error("Error end youtube watch");
-									}
+                                        break;
+                                    }
 									Count++;
 									Sleep(2);
 								}

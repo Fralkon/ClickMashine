@@ -250,10 +250,10 @@ function click_s()
     {
         n++; return 'continue';
     }
-    else { 
-        if(surf_cl[n].parentElement.className.indexOf('area_y') != -1){
-            youtube_premium = surf_cl[n].parentElement.parentElement;
-            if(youtube_premium == null){n++;return 'continue';}
+    else{ 
+        youtube_premium = surf_cl[n].parentElement.parentElement.parentElement;
+        if(youtube_premium == null){n++;return 'continue';}
+        if(youtube_premium.id.indexOf('v123') != -1){
             surf_cl[n].click(); 
             n++; 
             return 'surf_premium';
@@ -272,8 +272,7 @@ function surf(){
 		else {start_ln.click(); n++; return 'surf'; }
 	}
 	else { return 'sec_wait'; }
-}
-";
+}";
 
             SendJS(0, js);
             Thread.Sleep(200);
