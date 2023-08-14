@@ -54,7 +54,7 @@ namespace ClickMashine
                     }
                     try
                     {
-                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple");
+                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple__");
                     }
                     catch (Exception ex)
                     {

@@ -52,14 +52,15 @@ namespace ClickMashine
                 sqlCom.ExecuteNonQuery();
             }
         }
-        private string serverName = "astf3-stp5"; // Адрес сервера (для локальной базы пишите "localhost")
+        //private string serverName = "astf3-stp5"; // Адрес сервера (для локальной базы пишите "localhost")
         private string userName = "root"; // Имя пользователя
-        private string dbName = "zabbix"; //Имя базы данных
-        private uint port = 3307; // Порт для подключения
+        //private string dbName = "zabbix"; //Имя базы данных
+        //private uint port = 3307; // Порт для подключения
         private string password = "Fralkon"; // Пароль для подключения
 
 
-        //private string serverName = "192.168.0.10"; // Адрес сервера (для локальной базы пишите "localhost")
+        private uint port = 3306; // Порт для подключения
+        private string serverName = "192.168.0.10"; // Адрес сервера (для локальной базы пишите "localhost")
         //private string userName = "root"; // Имя пользователя
         //private string password = "Fralkon"; // Пароль для подключения
     }
