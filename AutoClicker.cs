@@ -6,12 +6,10 @@ namespace ClickMashine
 {
     class AutoClicker
     {
-        public MySQL mySQL;
         public TCPControl TCPControl { get; private set; }
         List<Site> siteList = new List<Site>();
-        public AutoClicker(Form1 form)
+        public AutoClicker(Form1 form, MySQL mySQL)
         {
-            mySQL = new MySQL("clicker");
             TCPControl = new TCPControl(mySQL, form.ID);
             TCPControl.MessageReceived += TCPControl_MessageReceived;
             TCPControl.StartListing();

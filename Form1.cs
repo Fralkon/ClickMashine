@@ -9,6 +9,7 @@ namespace ClickMashine
     public partial class Form1 : Form
     {
         AutoClicker? autoClicker;
+        public MySQL mySQL = new MySQL("ClickMashine");
         public int Step { private set; get; }
         public int ID { private set; get; }
         public string PATH_SETTING = @"C:/ClickMashine/Settings/";
@@ -23,7 +24,7 @@ namespace ClickMashine
                 string text = reader.ReadToEnd();
                 ID = int.Parse(text);
             }
-            using (DataTable settingData = new MySQL("clicker").GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
+            using (DataTable settingData = mySQL.GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
             {
                 if (settingData.Rows.Count > 0)
                 {
@@ -51,11 +52,11 @@ namespace ClickMashine
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             autoClicker.Close();
-            new MySQL("clicker").SendSQL("UPDATE object SET status = 'offline' WHERE id = " + ID.ToString());
+            mySQL.SendSQL("UPDATE object SET status = 'offline' WHERE id = " + ID.ToString());
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            autoClicker = new AutoClicker(this);
+            autoClicker = new AutoClicker(this,mySQL);
             Thread thread = new Thread(autoClicker.ClickSurf);
             thread.Start();
         }

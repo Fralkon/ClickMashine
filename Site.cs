@@ -3,10 +3,7 @@ using CefSharp.WinForms;
 using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using OpenCvSharp.Internal.Vectors;
 using ClickMashine_11;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ClickMashine
 {
@@ -156,20 +153,22 @@ namespace ClickMashine
         public MyLifeSplanHandler ?lifeSplanHandler;
         protected Auth ?auth;
         public TCPMessageManager TCPMessageManager;
-        protected MySQL mySQL = new MySQL("clicker");
+        protected MySQL mySQL;
         private ToolStripMenuItem menuItemSite;
         private ToolStripComboBox siteStripComboBox;
         protected EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         public Site(Form1 form, Auth auth)
         {
-            this.auth = auth;
             this.form = form;
-            TCPMessageManager= new TCPMessageManager(form.ID);
+            this.mySQL = form.mySQL;
+            this.auth = auth;
+            TCPMessageManager= new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public Site(Form1 form)
         {
-            TCPMessageManager = new TCPMessageManager(form.ID);
             this.form = form;
+            this.mySQL = form.mySQL;
+            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public abstract bool Auth(Auth auth);
         public void SomedoIt()

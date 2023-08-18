@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<setting>
+  <MySQL name = "ClickMashine">
+    <server>astf3-stp5</server>
+    <port>3307</port>
+    <bd>clicker</bd>
+    <user>root</user>
+    <password>Fralkon</password>
+  </MySQL>
+</setting>

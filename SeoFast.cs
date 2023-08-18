@@ -32,7 +32,6 @@ namespace ClickMashine
                 int youTube = 10;
                 while (youTube > 9)
                 {
-                    //mSurf.GoSurf();
                     youTube = 0;
                     try
                     {
@@ -71,7 +70,6 @@ namespace ClickMashine
                         Error("Error youtube3\n" + ex.Message);
                     }
                 }
-                //SetBDInfo(youTube);
                 //mSurf.GoSurf();
                 Sleep(600);
             }

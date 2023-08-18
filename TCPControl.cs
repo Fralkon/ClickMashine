@@ -41,10 +41,10 @@ namespace ClickMashine
         TCPMessage bufferMessage = new TCPMessage();
         IPEndPoint endPointTelebot;
         int IDMashine;
-        public TCPMessageManager(int IDMashine)
+        public TCPMessageManager(int IDMashine, IPEndPoint teleBot)
         {
             this.IDMashine = IDMashine;
-            endPointTelebot = IPManager.GetEndPoint(new MySQL("clicker"),1);
+            endPointTelebot = teleBot;
         }
         private void SendTCPMesage(TCPMessage message)
         {
