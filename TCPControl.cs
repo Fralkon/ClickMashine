@@ -113,8 +113,8 @@ namespace ClickMashine
         TcpListener Listener;
         public TCPControl(MySQL mySQL, int IDMashine)
         {            
-            IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("192") != -1);
-            //IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("172") != -1);
+            //IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("192") != -1);
+            IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("172") != -1);
             if (iP == null)
                 throw new Exception("Error IP server");
 

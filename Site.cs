@@ -154,8 +154,8 @@ namespace ClickMashine
         protected Auth ?auth;
         public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL;
-        private ToolStripMenuItem menuItemSite;
-        private ToolStripComboBox siteStripComboBox;
+        protected ToolStripMenuItem menuItemSite;
+        protected ToolStripComboBox siteStripComboBox;
         protected EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         public Site(Form1 form, Auth auth)
         {
@@ -198,6 +198,8 @@ namespace ClickMashine
 
             menuItemSite.DropDownItems.Add(siteStripComboBox);
 
+            siteStripComboBox.Text = StatusSite.login.ToString();
+
             form.Invoke(new Action(() =>
             {
                 form.waitToolStripMenuItem.DropDownItems.Add(menuItemSite);
@@ -211,7 +213,7 @@ namespace ClickMashine
                 form.tabControl1.SelectedTab = newTabPage;
             }));
 
-            eventLoadPage.WaitOne(5000);
+            eventLoadPage.WaitOne(15000);
         }
         private void SiteStripComboBox_TextChanged(object? sender, EventArgs e)
         {
@@ -573,7 +575,43 @@ WaitElement();";
         }
         protected bool WaitElement(IBrowser browser, string element, int sec = 10)
         {
-            return WaitElement(browser.MainFrame, element, sec);
+            string JS =
+@"function WaitElement()
+{
+    var element = " + element + @";
+    if (element != null) { return 'end'; }
+    else return 'wait';
+}
+WaitElement();";
+            for (int i = 0; i < sec; i++)
+            {
+                string? ev_js_wait = SendJSReturn(browser, JS);
+                if (ev_js_wait == null)
+                    continue;
+                if (ev_js_wait == "end")
+                    return true;
+                Thread.Sleep(1000);
+            }
+            return false;
+        }
+        protected bool WaitElement(IBrowser browser, string nameFrame, string element, int sec = 10)
+        {
+            string JS =
+@"function WaitElement()
+{
+    var element = " + element + @";
+    if (element != null) { return 'end'; }
+    else return 'wait';
+}
+WaitElement();";
+            for (int i = 0; i < sec; i++)
+            {
+                string ev_js_wait = SendJSReturn(browser.GetFrame(nameFrame), JS);
+                if (ev_js_wait == "end")
+                    return true;
+                Thread.Sleep(1000);
+            }
+            return false;
         }
         protected string WaitFunction(IFrame frame, string functionName, string? function = null, int sec = 5)
         {
@@ -582,6 +620,17 @@ WaitElement();";
             for (int j = 0; j < sec; j++)
             {
                 string ev = SendJSReturn(frame, functionName);
+                if (ev == "wait")
+                    Sleep(1);
+                else return ev;
+            }
+            return "errorWait";
+        }
+        protected string WaitFunction(IBrowser browser, string nameFrame, string function, int sec = 5)
+        {
+            for (int j = 0; j < sec; j++)
+            {
+                string ev = SendJSReturn(browser.GetFrame(nameFrame), function);
                 if (ev == "wait")
                     Sleep(1);
                 else return ev;
