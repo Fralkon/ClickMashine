@@ -314,9 +314,9 @@ namespace ClickMashine
         protected IBrowser? WaitCreateBrowser()
         {
             eventLoadPage.Reset();
-            if (!eventBrowserCreated.WaitOne(10000))
+            if (!eventBrowserCreated.WaitOne(15000))
                 return null;
-            eventLoadPage.WaitOne(10000);
+            eventLoadPage.WaitOne(15000);
             return LastBrowser;
         }
         protected void LoadPage(int id_browser, string page)
