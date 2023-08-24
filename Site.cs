@@ -422,12 +422,21 @@ namespace ClickMashine
         }
         protected void Error(string text)
         {
-            string Message = "---------------------------\n" +
+            string Message = "---------------------------\nError: " +
             text +
             "\nType: " + Type.ToString() +
-            "\n---------------------------\n";
+            "\n---------------------------";
             Console.WriteLine(Message);
             TCPMessageManager.SendError(Message, Type);
+        }
+        protected void Info(string text)
+        {
+            string Message = "---------------------------\nInfo: " +
+            text +
+            "\nType: " + Type.ToString() +
+            "\n---------------------------";
+            Console.WriteLine(Message);
+            TCPMessageManager.SendInfo(Message, Type);
         }
         protected void Error(IBrowser browser, string text)
         {
@@ -436,7 +445,7 @@ namespace ClickMashine
                 string path = @"C:\ClickMashine\Settings\Errors\Pages\";
                 File.WriteAllText(path + "html_page_error" + new DirectoryInfo(path).GetFiles().Length.ToString() + ".txt", v.Result);
             }).Wait();
-            string Message = "---------------------------\n" +
+            string Message = "---------------------------\nError: " +
             text +
             "\nType: " + Type.ToString() +
             "\n---------------------------\n";
@@ -691,6 +700,24 @@ else 'notAntiBot';";
                 eventLoadPage.WaitOne(5000);
             }
             return true;
+        }
+        protected string GetMoney(IBrowser browser, string selector)
+        {
+            string js =
+@"var ballans = "+selector+@";
+if(ballans != null)
+    ballans.innerText;
+else 'error';";
+            string ev = SendJSReturn(browser.MainFrame, js);
+            if (ev != "error")
+                Info("Money: " + ev);
+            return ev;
+        }
+        protected void SaveImage(Bitmap bmp)
+        {
+            string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
+            Directory.CreateDirectory(path);
+            bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
         }
     }
 }

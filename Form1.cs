@@ -45,10 +45,6 @@ namespace ClickMashine
         {
             event_eny.Set();
         }
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-        }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             autoClicker.Close();
@@ -85,6 +81,7 @@ namespace ClickMashine
         }
         public Bitmap MakeScreenshot(IBrowser browser, Rectangle rect)
         {
+            FocusTab(browser);
             lock (tabControl1)
             {
                 if (this.WindowState == FormWindowState.Minimized)
@@ -102,13 +99,11 @@ namespace ClickMashine
             if (parentControl != null)
             {
                 tabControl1.SelectedTab = parentControl;
-                Thread.Sleep(500);
                 return ControlSnapshot.Snapshot(parentControl, rect);
             }
             else
             {
                 tabControl1.SelectedTab = (TabPage)control;
-                Thread.Sleep(500);
                 return ControlSnapshot.Snapshot(control, rect);
             }
         }

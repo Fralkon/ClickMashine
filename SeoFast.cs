@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
+﻿using System.Text.RegularExpressions;
 using CefSharp;
 
 namespace ClickMashine
@@ -97,6 +92,12 @@ namespace ClickMashine
                         string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
                         "document.querySelector('#logpassword').value = '" + auth.Password + "';";
                         SendJS(0, js);
+
+                        for (int j = 0; j < 4; j++)
+                        {
+                            SaveImage(GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
+                        }
+
                         Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
 
                         string answer_telebot = SendQuestion(img, "");

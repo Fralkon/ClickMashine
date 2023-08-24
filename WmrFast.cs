@@ -4,19 +4,19 @@ namespace ClickMashine
 {
     class WmrFast : Site
 	{
-		//ImageControlWmrClick imageConrolWmrClick;
+		ImageControlWmrClick imageConrolWmrClick;
 		public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
 			HostName = "wmrfast.com";
             Type = EnumTypeSite.WmrFast; 
-			//imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
+			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
 		public override bool Auth(Auth auth)
 		{
 			LoadPage("https://wmrfast.com/");
 			Sleep(2);
-			//ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
+			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
 				string ev = SendJSReturn(browsers[0], "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
@@ -32,15 +32,14 @@ else 'wait_login';");
 document.querySelector('#vhpass').value = '" + auth.Password + @"';");
 					if (ev == "login_cap")
                     {
-                        return false;
-                        //						string js =
-                        //@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
-                        //document.querySelector('#vhod1').click();";
-                        //						eventLoadPage.Reset();
-                        //						SendJS(browsers[0], js);
-                        //						eventLoadPage.WaitOne();
-                        //						Sleep(3);
-                    }
+						string js =
+@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
+                        document.querySelector('#vhod1').click();";
+						eventLoadPage.Reset();
+						SendJS(browsers[0], js);
+						eventLoadPage.WaitOne();
+						Sleep(3);
+					}
 					else if(ev == "anchor")
                     {
                         return false;
@@ -122,85 +121,85 @@ function click_s()
 			}
 			return Count;
 		}
-//		private int ClickSurf()
-//		{
-//			int Count = 0;
-//			LoadPage("https://wmrfast.com/serfing.php");
-//            Sleep(2);
-//            string js =
-//@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
-//function click_s()
-//{
-//	if (n >= surf_cl.length) return 'end';
-//	else
-//	{
-//		surf_cl[n].click(); n++; return 'surf';
-//	}
-//}";
-//			SendJS(0, js);
-//			while (true)
-//			{
-//				eventBrowserCreated.Reset();
-//				string ev = SendJSReturn(0, "click_s();");
-//				if (ev == "surf")
-//				{
-//					IBrowser? browser = WaitCreateBrowser();
-//					if (browser!= null)
-//					{
-//						ev = SendJSReturn(browser, "counter.toString();");
-//						if (ev != "error")
-//						{
-//							Sleep(ev);
-//							ev = SendJSReturn(browser, "counter.toString();");
-//							if(ev != "-1")
-//							{
-//								SendJS(browser, "counter = 0;flag = 1;");
-//								Sleep(2);
-//                            }
-//                            for (int i = 0; i < 10; i++)
-//                            {
-//                                Sleep(1);
-//                                string value;
-//                                try
-//                                {
-//                                    value = imageConrolWmrClick.Predict(GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha-image')"));
-//                                }
-//                                catch (Exception ex)
-//                                {
-//                                    Console.WriteLine(ex.ToString());
-//                                    SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-//                                    Sleep(2);
-//                                    continue;
-//                                }
-//                                if (value.Length == 3)
-//                                {
-//                                    js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
-//for (var i = 0; i < butRet.length; i++)
-//{
-//	if (butRet[i].querySelector('.submit').value == " + value + @")
-//	{ butRet[i].querySelector('.submit').click(); return 'ok'}
-//}
-//return 'errorClick';}endClick();";
-//									if (SendJSReturn(browser, js) == "ok")
-//									{
-//                                        Sleep(2);
-//                                        Count++;
-//                                        break;
-//                                    }
-//                                }
-//                                SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-//                                Sleep(2);
-//                            }
-//                        }
-//					}
-//				}
-//				else if (ev == "end")
-//					break;
-//				CloseСhildBrowser();
-//				Sleep(2);
-//			}
-//			return Count;
-//		}	
+		private int ClickSurf()
+		{
+			int Count = 0;
+			LoadPage("https://wmrfast.com/serfing.php");
+			Sleep(2);
+			string js =
+@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
+function click_s()
+{
+	if (n >= surf_cl.length) return 'end';
+	else
+	{
+		surf_cl[n].click(); n++; return 'surf';
+	}
+}";
+			SendJS(0, js);
+			while (true)
+			{
+				eventBrowserCreated.Reset();
+				string ev = SendJSReturn(0, "click_s();");
+				if (ev == "surf")
+				{
+					IBrowser? browser = WaitCreateBrowser();
+					if (browser != null)
+					{
+						ev = SendJSReturn(browser, "counter.toString();");
+						if (ev != "error")
+						{
+							Sleep(ev);
+							ev = SendJSReturn(browser, "counter.toString();");
+							if (ev != "-1")
+							{
+								SendJS(browser, "counter = 0;flag = 1;");
+								Sleep(2);
+							}
+							for (int i = 0; i < 10; i++)
+							{
+								Sleep(1);
+								string value;
+								try
+								{
+									value = imageConrolWmrClick.Predict(GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha-image')"));
+								}
+								catch (Exception ex)
+								{
+									Console.WriteLine(ex.ToString());
+									SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+									Sleep(2);
+									continue;
+								}
+								if (value.Length == 3)
+								{
+									js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
+for (var i = 0; i < butRet.length; i++)
+{
+	if (butRet[i].querySelector('.submit').value == " + value + @")
+	{ butRet[i].querySelector('.submit').click(); return 'ok'}
+}
+return 'errorClick';}endClick();";
+									if (SendJSReturn(browser, js) == "ok")
+									{
+										Sleep(2);
+										Count++;
+										break;
+									}
+								}
+								SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+								Sleep(2);
+							}
+						}
+					}
+				}
+				else if (ev == "end")
+					break;
+				CloseСhildBrowser();
+				Sleep(2);
+			}
+			return Count;
+		}
 		private int VisitSurf()
         {
 			int Count = 0;

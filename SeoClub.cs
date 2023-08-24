@@ -1,6 +1,4 @@
 ﻿using CefSharp;
-using CefSharp.DevTools.Page;
-using System.Text.Json;
 
 namespace ClickMashine
 {
@@ -20,7 +18,7 @@ namespace ClickMashine
 
             SendJS(0, auth_js);
             for (int i = 0; i < 5; i++) {
-                if (WaitElement(loginBrowser.MainFrame, "document.querySelector('.out-capcha')",2))
+                if (WaitElement(loginBrowser.MainFrame, "document.querySelector('.out-capcha')", 2))
                 {
                     AntiBot(loginBrowser);
                     SendJS(loginBrowser, "document.querySelector('.btn').click();");
@@ -28,20 +26,13 @@ namespace ClickMashine
                 }
                 else
                 {
-                    if (!WaitElement(loginBrowser.MainFrame, "document.querySelector('#new-money-ballans')"))
+                    string money = GetMoney(loginBrowser, "document.querySelector('#new-money-ballans')");
+                    if (money != "error")
                     {
-                        Error("NOT AUTH");
+                        siteStripComboBox.Text = StatusSite.online.ToString();
+                        return true;
                     }
-                    try
-                    {
-                        CM("Money : " + SendJSReturn(loginBrowser, "document.querySelector('#new-money-ballans').innerText"));
-                    }
-                    catch (Exception ex)
-                    {
-                        Error(ex.ToString());
-                        return false;
-                    }
-                    return true;
+                    return false;
                 }
             }
             return false;            
@@ -50,7 +41,7 @@ namespace ClickMashine
         {
             Initialize();
             if (!Auth(auth))
-                return;
+                waitHandle.WaitOne();
             mSurf.AddFunction(YouTubeSurf);
             mSurf.AddFunction(VisitSurf);
             mSurf.AddFunction(MailSurf);
@@ -60,15 +51,13 @@ namespace ClickMashine
                 mSurf.GoSurf();
                 Sleep(600);
             }
-
-            CloseAllBrowser();
         }
         private int ClickSurf()
         {
             int Count = 0;
+            IBrowser mainBrowser = browsers[0];
             LoadPage("https://seoclub.su/");
-            SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').click();");
-            Sleep(4);
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href"));
             //AntiBot();
             string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
@@ -125,7 +114,7 @@ else 'error_surf';");
                                 if (ev != "error")
                                 {
                                     Sleep(ev);
-                                    if(!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
+                                    if (!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
                                     {
                                         SendJS(frame, "location.replace(\"vlss?view=ok\");");
                                         if (!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
@@ -161,9 +150,9 @@ else
         private int VisitSurf()
         {
             int Count = 0;
-            LoadPage(0, "https://profitcentr.com/");
-            SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').click();");
-            Sleep(4);
+            IBrowser mainBrowser = browsers[0];
+            LoadPage("https://seoclub.su/");
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').href"));
             //AntiBot();
             string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
@@ -181,6 +170,7 @@ function click_s()
             SendJS(0, js);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
                     break;
@@ -208,10 +198,10 @@ function click_s()
         private int YouTubeSurf()
         {
             int Count = 0;
-            SendJS(0,"document.querySelector('#mnu_tblock1 > a:nth-child(7)').click();");
-            Sleep(4);
             IBrowser mainBrowser = browsers[0];
-            if(!OutCaptchaLab(mainBrowser, "document.querySelectorAll('.out-capcha-lab')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn_big_green').click()"))
+            LoadPage("https://seoclub.su/");
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').href"));
+            if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn_big_green').click()"))
             {
                 return 0;
             }            
@@ -233,11 +223,12 @@ function surf()
 		if(start_ln.innerText != 'Приступить к просмотру') {n++; return 'continue';}
 		else {start_ln.querySelector('span').click(); n++; return 'surf'; }
 	}
-	else { return 'sec_wait'; }
+	else { return 'wait'; }
 }";
             SendJS(mainBrowser, js_links);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(mainBrowser, "click_s();");
                 if (ev == "end_surf")
                 {
@@ -245,11 +236,12 @@ function surf()
                 }
                 else if (ev == "click")
                 {
-                    eventBrowserCreated.Reset();
                     for (int i = 0; i < 10; i++)
                     {
                         ev = SendJSReturn(mainBrowser, "surf();");
-                        if (ev == "surf")
+                        if (ev == "wait")
+                            Sleep(1);
+                        else if (ev == "surf")
                         {
                             var browserYouTube = WaitCreateBrowser();
                             if (browserYouTube != null){
@@ -282,10 +274,9 @@ function surf()
         private int MailSurf()
         {
             int Count = 0;
-            LoadPage(0, "https://profitcentr.com/");
-            Sleep(2);
-            SendJS(0, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').click();");
-            Sleep(4);
+            IBrowser mainBrowser = browsers[0];
+            LoadPage("https://seoclub.su/");
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href"));
             string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
 function surf()
@@ -305,6 +296,7 @@ function click_s()
             SendJS(0, js);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
                     return Count;

@@ -16,18 +16,31 @@ namespace ClickMashine
 			string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
 							 "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
             SendJS(0, auth_js);
-            return AntiBot();
+			if (AntiBot())
+			{
+				string ev = GetMoney(browsers[0], "document.querySelector('#new-money-ballans')");
+				if (ev == "error")
+					return false;
+                siteStripComboBox.Text = StatusSite.online.ToString();
+                return true;
+			}
+			return false;
 		}
 		protected override void StartSurf()
 		{
 			Initialize();
+			TrainBD();
+
+            waitHandle.WaitOne();
+
             if (!Auth(auth))
-				return;
-            mSurf.AddFunction(YouTubeSurf);
-            mSurf.AddFunction(RuTubeSurf);
+				waitHandle.WaitOne();
+
             mSurf.AddFunction(ClickSurf);
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(VisitSurf);
+            mSurf.AddFunction(YouTubeSurf);
+            mSurf.AddFunction(RuTubeSurf);
             while (true)
 			{
 				mSurf.GoSurf();
@@ -141,8 +154,6 @@ else
 			IBrowser mainBrowser = browsers[0];
 			LoadPage(mainBrowser, "https://profitcentr.com/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href"));
-            Sleep(4);
-
             if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
                 Error("Error captcha youtube");
@@ -165,6 +176,7 @@ function click_s()
 			SendJS(mainBrowser, js);
 			while (true)
 			{
+				eventBrowserCreated.Reset();
 				string ev = SendJSReturn(mainBrowser, "click_s();");
 				if (ev == "end_surf")
 					break;
@@ -172,15 +184,18 @@ function click_s()
 					continue;
 				else
 				{
-                    int pointStart = ev.IndexOf("Таймер: ") + 8;
-					int pointEnd = ev.IndexOf(' ', pointStart);
-					int countText = pointEnd- pointStart;
-					if (pointStart == -1 || pointEnd == -1 || countText > 0)
+					if (WaitCreateBrowser() != null)
 					{
-						Count++;
-						Sleep(ev.Substring(pointStart, pointEnd - pointStart));
+						int pointStart = ev.IndexOf("Таймер: ") + 8;
+						int pointEnd = ev.IndexOf(' ', pointStart);
+						int countText = pointEnd - pointStart;
+						if (pointStart == -1 || pointEnd == -1 || countText > 0)
+						{
+							Count++;
+							Sleep(ev.Substring(pointStart, pointEnd - pointStart));
+						}
+						Sleep(2);
 					}
-                    Sleep(2);
                 }
 				CloseСhildBrowser();
                 Sleep(2);
@@ -192,7 +207,6 @@ function click_s()
 			int Count = 0;
 			var mainBrowser = browsers[0];
 			LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href"));
-			Sleep(4);
             if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
                 Error("Error captcha youtube");
@@ -246,19 +260,20 @@ else 'end';");
 					{
 						ev = SendJSReturn(main_frame, "surf();");
 						if (ev == "surf")
-                        {
-                            var browserYouTube = WaitCreateBrowser();
-							if (browserYouTube == null)
-								break;
-							IFrame yotube_frame = browserYouTube.MainFrame;
-							ev = SendJSReturn(yotube_frame,
-@"c = true;  b = true; document.querySelector('#tmr').innerText;");
-							if (ev != "error")
+						{
+							var browserYouTube = WaitCreateBrowser();
+							if (browserYouTube != null)
 							{
-								Sleep(ev);
-								if(WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
-									Count++;
-								Sleep(2);
+								IFrame yotube_frame = browserYouTube.MainFrame;
+								ev = SendJSReturn(yotube_frame,
+	@"c = true;  b = true; document.querySelector('#tmr').innerText;");
+								if (ev != "error")
+								{
+									Sleep(ev);
+									if (WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
+										Count++;
+									Sleep(2);
+								}
 							}
 							break;
 						}
@@ -328,6 +343,7 @@ else 'end';");
             SendJS(main_frame, js_links);
             while (true)
             {
+                eventBrowserCreated.Reset();
                 string ev = SendJSReturn(main_frame, "click_s();");
                 if (ev == "end_surf")
                 {
@@ -337,7 +353,6 @@ else 'end';");
                 {
                     for (int i = 0; i < 10; i++)
                     {
-						eventBrowserCreated.Reset();
                         ev = SendJSReturn(main_frame, "surf();");
                         if (ev == "surf")
                         {
@@ -391,11 +406,11 @@ function surf()
 {
 	var start_ln = surf_cl[n].querySelector('.butt-yes-test');
 	if (start_ln != null) { start_ln.click(); n++; return 'surf'; }
-	else { return 'wait' }
+	else { return 'wait'; }
 }
 function click_s()
 {
-	if (n >= surf_cl.length) return 'end_surf';
+	if (n >= surf_cl.length) { return 'end_surf';}
 	else
 	{
 		surf_cl[n].querySelector('a').click(); return 'click';
@@ -403,8 +418,9 @@ function click_s()
 }";
 			SendJS(0, js);
 			while (true)
-			{
-				string ev = SendJSReturn(0, "click_s();");
+            {
+                eventBrowserCreated.Reset();
+                string ev = SendJSReturn(0, "click_s();");
 				if (ev == "end_surf")
 					break;
 				else if (ev == "contionue")
@@ -416,33 +432,35 @@ function click_s()
 						ev = SendJSReturn(0, "surf();");
 						if (ev == "wait")
 							Sleep(1);
-						else if (ev == "click")
+						else if (ev == "surf")
 						{
-							ev = GetMailAnswer(browsers[0].MainFrame, "document.querySelector('.taskdescription')",
-								"document.querySelector('.taskquestion')",
-								"document.querySelectorAll('.mails-otvet-new a')");
-							if (ev == "errorMail")
+							if (WaitElement(mainBrowser, "document.querySelector('.taskdescription')"))
 							{
-								Random rnd = new Random();
-								ev = rnd.Next(0, 3).ToString();
-							}
-							SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
-							IBrowser? browserMail = WaitCreateBrowser();
-							if (browserMail != null)
-							{
-								ev = SendJSReturn(browserMail,
-@"b = false;
+								ev = GetMailAnswer(mainBrowser.MainFrame, "document.querySelector('.taskdescription')",
+									"document.querySelector('.taskquestion')",
+									"document.querySelectorAll('.mails-otvet-new a')");
+								if (ev == "errorMail")
+								{
+									Random rnd = new Random();
+									ev = rnd.Next(0, 3).ToString();
+								}
+								SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
+								IBrowser? browserMail = WaitCreateBrowser();
+								if (browserMail != null)
+								{
+									ev = SendJSReturn(browserMail,
+	@"b = false;
 var timer1 = document.querySelector('#tmr');
 if (timer1 != null)
 	timer1.innerText;
 else 'error_surf';");
-								if (ev != "error")
-								{
-									Sleep(ev);
-									if (WaitElement(browserMail, @"document.querySelector('[type=""range""]')"))
-                                    {
-                                        string function = 
-@"var range = document.querySelector('[type=""range""]');
+									if (ev != "error")
+									{
+										Sleep(ev);
+										if (WaitElement(browserMail, @"document.querySelector('[type=""range""]')"))
+										{
+											string function =
+	@"var range = document.querySelector('[type=""range""]');
 if (range != null)
 {
 	range.value = range.max;
@@ -453,12 +471,13 @@ else
 {
 	'error';
 }";
-                                        ev = SendJSReturn(browserMail, function);
-										if(ev != "error")
-										{
-                                            Count++;
-                                            Sleep(2);
-                                        }
+											ev = SendJSReturn(browserMail, function);
+											if (ev != "error")
+											{
+												Count++;
+												Sleep(2);
+											}
+										}
 									}
 								}
 							}
@@ -491,9 +510,13 @@ else 'ok';";
 				}
 				else
 				{
-					Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+					for(int j = 0; j< 6; j++)
+					{
+                        SaveImage(GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')["+j.ToString()+"]"));
+                    }
 
-					string answer_telebot = SendQuestion(img, "");
+                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+                    string answer_telebot = SendQuestion(img, "");
 					if(answer_telebot == "")
 					jsAntiBot = "";
 					foreach (char ch in answer_telebot)
@@ -507,5 +530,25 @@ else 'ok';";
 			Error("Ошибка ввода капчи");
 			return false;
 		}
+		private void TrainBD()
+        {
+			LoadPage("https://profitcentr.com/login");
+            string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
+            for (int i = 0; i < 100; i++) {
+				string name = SendJSReturn(browsers[0].MainFrame, "document.querySelector('.out-capcha-title').innerText");
+				string[] name_item = name.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				Directory.CreateDirectory(path + name_item[name_item.Length-1] + @"\");
+
+                SendJS(0, "for(var i = 0; i< 6;i++)document.querySelectorAll('.out-capcha-lab')[i].style.border = '0px';");
+				Sleep(1);
+                for (int j = 0; j < 6; j++)
+				{
+                    GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]")
+						.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
+				}
+				SendJS(0, "document.querySelector('.out-reload').click();");
+				Sleep(2);
+			}
+        }
 	}
 }
