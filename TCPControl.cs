@@ -29,14 +29,14 @@ namespace ClickMashine
             }
         }
     }
-    enum TypeMessage
+    public enum TypeMessage
     {
         CaptchaImage,
         Captcha,
         Error,
         Info
     }
-    class TCPMessageManager
+    public class TCPMessageManager
     {
         TCPMessage bufferMessage = new TCPMessage();
         IPEndPoint endPointTelebot;
@@ -83,7 +83,7 @@ namespace ClickMashine
         }
         private EventWaitHandle eventTCPHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
     }
-    class TCPMessage
+    public class TCPMessage
     {
         public string Text { get; set; }
         public byte[] Data { get; set; }

@@ -294,7 +294,7 @@ namespace ClickMashine
     }
     class MyLifeSplanHandler: ILifeSpanHandler
     {
-        public Site site;
+        Site site;
         private Dictionary<int, PopupAsChildHelper> popupasChildHelpers = new Dictionary<int, PopupAsChildHelper>();
         public MyLifeSplanHandler(Site site)
         {

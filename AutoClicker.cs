@@ -26,11 +26,11 @@ namespace ClickMashine
                                 Auth auth = new Auth(row["login"].ToString(), row["password"].ToString());
                                 switch (site)
                                 {
-                                    case EnumTypeSite.Aviso:
-                                        {
-                                            siteList.Add(new Aviso(form, auth));
-                                            break;
-                                        }
+                                    //case EnumTypeSite.Aviso:
+                                    //    {
+                                    //        siteList.Add(new Aviso(form, auth));
+                                    //        break;
+                                    //    }
                                     case EnumTypeSite.SeoFast:
                                         {
                                             siteList.Add(new SeoFast(form, auth));
@@ -46,16 +46,16 @@ namespace ClickMashine
                                             siteList.Add(new WmrFast(form, auth));
                                             break;
                                         }
-                                    case EnumTypeSite.WebofSar:
-                                        {
-                                            siteList.Add(new WebofSar(form, auth));
-                                            break;
-                                        }
-                                    case EnumTypeSite.VipClick:
-                                        {
-                                            siteList.Add(new VipClick(form, auth));
-                                            break;
-                                        }
+                                    //case EnumTypeSite.WebofSar:
+                                    //    {
+                                    //        siteList.Add(new WebofSar(form, auth));
+                                    //        break;
+                                    //    }
+                                    //case EnumTypeSite.VipClick:
+                                    //    {
+                                    //        siteList.Add(new VipClick(form, auth));
+                                    //        break;
+                                    //    }
                                     case EnumTypeSite.SeoClub:
                                         {
                                             siteList.Add(new SeoClub(form, auth));

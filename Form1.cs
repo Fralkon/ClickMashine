@@ -12,7 +12,7 @@ namespace ClickMashine
         public MySQL mySQL = new MySQL("ClickMashine");
         public int Step { private set; get; }
         public int ID { private set; get; }
-        public string PATH_SETTING = @"C:/ClickMashine/Settings/";
+        public const string PATH_SETTING = @"C:/ClickMashine/Settings/";
         public Form1(string[] args)
         {
             InitializeComponent();

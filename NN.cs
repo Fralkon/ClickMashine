@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using Tensorflow;
 using Tensorflow.Keras.ArgsDefinition;
 using Tensorflow.Keras.Engine;
@@ -28,24 +29,39 @@ namespace ClickMashine
     }
     abstract class NN
     {
-        protected Shape img_dim;
-        protected IDatasetV2? train_ds, val_ds;
+        public Size Size { get; set; }
+        protected Shape imgDim;
+        protected IDatasetV2 train_ds, val_ds;
         protected Model model;
-        public Size Size{ get; set; }
+        public NN(Size size, int depth)
+        {
+            Size = size;
+            imgDim = new Shape(Size.Height, Size.Width, depth);
+            tf.enable_eager_execution();
+            BuildModel();
+        }
+        public NN(Size size, int depth, string path)
+        {
+            Size = size;
+            imgDim = new Shape(Size.Height, Size.Width, depth);
+            tf.enable_eager_execution();
+            BuildModel();
+            model.load_weights(path);
+        }
         public NN(Size size)
         {
             Size = size;
-            img_dim = (Size.Height, Size.Width, 1);
+            imgDim = new Shape(Size.Height, Size.Width, 1);
             tf.enable_eager_execution();
             BuildModel();
         }
         public NN(Size imgSize, string path)
         {
             Size = imgSize;
-            img_dim = (imgSize.Height, imgSize.Width, 1);
+            imgDim = (imgSize.Height, imgSize.Width, 1);
             tf.enable_eager_execution();
             BuildModel();
-            Load(path);
+            model.load_weights(path);
         }
         public virtual PredictNN Predict(Mat mat)
         {
@@ -54,6 +70,7 @@ namespace ClickMashine
         }
         protected NDArray ConvertToPredict(Mat mat)
         {
+            mat = mat.Resize(new Size(imgDim[1], imgDim[0]));
             mat.ConvertTo(mat, MatType.CV_32SC1);
             mat.GetArray(out int[] arr);
             var numpy_array = np.array(arr);
@@ -71,27 +88,27 @@ namespace ClickMashine
         public void Train(string path, int epochs)
         {
             PrepareData(path);
-            model.fit(train_ds, validation_data: val_ds, epochs: epochs);
+            model.fit(train_ds, epochs: epochs);
         }
         protected void PrepareData(string pathData)
         {
-            // convert to tensor
             train_ds = keras.preprocessing.image_dataset_from_directory(pathData,
                 validation_split: 0.2f,
-                color_mode: "grayscale",
+                color_mode:"rgb",
                 subset: "training",
                 seed: 123,
-                image_size: (img_dim[0], img_dim[1]));
+                image_size: (imgDim[0], imgDim[1]));
 
             val_ds = keras.preprocessing.image_dataset_from_directory(pathData,
             validation_split: 0.2f,
             subset: "validation",
-                color_mode: "grayscale",
+            color_mode: "rgb",
             seed: 123,
-                image_size: (img_dim[0], img_dim[1]));
+            image_size: (imgDim[0], imgDim[1]));
 
             train_ds = train_ds.shuffle(1000).prefetch(buffer_size: -1);
             val_ds = val_ds.prefetch(buffer_size: -1);
+            
         }
     }
     class WmrFastNNClick : NN
@@ -109,10 +126,10 @@ namespace ClickMashine
             var layers = new LayersApi();
 
             // input layer
-            var inputs = keras.layers.Input(shape: img_dim, name: "img");
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
 
             // convolutional layer
-            var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
             x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
@@ -150,10 +167,10 @@ namespace ClickMashine
             var layers = new LayersApi();
 
             // input layer
-            var inputs = keras.layers.Input(shape: img_dim, name: "img");
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
 
             // convolutional layer
-            var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
             x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
@@ -194,10 +211,10 @@ namespace ClickMashine
             var layers = new LayersApi();
 
             // input layer
-            var inputs = keras.layers.Input(shape: img_dim, name: "img");
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
 
             // convolutional layer
-            var x = layers.Rescaling(1.0f / 255, input_shape: img_dim).Apply(inputs);
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
             x = layers.Conv2D(10, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
             x = layers.Conv2D(64, 3, activation: "relu").Apply(x);
@@ -210,6 +227,127 @@ namespace ClickMashine
 
             // build keras model
             model = (Model)keras.Model(inputs, outputs, name: "VipClickNN");
+            model.summary();
+
+            // compile keras model in tensorflow static graph
+            model.compile(optimizer: keras.optimizers.Adam(),
+               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+               metrics: new[] { "accuracy" });
+        }
+    }
+    class ProfitcentNN : NN
+    {
+        public ProfitcentNN() : base(new Size(75, 75), 3)
+        {
+        }
+        public ProfitcentNN(string path) : base(new Size(75, 75), 3, path)
+        {
+        }
+        public PredictNN Predict(Bitmap bitmap)
+        {
+            Mat mat = BitmapConverter.ToMat(bitmap);
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);
+            if (mat.Cols != imgDim[0] || mat.Rows != imgDim[1])
+                mat = mat.Resize(new Size(imgDim[0], imgDim[1]));
+            int rows = mat.Rows;
+            int cols = mat.Cols;
+            byte[] arr = new byte[rows * cols * 3];
+            int p = 0;
+            for (int i = 0; i < mat.Rows; i++)
+            {
+                for (int j = 0; j < mat.Cols; j++)
+                {
+                    Vec3b color = mat.At<Vec3b>(i, j);
+                    arr[p++] = color.Item0;
+                    arr[p++] = color.Item1;
+                    arr[p++] = color.Item2;
+                }
+            }
+            NDArray numpy_array = np.array(arr);
+            numpy_array = numpy_array.reshape(new int[] { rows, cols, 3 });
+            PredictNN predictNN = new PredictNN(model.predict(tf.expand_dims(numpy_array, 0)));
+            return predictNN;
+        }
+        protected override void BuildModel()
+        {
+            var layers = new LayersApi();
+
+            // input layer
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
+
+            // convolutional layer
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
+            x = layers.Conv2D(20, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.GlobalAveragePooling2D().Apply(x);
+            x = layers.Dense(256, activation: "relu").Apply(x);
+            x = layers.Dropout(0.5f).Apply(x);
+
+            // output layer
+            var outputs = layers.Dense(39).Apply(x);
+
+            model = (Model)keras.Model(inputs, outputs, name: "Profitcentr");
+            model.summary();
+
+            // compile keras model in tensorflow static graph
+            model.compile(optimizer: keras.optimizers.Adam(),
+               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+               metrics: new[] { "accuracy" });
+
+        }
+    }
+    class SeoClubNN : NN
+    {
+        public SeoClubNN() : base(new Size(75, 75), 3)
+        {
+        }
+        public SeoClubNN(string path) : base(new Size(75, 75), 3, path)
+        {
+        }
+        public PredictNN Predict(Bitmap bitmap)
+        {
+            Mat mat = BitmapConverter.ToMat(bitmap);
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);
+            if (mat.Cols != imgDim[0] || mat.Rows != imgDim[1])
+                mat = mat.Resize(new Size(imgDim[0], imgDim[1]));
+            int rows = mat.Rows;
+            int cols = mat.Cols;
+            byte[] arr = new byte[rows * cols * 3];
+            int p = 0;
+            for (int i = 0; i < mat.Rows; i++)
+            {
+                for (int j = 0; j < mat.Cols; j++)
+                {
+                    Vec3b color = mat.At<Vec3b>(i, j);
+                    arr[p++] = color.Item0;
+                    arr[p++] = color.Item1;
+                    arr[p++] = color.Item2;
+                }
+            }
+            NDArray numpy_array = np.array(arr);
+            numpy_array = numpy_array.reshape(new int[] { rows, cols, 3 });
+            PredictNN predictNN = new PredictNN(model.predict(tf.expand_dims(numpy_array, 0)));
+            return predictNN;
+        }
+        protected override void BuildModel()
+        {
+            var layers = new LayersApi();
+
+            // input layer
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
+            x = layers.Conv2D(20, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.GlobalAveragePooling2D().Apply(x);
+            x = layers.Dense(256, activation: "relu").Apply(x);
+            x = layers.Dropout(0.5f).Apply(x);
+
+            // output layer
+            var outputs = layers.Dense(10).Apply(x);
+
+            model = (Model)keras.Model(inputs, outputs, name: "Profitcentr");
             model.summary();
 
             // compile keras model in tensorflow static graph

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClickMashine_11
 {
-    internal abstract class MyTask
+    public abstract class MyTask
     {
         protected CancellationToken cancellationToken = new CancellationToken();
         Task task;

@@ -13,30 +13,32 @@ namespace ClickMashine
 			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
 		}
 		public override bool Auth(Auth auth)
-		{
-			LoadPage("https://wmrfast.com/");
+        {
+            var browserAuth = GetBrowser(0);
+            if (browserAuth == null) return false;
+            LoadPage("https://wmrfast.com/");
 			Sleep(2);
 			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
-				string ev = SendJSReturn(browsers[0], "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
+				string ev = SendJSReturn(browserAuth, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
 				if (ev == "login")
 				{
 					Sleep(2);
-                    ev = SendJSReturn(browsers[0],
+                    ev = SendJSReturn(browserAuth,
 @"if(document.querySelector(""#anchor"")) 'anchor';
 else if(document.querySelector(""#login_cap"")) 'login_cap';
 else 'wait_login';");
-					SendJS(browsers[0],
+					SendJS(browserAuth,
 @"document.querySelector('#vhusername').value = '" + auth.Login + @"';
 document.querySelector('#vhpass').value = '" + auth.Password + @"';");
 					if (ev == "login_cap")
                     {
 						string js =
-@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browsers[0].MainFrame, "document.querySelector('#login_cap')")) + @"';
+@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browserAuth.MainFrame, "document.querySelector('#login_cap')")) + @"';
                         document.querySelector('#vhod1').click();";
 						eventLoadPage.Reset();
-						SendJS(browsers[0], js);
+						SendJS(browserAuth, js);
 						eventLoadPage.WaitOne();
 						Sleep(3);
 					}
@@ -52,7 +54,8 @@ document.querySelector('#vhpass').value = '" + auth.Password + @"';");
 				else
 					break;
 			}
-			return true;
+            TakeMoney(browserAuth);
+            return true;
 		}
 		protected override void StartSurf()
 		{
@@ -61,7 +64,6 @@ document.querySelector('#vhpass').value = '" + auth.Password + @"';");
 			{
 				waitHandle.WaitOne();
 			}
-			TakeMoney(browsers[0]);
 			mSurf.AddFunction(YouTubeSurf);
             //mSurf.AddFunction(ClickSurf);
             while (true)
@@ -106,7 +108,7 @@ function click_s()
 							if (ev != "error")
 							{
 								Sleep(ev);
-								WaitButtonClick(browsers[1].MainFrame, "document.querySelector('a');");
+								WaitButtonClick(browser.MainFrame, "document.querySelector('a');");
 								Count++;
 								Sleep(2);
 							}
@@ -268,7 +270,7 @@ else 'notAntiBot';";
         }
         private void TakeMoney(IBrowser browser)
         {
-			string ret = SendJSReturn(browsers[0], "document.querySelector('#osn_money').innerText;");
+			string ret = SendJSReturn(browser, "document.querySelector('#osn_money').innerText;");
 			CM(ret);
             double.TryParse(ret,out double money);
             if (money >= 30)

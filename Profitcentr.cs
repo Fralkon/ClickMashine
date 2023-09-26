@@ -1,9 +1,50 @@
 ﻿using CefSharp;
-using System.Text.Json;
+using System;
+using Tensorflow;
 
 namespace ClickMashine
 {
-	class Profitcentr : Site
+    enum ProfiCentrEnumNN
+    {
+        ёжиками,
+        автомобили,
+        апельсинами,
+        арбузами,
+        бананами,
+        бантиками,
+        велосипедами,
+        девушками,
+        деньгами,
+        деревьями,
+        домами,
+        жирафами,
+        карандашами,
+        клавиатурами,
+        книгами,
+        котятами,
+        лампочками,
+        лодками,
+        лошадьми,
+        медалями,
+        мышками,
+        носками,
+        пандой,
+        поездами,
+        поросятами,
+        самолетами,
+        скрипками,
+        слонами,
+        собаками,
+        стульями,
+        телефонами,
+        тиграми,
+        цветами,
+        цифрами,
+        чайниками,
+        экскаваторами,
+		яблоками
+	}
+    class Profitcentr : Site
 	{
 		public Profitcentr(Form1 form, Auth auth) : base(form, auth)
 		{
@@ -12,13 +53,15 @@ namespace ClickMashine
 		}
 		public override bool Auth(Auth auth)
 		{
+			var browserAuth = GetBrowser(0);
+			if(browserAuth == null) { return false; }
 			LoadPage(0, "https://profitcentr.com/login");
 			string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
 							 "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
             SendJS(0, auth_js);
-			if (AntiBot())
+			if (AuthorizationAntiBot(browserAuth))
 			{
-				string ev = GetMoney(browsers[0], "document.querySelector('#new-money-ballans')");
+				string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
 				if (ev == "error")
 					return false;
                 siteStripComboBox.Text = StatusSite.online.ToString();
@@ -29,9 +72,9 @@ namespace ClickMashine
 		protected override void StartSurf()
 		{
 			Initialize();
-			TrainBD();
 
-            waitHandle.WaitOne();
+
+
 
             if (!Auth(auth))
 				waitHandle.WaitOne();
@@ -50,11 +93,12 @@ namespace ClickMashine
 		private int ClickSurf()
 		{
 			int Count = 0;
-			IBrowser mainBrowser = browsers[0];
+			var mainBrowser = GetBrowser(0);
+			if(mainBrowser == null) { return -1; }
 			LoadPage("https://profitcentr.com/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(1)').href"));
 
-            if (!OutCaptchaLab(browsers[0], "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
+            if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
                 Error("Error captcha youtube");
                 return Count;
@@ -151,7 +195,8 @@ else
 		private int VisitSurf()
         {
 			int Count = 0;
-			IBrowser mainBrowser = browsers[0];
+			IBrowser mainBrowser = GetBrowser(0);
+			if (mainBrowser == null) return -1;
 			LoadPage(mainBrowser, "https://profitcentr.com/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href"));
             if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
@@ -205,7 +250,8 @@ function click_s()
 		private int YouTubeSurf()
 		{
 			int Count = 0;
-			var mainBrowser = browsers[0];
+			var mainBrowser = GetBrowser(0);
+			if (mainBrowser == null) return -1;
 			LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href"));
             if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
             {
@@ -213,7 +259,7 @@ function click_s()
                 return Count;
             }
 
-            IFrame main_frame = browsers[0].MainFrame;
+            IFrame main_frame = mainBrowser.MainFrame;
 			SendJS(main_frame, @"var loadPage = document.querySelector('#load-pages');
 if(loadPage != null) loadPage.click();");
 			Sleep(2);
@@ -299,7 +345,8 @@ else 'end';");
 		private int RuTubeSurf()
 		{
 			int Count = 0;
-			IBrowser mainBrowser = browsers[0];
+			IBrowser mainBrowser = GetBrowser(0);
+			if (mainBrowser == null) return -1;
             LoadPage("https://profitcentr.com/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').href"));
             if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn').click();"))
@@ -397,7 +444,8 @@ else 'end';");
 		private int MailSurf()
 		{
 			int Count = 0;
-            IBrowser mainBrowser = browsers[0];
+            var mainBrowser = GetBrowser(0);
+			if (mainBrowser == null) return -1;
             LoadPage("https://profitcentr.com/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').href"));
 			string js =
@@ -488,9 +536,11 @@ else
 			}
 			return Count;
 		}
-		private bool AntiBot()
-		{
-			for (int i = 0; i < 5; i++)
+		private bool AuthorizationAntiBot(IBrowser browser)
+        {
+            ProfitcentNN nn = new ProfitcentNN(@"C:/Users/Boyarkin/Desktop/Profitcentr.h5");
+            BoundObject boundObject = new BoundObject();
+            for (int i = 0; i < 5; i++)
 			{
 				string jsAntiBot =
 	@"var captha_lab = document.querySelectorAll('.out-capcha-lab');
@@ -498,7 +548,7 @@ if(captha_lab.length != 0){
     'captcha';
 }
 else 'ok';";
-				string evAntiBot = SendJSReturn(0, jsAntiBot);
+				string evAntiBot = SendJSReturn(browser, jsAntiBot);
 				CM(evAntiBot);
 				if (evAntiBot == "ok")
 					return true;
@@ -510,45 +560,139 @@ else 'ok';";
 				}
 				else
 				{
-					for(int j = 0; j< 6; j++)
-					{
-                        SaveImage(GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')["+j.ToString()+"]"));
+                    SendJS(browser, "document.querySelectorAll('.out-capcha-lab').forEach((element) => element.style.border = '0px');");
+                    Sleep(1);
+					ProfiCentrEnumNN? enumNN = null;
+					string nameImage = SendJSReturn(browser, "document.querySelector('.out-capcha-title').innerText;");
+                    foreach (string item in Enum.GetNames(typeof(ProfiCentrEnumNN)))
+                    {
+						if(nameImage.IndexOf(item) != -1)
+						{
+							enumNN = Enum.Parse<ProfiCentrEnumNN>(item);
+							break;
+						}
                     }
-
-                    Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
-                    string answer_telebot = SendQuestion(img, "");
-					if(answer_telebot == "")
-					jsAntiBot = "";
-					foreach (char ch in answer_telebot)
-						jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-					jsAntiBot += "document.querySelector('.btn_big_green').click();";
-
-					SendJS(0, jsAntiBot);
+					if (enumNN != null)
+                    {
+						List<Tuple<Bitmap, PredictNN>> imageHistoryPredict = new List<Tuple<Bitmap, PredictNN>>();
+						for (int j = 0; j < 6; j++)
+						{
+							Bitmap image = GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]");
+							PredictNN predict = nn.Predict(image);
+                            imageHistoryPredict.Add(Tuple.Create(image, predict));
+							if (enumNN == (ProfiCentrEnumNN)predict.Num)
+								SendJS(browser, "document.querySelectorAll('.out-capcha-inp')[" + j + "].checked = true;");
+						}
+						WaitChangeElement(browser, boundObject, "document.querySelector('.login-error')");
+						boundObject.ResetEvent();
+                        SendJS(browser, "document.querySelector('.btn_big_green').click();");
+						string ev = boundObject.GetValue();
+                        if (ev == "error")
+						{
+                            SaveHistoryCaptcha(imageHistoryPredict, enumNN);
+                        }
+						else if (ev == "Нужно подтвердить, что Вы не робот!")
+						{
+                            SaveHistoryCaptcha(imageHistoryPredict, enumNN);
+                        }
+						else if (ev == "Ваш аккаунт заблокирован")
+						{
+							AccountBlock();
+							return false;
+						}
+						else
+							return true;
+						//Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+						//string answer_telebot = SendQuestion(img, "");
+						//if (answer_telebot == "")
+						//	jsAntiBot = "";
+						//foreach (char ch in answer_telebot)
+						//	jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
+						//jsAntiBot += "document.querySelector('.btn_big_green').click();";
+					}
+					SendJS(browser, jsAntiBot);
 					Sleep(10);
 				}
 			}
 			Error("Ошибка ввода капчи");
 			return false;
 		}
-		private void TrainBD()
+        private bool OutCaptchaLab(IBrowser browser, string captcha, string input, string button)
         {
-			LoadPage("https://profitcentr.com/login");
-            string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
-            for (int i = 0; i < 100; i++) {
-				string name = SendJSReturn(browsers[0].MainFrame, "document.querySelector('.out-capcha-title').innerText");
-				string[] name_item = name.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-				Directory.CreateDirectory(path + name_item[name_item.Length-1] + @"\");
+            ProfitcentNN nn = new ProfitcentNN(@"C:/Users/Boyarkin/Desktop/Profitcentr.h5");
+            string js =
+@"var img_captcha = " + captcha + @";
+if(img_captcha != null)
+    'antiBot';
+else 'notAntiBot';";
+            int iteration = 0;
+            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
+            {
+                if (iteration == 10)
+                    return false;
 
-                SendJS(0, "for(var i = 0; i< 6;i++)document.querySelectorAll('.out-capcha-lab')[i].style.border = '0px';");
-				Sleep(1);
-                for (int j = 0; j < 6; j++)
-				{
-                    GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]")
-						.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
-				}
-				SendJS(0, "document.querySelector('.out-reload').click();");
-				Sleep(2);
-			}
+                string jsAntiBot = String.Empty;
+                string answerBot = SendQuestion(GetImgBrowser(browser.MainFrame, captcha), "");
+                if (answerBot != "upload")
+                {
+                    foreach (char ch in answerBot)
+                        jsAntiBot += input + "[" + ch + "].checked = true;";
+                    jsAntiBot += button + ";";
+                    SendJS(browser.MainFrame, jsAntiBot);
+                    Sleep(4);
+                }
+                iteration++;
+                eventLoadPage.Reset();
+                browser.Reload();
+                eventLoadPage.WaitOne(5000);
+            }
+            return true;
         }
-	}
+		//private void SaveHistoryCaptcha(List<Tuple<Bitmap, PredictNN>> historyCaptcha, ProfiCentrEnumNN? enumNN)
+		//{
+		//	string path = $"{Form1.PATH_SETTING}Errors/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+		//	Directory.CreateDirectory(path);
+		//	for (int i = 0; i < historyCaptcha.Count; i++)
+  //          {
+  //              string file = enumNN.ToString() + Environment.NewLine + "----------------------------" + Environment.NewLine;
+  //              Tuple<Bitmap, PredictNN>? captcha = historyCaptcha[i];
+		//		captcha.Item1.Save(path + i.ToString() + ".png");
+		//		var tensor = captcha.Item2.Tensor.ToArray<float>();
+		//		for (int j = 0; j < tensor.Length; j++)
+		//			file += ((ProfiCentrEnumNN)j).ToString() + " : " + tensor[j].ToString() + Environment.NewLine;
+		//		File.WriteAllText(path + $"debug{i.ToString()}.txt", file);
+		//	}
+		//}
+        //     private void TrainBD()
+        //     {
+        //         ProfitcentNN nn = new ProfitcentNN(@"C:/Users/Boyarkin/Desktop/Profitcentr.h5");
+        //LoadPage("https://profitcentr.com/login");
+        //         string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
+        //         for (int i = 0; i < 100; i++) {
+        //	string name = SendJSReturn(Browsers[0].MainFrame, "document.querySelector('.out-capcha-title').innerText");
+        //	string[] name_item = name.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        //	Directory.CreateDirectory(path + name_item[name_item.Length-1] + @"\");
+
+        //             SendJS(0, "document.querySelectorAll('.out-capcha-lab').forEach((element) => element.style.border = '0px');");
+        //	Sleep(1);
+        //             for (int j = 0; j < 6; j++)
+        //	{
+
+        //		PredictNN predict = nn.Predict(GetImgBrowser(Browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
+        //		foreach (var v in predict.Tensor.numpy())
+        //		{
+        //			foreach (var v2 in v)
+        //				Console.WriteLine(v2.ToString());
+        //		}
+        //		Console.WriteLine((ProfiCentrEnumNN)predict.Num);
+        //		Console.ReadLine();
+
+        //		//              GetImgBrowser(browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]")
+        //		//.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
+        //	}
+        //	SendJS(0, "document.querySelector('.out-reload').click();");
+        //	Sleep(2);
+        //}
+        //     }
+    }
 }

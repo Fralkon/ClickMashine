@@ -13,12 +13,15 @@ namespace ClickMashine
         protected override void StartSurf()
         {
             Initialize();
+
+            GetTrainBD(GetBrowser(0), "document.querySelector('.out-capcha-title')", "document.querySelectorAll('.out-capcha-lab')", "document.querySelector('.fa-refresh')",5,500);
+            waitHandle.WaitOne();
             if (!Auth(auth))
             {
                 if (!waitHandle.WaitOne())
                     return;
             }
-            TakeMoney(browsers[0]);
+            TakeMoney(main_browser.GetBrowser());
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
             mSurf.AddFunction(VisitSurf);
@@ -81,7 +84,8 @@ namespace ClickMashine
             "else {'go';}");
             if (ev == "login")
             {
-                IBrowser browser = browsers[0];
+                var browser = GetBrowser(0);
+                if (browser == null) return false;
                 for (int i = 0; i < 10; i++)
                 {
                     if (i == 9)
@@ -127,17 +131,19 @@ namespace ClickMashine
         private void CheckCaptcha()
         {
             Sleep(3);
+            var browserAuth = GetBrowser(0);
+            if (browserAuth == null) return;
             string ev = SendJSReturn(0,
 @"var check = document.querySelector('.h-captcha');
 if (check != null) { 'captcha'; }
 else {'end';}");
             if (ev == "captcha")
             {
-                List<long> list_id = browsers[0].GetFrameIdentifiers();
+                List<long> list_id = browserAuth.GetFrameIdentifiers();
                 IFrame? frameCheckbox = null, frameChallenge = null;
                 for (int i = 0; i < list_id.Count; i++)
                 {
-                    IFrame frame = browsers[0].GetFrame(list_id[i]);
+                    IFrame frame = browserAuth.GetFrame(list_id[i]);
                     if (frame.Url.IndexOf("challenge") != -1)
                         frameChallenge = frame;
                     else if (frame.Url.IndexOf("checkbox") != -1)
@@ -154,7 +160,7 @@ else {'end';}");
                     while (true)
                     {
                         Sleep(1);
-                        Bitmap img = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('[title=\"Main content of the hCaptcha challenge\"]')");
+                        Bitmap img = GetImgBrowser(browserAuth.MainFrame, "document.querySelector('[title=\"Main content of the hCaptcha challenge\"]')");
                         string answerTelebot = SendQuestion(img, "");
                         js = "var items = document.querySelectorAll('.task-image');";
                         string jsCaptch =
@@ -206,7 +212,7 @@ else 'end';");
             {
                 while (true)
                 {
-                    Bitmap image = GetImgBrowser(browsers[0].MainFrame, "document.querySelector('.out-capcha')");
+                    Bitmap image = GetImgBrowser(browserAuth.MainFrame, "document.querySelector('.out-capcha')");
                     string answer_telebot = SendQuestion(image, "");
 
                     string auth_js = "";
@@ -226,7 +232,7 @@ else 'ok';";
                     else
                     {
                         eventLoadPage.Reset();
-                        browsers[0].Reload();
+                        browserAuth.Reload();
                         eventLoadPage.WaitOne();
                     }
                 }
@@ -235,10 +241,12 @@ else 'ok';";
         private int YouTubeSurf(string url)
         {
             int count = 0;
+            var browserMain = GetBrowser(0);
+            if (browserMain == null) return -1;
             LoadPage(0, url);
             Sleep(5);
             //CheckCaptcha();
-            AntiBotImage(browsers[0]);
+            AntiBotImage(browserMain);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 var youtube_premium = null;
@@ -273,7 +281,7 @@ function surf(){
 	else { return 'sec_wait'; }
 }";
 
-            SendJS(0, js);
+            SendJS(browserMain, js);
             Thread.Sleep(200);
             while (true)
             {
@@ -374,9 +382,12 @@ else
         private int ClickSurf()
         {
             int Count = 0;
-            LoadPage(0, "https://seo-fast.ru/work_surfing?go");
+
+            var browserMain = GetBrowser(0);
+            if (browserMain == null) return -1;
+            LoadPage(browserMain, "https://seo-fast.ru/work_surfing?go");
             Sleep(2);
-            AntiBotImage(browsers[0]);
+            AntiBotImage(browserMain);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -397,10 +408,10 @@ function click_s()
         surf_cl[n].click(); n++; return 'surf';
     }
 }";
-            SendJS(0, js);
+            SendJS(browserMain, js);
             while (true)
             {
-                string ev = SendJSReturn(0, "click_s();");
+                string ev = SendJSReturn(browserMain, "click_s();");
                 if (ev == "end_surf")
                     break;
                 else if (ev == "continue")
@@ -409,7 +420,7 @@ function click_s()
                 {
                     for (int i = 0; i < 5; i++)
                     {
-                        ev = SendJSReturn(0, "surf();");
+                        ev = SendJSReturn(browserMain, "surf();");
                         if (ev == "wait")
                             Sleep(1);
                         else if (ev == "click")
@@ -461,9 +472,11 @@ go();";
         private int VisitSurf()
         {
             int Count = 0;
+            var browserMain = GetBrowser(0);
+            if (browserMain == null) return -1;
             LoadPage(0, "https://seo-fast.ru/work_transitions");
             Sleep(2);
-            AntiBotImage(browsers[0]);
+            AntiBotImage(browserMain);
             string js =
            @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -484,10 +497,10 @@ function click_s()
         surf_cl[n].click(); n++; return 'surf';
     }
 }";
-            SendJS(0, js);
+            SendJS(browserMain, js);
             while (true)
             {
-                string ev = SendJSReturn(0, "click_s();");
+                string ev = SendJSReturn(browserMain, "click_s();");
                 if (ev == "end_surf")
                     break;
                 else if (ev == "continue")
@@ -496,7 +509,7 @@ function click_s()
                 {
                     for (int i = 0; i < 5; i++)
                     {
-                        ev = SendJSReturn(0, "surf();");
+                        ev = SendJSReturn(browserMain, "surf();");
                         if (ev == "wait")
                             Sleep(1);
                         else if (ev == "click")
@@ -538,9 +551,11 @@ else { return 'wait' }};";
         private int MailSurf()
         {
             int Count = 0;
+            var browserMain = GetBrowser(0);
+            if (browserMain == null) return -1;
             LoadPage(0, "https://seo-fast.ru/work_mails");
             Sleep(2);
-            AntiBotImage(browsers[0]);
+            AntiBotImage(browserMain);
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function surf()
@@ -571,11 +586,11 @@ function click_s()
                     continue;
                 else if (ev == "click")
                 {
-                    ev = WaitFunction(browsers[0].MainFrame, "surf();");
+                    ev = WaitFunction(browserMain.MainFrame, "surf();");
                     if (ev != "errorWait")
                     {
                         ev = Regex.Replace(ev, @"\D", "", RegexOptions.IgnoreCase);
-                        ev = GetMailAnswer(browsers[0].MainFrame, "document.querySelector('#window_mail" + ev + " > tbody > tr:nth-child(2) > td')",
+                        ev = GetMailAnswer(browserMain.MainFrame, "document.querySelector('#window_mail" + ev + " > tbody > tr:nth-child(2) > td')",
                            "document.querySelector('.question_am')",
                            "document.querySelectorAll('.button_a_m')");
                         if (ev == "errorMail")
@@ -594,7 +609,7 @@ function click_s()
 }";
 
                         SendJS(0, "document.querySelectorAll('.button_a_m')[" + ev + @"].click();");
-                        ev = WaitFunction(browsers[0].MainFrame, "waitReturn();", js);
+                        ev = WaitFunction(browserMain.MainFrame, "waitReturn();", js);
                         if (ev == "click")
                         {
                             var browserSurf = GetBrowser(1);
