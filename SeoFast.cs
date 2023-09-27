@@ -97,10 +97,10 @@ namespace ClickMashine
                         "document.querySelector('#logpassword').value = '" + auth.Password + "';";
                         SendJS(0, js);
 
-                        for (int j = 0; j < 4; j++)
-                        {
-                            SaveImage(GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
-                        }
+                        //for (int j = 0; j < 4; j++)
+                        //{
+                        //    SaveImage(GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
+                        //}
 
                         Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
 
