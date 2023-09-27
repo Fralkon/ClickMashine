@@ -32,6 +32,11 @@ namespace ClickMashine
         replace,
         exit
     }
+    enum StatusCaptcha { 
+        OK,
+        BLOCK,
+        ERROR
+    }
     class Auth
     {
         public string Login { get; set; }
@@ -402,7 +407,7 @@ namespace ClickMashine
         protected void SendJS(IFrame frame, string JS)
         {
             Active(frame);
-            Console.WriteLine("---------------------------\nSend JS: \n");
+            Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS);
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
@@ -668,7 +673,7 @@ WaitElement();";
             }
             return "errorWait";
         }
-        protected void WaitChangeElement(IBrowser browser,BoundObject boundObject, string element)
+        protected void WaitChangeElement(IBrowser browser, BoundObject boundObject, string element)
         {
             var control = BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier);
             if (control.Item1 != null)
@@ -725,36 +730,6 @@ else 'errorImg';";
         {
             return TCPMessageManager.SendQuestion(image, text, Type);
         }
-//        protected bool OutCaptchaLab(IBrowser browser,string captcha, string input, string button)
-//        {
-//            string js = 
-//@"var img_captcha = "+captcha+@";
-//if(img_captcha != null)
-//    'antiBot';
-//else 'notAntiBot';";
-//            int iteration = 0;
-//            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
-//            {
-//                if (iteration == 10)
-//                    return false;
-
-//                string jsAntiBot = String.Empty;
-//                string answerBot = SendQuestion(GetImgBrowser(browser.MainFrame, captcha), "");
-//                if (answerBot != "upload")
-//                {
-//                    foreach (char ch in answerBot)
-//                        jsAntiBot += input + "[" + ch + "].checked = true;";
-//                    jsAntiBot += button + ";";
-//                    SendJS(browser.MainFrame, jsAntiBot);
-//                    Sleep(4);
-//                }
-//                iteration++;
-//                eventLoadPage.Reset();
-//                browser.Reload();
-//                eventLoadPage.WaitOne(5000);
-//            }
-//            return true;
-//        }
         protected string GetMoney(IBrowser browser, string selector)
         {
             string js =
@@ -773,18 +748,18 @@ else 'error';";
             Directory.CreateDirectory(path);
             bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
         }
-        protected void SaveHistoryCaptcha<T>(List<Tuple<Bitmap, PredictNN>> historyCaptcha, T Enum)
+        protected void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
         {
             string path = $"{Form1.PATH_SETTING}Image/Errors/{Type.ToString()}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
             Directory.CreateDirectory(path);
             for (int i = 0; i < historyCaptcha.Count; i++)
             {
-                string file = $"{Enum.ToString()}{Environment.NewLine}----------------------------{Environment.NewLine}";
-                Tuple<Bitmap, PredictNN>? captcha = historyCaptcha[i];
+                string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
+                (Bitmap, PredictNN)captcha = historyCaptcha[i];
                 captcha.Item1.Save(path + i.ToString() + ".png");
                 var tensor = captcha.Item2.Tensor.ToArray<float>();
                 for (int j = 0; j < tensor.Length; j++)
-                    file += j.ToString() + " : " + tensor[j].ToString() + Environment.NewLine;
+                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
                 File.WriteAllText(path + $"debug{i}.txt", file);
             }
         }
@@ -818,6 +793,58 @@ else 'error';";
                 SendJS(0, reload + ".click();");
                 Sleep(2);
             }
+        }
+        protected StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
+        {
+            string js =
+@"var img_captcha = " + captcha + @";
+if(img_captcha != null)
+    'captcha';
+else 'ok';";
+            if (SendJSReturn(browser.MainFrame, js) != "captcha")
+                return StatusCaptcha.OK;           
+            BoundObject boundObject = new BoundObject();
+            WaitChangeElement(browser, boundObject, information);
+            for (int iteration = 0; iteration < 10; iteration++)
+            {
+                string nameImage = SendJSReturn(browser, $"{title}.innerText;");
+                string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
+                if (value == null)
+                    return StatusCaptcha.ERROR;
+                SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
+                Sleep(2);
+                List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
+                for(int i =0; i < countInput; i++)
+                {
+                    Bitmap image = GetImgBrowser(browser.MainFrame, $"{input}[" + i.ToString() + "]");
+                    PredictNN predict = nn.Predict(image);
+                    imageHistoryPredict.Add((image, predict));
+                    if (value == EnumValues[predict.Num])
+                        SendJS(browser, $"{input}[" + i + "].querySelector('input').checked = true;");
+                }
+                boundObject.ResetEvent();
+                SendJS(browser, $"{button}.click();");
+                string ev = boundObject.GetValue();
+                if (ev == "error")
+                {
+                    SaveHistoryCaptcha(imageHistoryPredict, EnumValues, value);
+                }
+                else if (ev == "Нужно подтвердить, что Вы не робот!")
+                {
+                    SaveHistoryCaptcha(imageHistoryPredict, EnumValues, value);
+                }
+                else if (ev == "Ваш аккаунт заблокирован")
+                {
+                    AccountBlock();
+                    return StatusCaptcha.BLOCK;
+                }
+                else
+                    return StatusCaptcha.OK;
+                if(reload != null)
+                    SendJS(browser, $"{reload}.click();");
+                Sleep(3);
+            }
+            return StatusCaptcha.ERROR;
         }
     }
 }

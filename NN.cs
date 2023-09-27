@@ -68,6 +68,30 @@ namespace ClickMashine
             var arr = ConvertToPredict(mat);
             return new PredictNN(model.predict(tf.expand_dims(arr, 0)));
         }
+        public virtual PredictNN Predict(Bitmap bitmap)
+        {
+            Mat mat = BitmapConverter.ToMat(bitmap);
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);
+            if (mat.Cols != imgDim[0] || mat.Rows != imgDim[1])
+                mat = mat.Resize(new Size(imgDim[0], imgDim[1]));
+            int rows = mat.Rows;
+            int cols = mat.Cols;
+            byte[] arr = new byte[rows * cols * 3];
+            int p = 0;
+            for (int i = 0; i < mat.Rows; i++)
+            {
+                for (int j = 0; j < mat.Cols; j++)
+                {
+                    Vec3b color = mat.At<Vec3b>(i, j);
+                    arr[p++] = color.Item0;
+                    arr[p++] = color.Item1;
+                    arr[p++] = color.Item2;
+                }
+            }
+            NDArray numpy_array = np.array(arr);
+            numpy_array = numpy_array.reshape(new int[] { rows, cols, 3 });
+            return new PredictNN(model.predict(tf.expand_dims(numpy_array, 0)));
+        }
         protected NDArray ConvertToPredict(Mat mat)
         {
             mat = mat.Resize(new Size(imgDim[1], imgDim[0]));
@@ -347,7 +371,7 @@ namespace ClickMashine
             // output layer
             var outputs = layers.Dense(10).Apply(x);
 
-            model = (Model)keras.Model(inputs, outputs, name: "Profitcentr");
+            model = (Model)keras.Model(inputs, outputs, name: "SeoClub");
             model.summary();
 
             // compile keras model in tensorflow static graph

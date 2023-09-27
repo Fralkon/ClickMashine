@@ -17,6 +17,7 @@ namespace ClickMashine
     }
     class SeoClub : Site
     {
+        SeoClubNN nn;
         public SeoClub(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://seoclub.su/";
@@ -30,7 +31,16 @@ namespace ClickMashine
             string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
                              "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
             SendJS(0, auth_js);
-            if (AuthorizationAntiBot(browserAuth))
+            StatusCaptcha status = OutCaptchaLab(browserAuth,
+               nn,
+               Enum.GetNames(typeof(SeoClubEnumNN)).ToList(),
+               "document.querySelector('.out-capcha-title')",
+               "document.querySelector('.out-capcha')",
+               "document.querySelectorAll('.out-capcha-lab')",
+               5,
+               "document.querySelector('.btn')",
+               "document.querySelector('.login-error')");
+            if (status == StatusCaptcha.OK)
             {
                 string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
                 if (ev == "error")
@@ -69,6 +79,7 @@ namespace ClickMashine
         }
         protected override void StartSurf()
         {
+            nn = new SeoClubNN(@"C:/ClickMashine/Settings/Net/SeoClub.h5");
             Initialize();
             //TrainBD();
             //waitHandle.WaitOne();
@@ -457,12 +468,12 @@ else 'ok';";
                     }
                     if (enumNN != null)
                     {
-                        List<Tuple<Bitmap, PredictNN>> imageHistoryPredict = new List<Tuple<Bitmap, PredictNN>>();
+                        List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
                         for (int j = 0; j < 5; j++)
                         {
                             Bitmap image = GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]");
                             PredictNN predict = nn.Predict(image);
-                            imageHistoryPredict.Add(Tuple.Create(image, predict));
+                            imageHistoryPredict.Add((image, predict));
                             if (enumNN == (SeoClubEnumNN)predict.Num)
                                 SendJS(browser, "document.querySelectorAll('.out-capcha-inp')[" + j + "].checked = true;");
                         }
@@ -472,11 +483,11 @@ else 'ok';";
                         string ev = boundObject.GetValue();
                         if (ev == "error")
                         {
-                            SaveHistoryCaptcha(imageHistoryPredict, enumNN);
+                            //SaveHistoryCaptcha(imageHistoryPredict, enumNN);
                         }
                         else if (ev == "Нужно подтвердить, что Вы не робот!")
                         {
-                            SaveHistoryCaptcha(imageHistoryPredict, enumNN);
+                            //SaveHistoryCaptcha(imageHistoryPredict, enumNN);
                         }
                         else if (ev == "Ваш аккаунт заблокирован")
                         {
