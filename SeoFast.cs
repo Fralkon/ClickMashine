@@ -5,15 +5,44 @@ using CefSharp.WinForms;
 
 namespace ClickMashine
 {
+    enum SeoFastEnumNN
+    {
+        автомобилями,
+        апельсинами,
+        бантиками,
+        велосипедами,
+        клавиатурами,
+        котятами,
+        лампочками,
+        лошадьми,
+        мышками,
+        носками,
+        пандой,
+        поездами,
+        поросятами,
+        самолетами,
+        слонами,
+        собаками,
+        стульями,
+        телефонами,
+        тиграми,
+        цветами,
+        чайниками,
+        экскаваторами,
+        яблоками
+    }
     class SeoFast : Site
     {
+        SeoFastNN nn;
         public SeoFast(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://seo-fast.ru/";
             Type = EnumTypeSite.SeoFast;
+            nn = new SeoFastNN();
         }
         protected override void StartSurf()
         {
+            nn = new SeoFastNN(@"C:/ClickMashine/Settings/Net/SeoFast.h5");
             Initialize();
            
             if (!Auth(auth))
@@ -84,48 +113,32 @@ namespace ClickMashine
             "else {'go';}");
             if (ev == "login")
             {
-                var browser = GetBrowser(0);
-                if (browser == null) return false;
-                for (int i = 0; i < 10; i++)
-                {
-                    if (i == 9)
-                        return false;
-                    eventLoadPage.WaitOne(5000);
-                    if (WaitElement(browser.MainFrame, "document.querySelector('.out-capcha')"))
-                    {
-                        string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
+                var browserAuth = GetBrowser(0);
+                if (browserAuth == null) return false;
+                string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
                         "document.querySelector('#logpassword').value = '" + auth.Password + "';";
-                        SendJS(0, js);
+                SendJS(browserAuth, js);
+                StatusCaptcha status = OutCaptchaLab(browserAuth,
+                    nn,
+                    Enum.GetNames(typeof(ProfiCentrEnumNN)).ToList(),
+                    "document.querySelector('.out-capcha-title')",
+                    "document.querySelector('.out-capcha')",
+                    "document.querySelectorAll('.out-capcha-lab')",
+                    5,
+                    "document.querySelector('.btn_big_green')",
+                    "document.querySelector('.login-error')");
+                if (status == StatusCaptcha.OK)
+                {
 
-                        //for (int j = 0; j < 4; j++)
-                        //{
-                        //    SaveImage(GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
-                        //}
-
-                        Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
-
-                        string answer_telebot = SendQuestion(img, "");
-
-                        string jsAntiBot = "";
-                        foreach (char ch in answer_telebot)
-                            jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                        jsAntiBot += "login('1');";
-
-                        SendJS(0, jsAntiBot);
-                        Sleep(7);
-                        if (WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
-                        {
-                            SendJS(browser.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
-                            Sleep(2);
-                            TakeMoney(browser);
-                            return true;
-                        }
-                        eventLoadPage.Reset();
-                        browser.Reload();
+                    if (WaitElement(browserAuth.MainFrame, "document.querySelector('.main_balance')"))
+                    {
+                        SendJS(browserAuth.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
+                        Sleep(2);
+                        return true;
                     }
-                    else
-                        return false;
                 }
+                else
+                    return false;
             }
             return true;
         }

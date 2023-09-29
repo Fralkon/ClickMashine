@@ -329,7 +329,7 @@ namespace ClickMashine
         public SeoClubNN(string path) : base(new Size(75, 75), 3, path)
         {
         }
-        public PredictNN Predict(Bitmap bitmap)
+        public override PredictNN Predict(Bitmap bitmap)
         {
             Mat mat = BitmapConverter.ToMat(bitmap);
             Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);
@@ -375,6 +375,62 @@ namespace ClickMashine
             model.summary();
 
             // compile keras model in tensorflow static graph
+            model.compile(optimizer: keras.optimizers.Adam(),
+               loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
+               metrics: new[] { "accuracy" });
+        }
+    }
+    class SeoFastNN : NN
+    {
+        public SeoFastNN() : base(new Size(75, 75), 3)
+        {
+        }
+        public SeoFastNN(string path) : base(new Size(75, 75), 3, path)
+        {
+        }
+        public override PredictNN Predict(Bitmap bitmap)
+        {
+            Mat mat = BitmapConverter.ToMat(bitmap);
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);
+            if (mat.Cols != imgDim[0] || mat.Rows != imgDim[1])
+                mat = mat.Resize(new Size(imgDim[0], imgDim[1]));
+            int rows = mat.Rows;
+            int cols = mat.Cols;
+            byte[] arr = new byte[rows * cols * 3];
+            int p = 0;
+            for (int i = 0; i < mat.Rows; i++)
+            {
+                for (int j = 0; j < mat.Cols; j++)
+                {
+                    Vec3b color = mat.At<Vec3b>(i, j);
+                    arr[p++] = color.Item0;
+                    arr[p++] = color.Item1;
+                    arr[p++] = color.Item2;
+                }
+            }
+            NDArray numpy_array = np.array(arr);
+            numpy_array = numpy_array.reshape(new int[] { rows, cols, 3 });
+            PredictNN predictNN = new PredictNN(model.predict(tf.expand_dims(numpy_array, 0)));
+            return predictNN;
+        }
+        protected override void BuildModel()
+        {
+            var layers = new LayersApi();
+
+            var inputs = keras.layers.Input(shape: imgDim, name: "img");
+            var x = layers.Rescaling(1.0f / 255, input_shape: imgDim).Apply(inputs);
+            x = layers.Conv2D(20, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.Conv2D(76, 3, activation: "relu").Apply(x);
+            x = layers.GlobalAveragePooling2D().Apply(x);
+            x = layers.Dense(256, activation: "relu").Apply(x);
+            x = layers.Dropout(0.5f).Apply(x);
+
+            var outputs = layers.Dense(23).Apply(x);
+
+            model = (Model)keras.Model(inputs, outputs, name: "SeoFast");
+            model.summary();
+
             model.compile(optimizer: keras.optimizers.Adam(),
                loss: keras.losses.SparseCategoricalCrossentropy(from_logits: true),
                metrics: new[] { "accuracy" });

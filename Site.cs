@@ -5,9 +5,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ClickMashine_11;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using CefSharp.DevTools.Page;
-using OpenCvSharp;
-using System.Drawing.Imaging;
+using CefSharp.DevTools;
 
 namespace ClickMashine
 {

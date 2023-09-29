@@ -1,5 +1,9 @@
 ﻿using CefSharp;
+using CefSharp.DevTools.Page;
+using CefSharp.WinForms;
 using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 using Tensorflow;
 
 namespace ClickMashine
@@ -46,7 +50,7 @@ namespace ClickMashine
 	}
     class Profitcentr : Site
     {
-		ProfitcentNN nn;
+        ProfitcentNN nn;
         public Profitcentr(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://profitcentr.com/";
@@ -87,10 +91,6 @@ namespace ClickMashine
         {
             nn = new ProfitcentNN(@"C:/ClickMashine/Settings/Net/Profitcentr.h5");
             Initialize();
-
-
-
-
             if (!Auth(auth))
 				waitHandle.WaitOne();
 
