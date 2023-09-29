@@ -5,6 +5,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ClickMashine_11;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using CefSharp.DevTools.Page;
+using OpenCvSharp;
+using System.Drawing.Imaging;
 
 namespace ClickMashine
 {
@@ -169,14 +172,14 @@ namespace ClickMashine
         public Form1 form;
         protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
-        protected List<(IWebBrowser,IBrowser)> BrowserConrols = new List<(IWebBrowser, IBrowser)>();
-        protected IBrowser ?LastBrowser;
+        protected List<(IWebBrowser, IBrowser)> BrowserConrols = new List<(IWebBrowser, IBrowser)>();
+        protected IBrowser? LastBrowser;
         protected string homePage = String.Empty;
         protected string HostName = String.Empty;
         public EnumTypeSite Type { get; protected set; }
-        public ChromiumWebBrowser ?main_browser;
-        public MyLifeSplanHandler ?lifeSplanHandler;
-        protected Auth ?auth;
+        public ChromiumWebBrowser? main_browser;
+        public MyLifeSplanHandler? lifeSplanHandler;
+        protected Auth? auth;
         public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL;
         protected ToolStripMenuItem menuItemSite;
@@ -187,7 +190,7 @@ namespace ClickMashine
             this.form = form;
             this.mySQL = form.mySQL;
             this.auth = auth;
-            TCPMessageManager= new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
+            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public Site(Form1 form)
         {
@@ -204,17 +207,17 @@ namespace ClickMashine
             lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
             main_browser.LifeSpanHandler = lifeSplanHandler;
-            
+
             menuItemSite = new ToolStripMenuItem();
             menuItemSite.Name = Type.ToString();
-            menuItemSite.Size = new Size(180, 22);
+            menuItemSite.Size = new System.Drawing.Size(180, 22);
             menuItemSite.Text = Type.ToString();
 
             siteStripComboBox = new ToolStripComboBox()
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Name = Type.ToString(),
-                Size = new Size(121, 23)
+                Size = new System.Drawing.Size(121, 23)
             };
             foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
                 siteStripComboBox.Items.Add(flavourName);
@@ -243,7 +246,7 @@ namespace ClickMashine
         private void SiteStripComboBox_TextChanged(object? sender, EventArgs e)
         {
             ToolStripComboBox? item = sender as ToolStripComboBox;
-            if(item != null)
+            if (item != null)
             {
                 switch ((StatusSite)item.SelectedIndex)
                 {
@@ -277,7 +280,7 @@ namespace ClickMashine
         {
             LastBrowser = browser;
             browserControl.LoadingStateChanged += Browser_LoadingStateChanged;
-            BrowserConrols.Add((browserControl,browser));
+            BrowserConrols.Add((browserControl, browser));
             eventBrowserCreated.Set();
         }
         public void CloseBrowser(IBrowser browser)
@@ -680,7 +683,7 @@ WaitElement();";
             {
                 control.Item1.JavascriptObjectRepository.Register("boundAsync", boundObject, BindingOptions.DefaultBinder);
                 string js =
-@"var target = "+element+ @";
+@"var target = " + element + @";
 const config = {
   childList: true,
         attributes: true,
@@ -733,7 +736,7 @@ else 'errorImg';";
         protected string GetMoney(IBrowser browser, string selector)
         {
             string js =
-@"var ballans = "+selector+@";
+@"var ballans = " + selector + @";
 if(ballans != null)
     ballans.innerText;
 else 'error';";
@@ -755,7 +758,7 @@ else 'error';";
             for (int i = 0; i < historyCaptcha.Count; i++)
             {
                 string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
-                (Bitmap, PredictNN)captcha = historyCaptcha[i];
+                (Bitmap, PredictNN) captcha = historyCaptcha[i];
                 captcha.Item1.Save(path + i.ToString() + ".png");
                 var tensor = captcha.Item2.Tensor.ToArray<float>();
                 for (int j = 0; j < tensor.Length; j++)
@@ -767,7 +770,7 @@ else 'error';";
         {
             MessageBox.Show("Account block");
         }
-        protected void GetTrainBD(IBrowser browser,string title, string element, string reload,int countElement, int count)
+        protected void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
         {
             string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
             for (int i = 0; i < count; i++)
@@ -793,6 +796,21 @@ else 'error';";
                 SendJS(0, reload + ".click();");
                 Sleep(2);
             }
+        }
+        protected byte[] GetScreenAsync()
+        {
+            Console.WriteLine(23123);
+            var devToolsClient = BrowserConrols[0].Item2.GetDevToolsClient();
+            
+                Console.WriteLine(23123);
+                var result = devToolsClient.Page.CaptureScreenshotAsync().Result;
+                Console.WriteLine(23123);
+                Console.WriteLine(result.ToString());
+                Console.WriteLine(23123);
+                Console.WriteLine(result.Data);
+                Console.WriteLine(23123);
+                return result.Data;
+            
         }
         protected StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
         {

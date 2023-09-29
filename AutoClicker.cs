@@ -26,11 +26,11 @@ namespace ClickMashine
                                 Auth auth = new Auth(row["login"].ToString(), row["password"].ToString());
                                 switch (site)
                                 {
-                                    //case EnumTypeSite.Aviso:
-                                    //    {
-                                    //        siteList.Add(new Aviso(form, auth));
-                                    //        break;
-                                    //    }
+                                    case EnumTypeSite.Aviso:
+                                        {
+                                            siteList.Add(new Aviso(form, auth));
+                                            break;
+                                        }
                                     case EnumTypeSite.SeoFast:
                                         {
                                             siteList.Add(new SeoFast(form, auth));

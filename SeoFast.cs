@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using CefSharp;
+using CefSharp.DevTools.Page;
+using CefSharp.WinForms;
 
 namespace ClickMashine
 {
@@ -13,15 +15,13 @@ namespace ClickMashine
         protected override void StartSurf()
         {
             Initialize();
-
-            GetTrainBD(GetBrowser(0), "document.querySelector('.out-capcha-title')", "document.querySelectorAll('.out-capcha-lab')", "document.querySelector('.fa-refresh')",5,500);
-            waitHandle.WaitOne();
+           
             if (!Auth(auth))
             {
                 if (!waitHandle.WaitOne())
                     return;
             }
-            TakeMoney(main_browser.GetBrowser());
+
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
             mSurf.AddFunction(VisitSurf);
@@ -117,6 +117,7 @@ namespace ClickMashine
                         {
                             SendJS(browser.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
                             Sleep(2);
+                            TakeMoney(browser);
                             return true;
                         }
                         eventLoadPage.Reset();
@@ -302,7 +303,7 @@ function surf(){
                     }
                     catch (Exception ex)
                     {
-                        Error("Error watch youtube task.");
+                        Error("Error watch youtube task." + ex.Message);
                         browserYouTube.GetHost().CloseBrowser(true);
                     }
                     count++;
@@ -324,7 +325,7 @@ function surf(){
                             }
                             catch (Exception ex)
                             {
-                                Error("Error watch youtube task.");
+                                Error("Error watch youtube task." + ex.Message);
                                 browserYouTube.GetHost().CloseBrowser(true);
                             }
                             count++;
