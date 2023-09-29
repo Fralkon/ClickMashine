@@ -2,7 +2,7 @@
 
 namespace ClickMashine
 {
-    enum SeoClubEnumNN
+    enum AdasoEnumNN
     {
         апельсинами,
         грибом,
@@ -15,25 +15,25 @@ namespace ClickMashine
         цветами,
         яблоками
     }
-    class SeoClub : Site
+    class Adaso : Site
     {
         SeoClubNN nn;
-        public SeoClub(Form1 form, Auth auth) : base(form, auth)
+        public Adaso(Form1 form, Auth auth) : base(form, auth)
         {
-            homePage = "https://seoclub.su/";
-            Type = EnumTypeSite.SeoClub;
+            homePage = "https://adaso.su/";
+            Type = EnumTypeSite.Adaso;
         }
         public override bool Auth(Auth auth)
         {
             var browserAuth = GetBrowser(0);
             if (browserAuth == null) { return false; }
-            LoadPage(browserAuth, "https://seoclub.su/login");
+            LoadPage(browserAuth, "https://adaso.su/login");
             string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
                              "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
             SendJS(0, auth_js);
             StatusCaptcha status = OutCaptchaLab(browserAuth,
                nn,
-               Enum.GetNames(typeof(SeoClubEnumNN)).ToList(),
+               Enum.GetNames(typeof(AdasoEnumNN)).ToList(),
                "document.querySelector('.out-capcha-title')",
                "document.querySelector('.out-capcha')",
                "document.querySelectorAll('.out-capcha-lab')",
@@ -42,51 +42,21 @@ namespace ClickMashine
                "document.querySelector('.login-error')");
             if (status == StatusCaptcha.OK)
             {
-                string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
-                if (ev == "error")
-                    return false;
+                //string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
+                //if (ev == "error")
+                //    return false;
                 siteStripComboBox.Text = StatusSite.online.ToString();
                 return true;
             }
-            return false;
-
-            //IBrowser loginBrowser = GetBrowser(0);
-            //if (loginBrowser == null) return false;
-            //LoadPage(loginBrowser, "https://seoclub.su/login");
-            //string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
-            //                 "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
-
-            //SendJS(0, auth_js);
-            //for (int i = 0; i < 5; i++) {
-            //    if (WaitElement(loginBrowser.MainFrame, "document.querySelector('.out-capcha')", 2))
-            //    {
-            //        AntiBot(loginBrowser);
-            //        SendJS(loginBrowser, "document.querySelector('.btn').click();");
-            //        Sleep(7);
-            //    }
-            //    else
-            //    {
-            //        string money = GetMoney(loginBrowser, "document.querySelector('#new-money-ballans')");
-            //        if (money != "error")
-            //        {
-            //            siteStripComboBox.Text = StatusSite.online.ToString();
-            //            return true;
-            //        }
-            //        return false;
-            //    }
-            //}
-            //return false;            
+            return false;          
         }
         protected override void StartSurf()
         {
             nn = new SeoClubNN(@"C:/ClickMashine/Settings/Net/SeoClub.h5");
             Initialize();
-            //TrainBD();
-            //waitHandle.WaitOne();
             if (!Auth(auth))
                 waitHandle.WaitOne();
             mSurf.AddFunction(YouTubeSurf);
-            mSurf.AddFunction(VisitSurf);
             mSurf.AddFunction(MailSurf);
             mSurf.AddFunction(ClickSurf);
             while (true)
@@ -100,7 +70,7 @@ namespace ClickMashine
             int Count = 0;
             var mainBrowser = GetBrowser(0);
             if (mainBrowser == null) return -1;
-            LoadPage("https://seoclub.su/");
+            LoadPage("https://adaso.su/");
             LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href"));
             //AntiBot();
             string js =
@@ -191,68 +161,14 @@ else
             }
             return Count;
         }
-        private int VisitSurf()
-        {
-            int Count = 0;
-            IBrowser mainBrowser = GetBrowser(0);
-            if (mainBrowser == null) return -1;
-            LoadPage("https://seoclub.su/");
-            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').href"));
-            //AntiBot();
-            string js =
-@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
-function click_s()
-{
-	if (n >= surf_cl.length) return 'end_surf';
-	else
-	{
-		var link = surf_cl[n];
-		if(link.querySelectorAll('td')[2]==null || link.getBoundingClientRect().height == 0)
-					{n++; return 'continue';}
-		else {link.querySelector('a').click(); n++; return link.querySelectorAll('td')[1].querySelectorAll('div')[1].innerText;}
-	}
-}";
-            SendJS(0, js);
-            while (true)
-            {
-                eventBrowserCreated.Reset();
-                string ev = SendJSReturn(0, "click_s();");
-                if (ev == "end_surf")
-                    break;
-                else if (ev == "continue")
-                    continue;
-                else
-                {
-                    if (WaitCreateBrowser() != null)
-                    {
-                        int pointStart = ev.IndexOf("Таймер: ") + 8;
-                        int pointEnd = ev.IndexOf(' ', pointStart);
-                        int countText = pointEnd - pointStart;
-                        if (pointStart == -1 || pointEnd == -1 || countText > 0)
-                            Sleep(ev.Substring(pointStart, pointEnd - pointStart));
-                        Sleep(2);
-                        Count++;
-                    }
-                }
-                Sleep(2);
-                CloseСhildBrowser();
-                Sleep(2);
-            }
-            return Count;
-        }
         private int YouTubeSurf()
         {
             int Count = 0;
             var mainBrowser = GetBrowser(0);
             if (mainBrowser == null) return -1;
-            LoadPage("https://seoclub.su/");
-            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(7)').href"));
-            //if (!OutCaptchaLab(mainBrowser, "document.querySelector('.out-capcha')", "document.querySelectorAll('.out-capcha-inp')", "document.querySelector('.btn_big_green').click()"))
-            //{
-            //    return 0;
-            //}            
-
-            string js_links = 
+            LoadPage("https://adaso.su/");
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href"));
+            string js_links =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function click_s()
 {
@@ -290,7 +206,8 @@ function surf()
                         else if (ev == "surf")
                         {
                             var browserYouTube = WaitCreateBrowser();
-                            if (browserYouTube != null){
+                            if (browserYouTube != null)
+                            {
                                 IFrame yotube_frame = browserYouTube.MainFrame;
                                 ev = SendJSReturn(yotube_frame,
     @"c = true;  b = true; document.querySelector('#tmr').innerText;");
@@ -322,8 +239,8 @@ function surf()
             int Count = 0;
             var mainBrowser = GetBrowser(0);
             if (mainBrowser == null) return -1;
-            LoadPage("https://seoclub.su/");
-            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href"));
+            LoadPage("https://adaso.su/");
+            LoadPage(SendJSReturn(mainBrowser, "document.querySelector('#mnu_tblock1 > a:nth-child(3)').href"));
             string js =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
 function surf()
@@ -340,11 +257,11 @@ function click_s()
 		surf_cl[n].querySelector('a').click(); return 'click';
 	}
 }";
-            SendJS(mainBrowser, js);
+            SendJS(0, js);
             while (true)
             {
                 eventBrowserCreated.Reset();
-                string ev = SendJSReturn(mainBrowser, "click_s();");
+                string ev = SendJSReturn(0, "click_s();");
                 if (ev == "end_surf")
                     return Count;
                 else if (ev == "continue")
@@ -353,7 +270,7 @@ function click_s()
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        ev = SendJSReturn(mainBrowser, "surf();");
+                        ev = SendJSReturn(0, "surf();");
                         if (ev == "wait")
                             Sleep(1);
                         else if (ev == "surf")
@@ -368,13 +285,14 @@ function click_s()
                             }
                             SendJS(0, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
                             var browser = WaitCreateBrowser();
-                            if (browser != null) {
+                            if (browser != null)
+                            {
                                 ev = SendJSReturn(browser,
 @"b = false;
 window.top.start = 0;
 var timer1 = document.querySelector('.timer');
 if (timer1 != null)
-	return timer1.innerText;
+	timer1.innerText;
 else 'error_surf';");
                                 if (ev != "error")
                                 {
@@ -399,9 +317,12 @@ else
 	'error_surf';
 }");
                                     Count++;
+                                    i = 10;
                                     Sleep(2);
                                 }
                             }
+                            else
+                                break;
                         }
                     }
                 }

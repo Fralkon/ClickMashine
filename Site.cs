@@ -27,7 +27,8 @@ namespace ClickMashine
         WebofSar,
         Losena,
         SeoClub,
-        VipClick
+        VipClick,
+        Adaso
     }
     enum EnumAnswerBot { 
         replace,
