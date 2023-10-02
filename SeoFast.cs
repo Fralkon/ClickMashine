@@ -2,11 +2,39 @@
 using CefSharp;
 using CefSharp.DevTools.Page;
 using CefSharp.WinForms;
+using Microsoft.VisualBasic;
 
 namespace ClickMashine
 {
+    enum SeoFastEnumNN
+    {
+        автомобилями,
+        апельсинами,
+        бантиками,
+        велосипедами,
+        клавиатурами,
+        котятами,
+        лампочками,
+        лошадьми,
+        мышками,
+        носками,
+        пандой,
+        поездами,
+        поросятами,
+        самолетами,
+        слонами,
+        собаками,
+        стульями,
+        телефонами,
+        тиграми,
+        цветами,
+        чайниками,
+        экскаваторами,
+        яблоками
+    }
     class SeoFast : Site
     {
+        SeoFastNN nn;
         public SeoFast(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://seo-fast.ru/";
@@ -14,6 +42,7 @@ namespace ClickMashine
         }
         protected override void StartSurf()
         {
+            nn = new SeoFastNN(@"C:/ClickMashine/Settings/Net/SeoFast.h5");
             Initialize();
            
             if (!Auth(auth))
@@ -84,43 +113,35 @@ namespace ClickMashine
             "else {'go';}");
             if (ev == "login")
             {
-                var browser = GetBrowser(0);
-                if (browser == null) return false;
-                eventLoadPage.WaitOne(5000);
-                if (WaitElement(browser.MainFrame, "document.querySelector('.out-capcha')"))
+                var browserAuth = GetBrowser(0);
+                if (browserAuth == null) return false;
+                for (int i = 0; i < 10; i++)
                 {
                     string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
-                    "document.querySelector('#logpassword').value = '" + auth.Password + "';";
-                    SendJS(0, js);
-
-                    //for (int j = 0; j < 4; j++)
-                    //{
-                    //    SaveImage(GetImgBrowser(browser.MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
-                    //}
-
-                    Bitmap img = GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')");
-
-                    string answer_telebot = SendQuestion(img, "");
-
-                    string jsAntiBot = "";
-                    foreach (char ch in answer_telebot)
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "login('1');";
-
-                    SendJS(0, jsAntiBot);
-                    Sleep(7);
-                    if (WaitElement(browser.MainFrame, "document.querySelector('.main_balance')"))
+                            "document.querySelector('#logpassword').value = '" + auth.Password + "';";
+                    SendJS(browserAuth, js);
+                    BoundObject boundObject = new BoundObject();
+                    WaitChangeElement(browserAuth, boundObject, "document.querySelector('.result_echo')");
+                    OutCaptchaLab1(browserAuth,
+                        nn,
+                        Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
+                        "document.querySelector('.out-capcha-title').querySelector('span')",
+                        "document.querySelector('.out-capcha')",
+                        "document.querySelectorAll('.out-capcha-lab')",
+                        5,
+                        "document.querySelector('.sf_button')");
+                    if (WaitElement(browserAuth, "document.querySelector('.main_balance')"))
                     {
-                        SendJS(browser.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
+                        SendJS(browserAuth.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
                         Sleep(2);
-                        TakeMoney(browser);
                         return true;
                     }
-                    eventLoadPage.Reset();
-                    browser.Reload();
+                    else
+                    {
+                        Console.WriteLine(boundObject.GetValue());
+                    }
                 }
-                else
-                    return false;
+                return false;
             }
             return true;
         }
@@ -357,7 +378,9 @@ function surf(){
 }
 else {
     timer();
-    timer_v;
+    if(timer_v != null)
+        timer_v;
+    else 'error_youtube';
 }";
                 string ev = SendJSReturn(browserYouTube.MainFrame, js);
                 if (ev != "error_youtube")
@@ -372,13 +395,12 @@ else
     return 'wait';}";
                 form.FocusTab(browserYouTube);
                 WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
-                browserYouTube.GetHost().CloseBrowser(true);
+                browserYouTube.GetHost().CloseBrowser(false);
             });
         }
         private int ClickSurf()
         {
             int Count = 0;
-
             var browserMain = GetBrowser(0);
             if (browserMain == null) return -1;
             LoadPage(browserMain, "https://seo-fast.ru/work_surfing?go");
@@ -708,27 +730,28 @@ else 'notAntiBot';";
 if(img_captcha != null)
     'antiBot';
 else 'notAntiBot';";
-            int iteration = 0;
-            while (SendJSReturn(browser.MainFrame, js) == "antiBot")
+            if(SendJSReturn(browser.MainFrame, js) != "antiBot")
+                return true;
+            //BoundObject boundObject = new BoundObject();
+            //WaitChangeElement(browser, boundObject, "document.querySelector('.result_echo')");
+            for (int i = 0; i< 10; i++)
             {
-                if (iteration == 10)
-                    return false;
-                string jsAntiBot = String.Empty;
-                string answerBot = SendQuestion(GetImgBrowser(browser.MainFrame, "document.querySelector('.out-capcha')"), "");
-                if (answerBot != "replace")
-                {
-                    foreach (char ch in answerBot)
-                        jsAntiBot += "document.querySelectorAll('.out-capcha-inp')[" + ch + "].checked = true;";
-                    jsAntiBot += "document.querySelector('.sf_button').click();";
-                    SendJS(browser.MainFrame, jsAntiBot);
-                    Sleep(4);
-                }
-                iteration++;
-                eventLoadPage.Reset();
-                browser.Reload();
-                eventLoadPage.WaitOne(5000);
+                var history = OutCaptchaLab1(browser,
+                    nn,
+                    Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
+                    "document.querySelector('.out-capcha-title').querySelector('span')",
+                    "document.querySelector('.out-capcha')",
+                    "document.querySelectorAll('.out-capcha-lab')",
+                    5,
+                    "document.querySelector('.sf_button')");
+                Sleep(5);
+                if (SendJSReturn(browser.MainFrame, js) != "antiBot")
+                    return true;
+                SaveHistoryCaptcha1(history, Enum.GetNames(typeof(SeoFastEnumNN)).ToList());
+                SendJS(browser, "document.querySelector('.fa-refresh').click();");
+                Sleep(4);
             }
-            return true;
+            return false;
         }
         private void TakeMoney(IBrowser browser)
         {

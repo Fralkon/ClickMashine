@@ -750,6 +750,21 @@ else 'error';";
             Directory.CreateDirectory(path);
             bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
         }
+        protected void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
+        {
+            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type.ToString()}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+            Directory.CreateDirectory(path);
+            for (int i = 0; i < historyCaptcha.Count; i++)
+            {
+                string file = "";
+                (Bitmap, PredictNN) captcha = historyCaptcha[i];
+                captcha.Item1.Save(path + i.ToString() + ".png");
+                var tensor = captcha.Item2.Tensor.ToArray<float>();
+                for (int j = 0; j < tensor.Length; j++)
+                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
+                File.WriteAllText(path + $"debug{i}.txt", file);
+            }
+        }
         protected void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
         {
             string path = $"{Form1.PATH_SETTING}Image/Errors/{Type.ToString()}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
@@ -810,7 +825,30 @@ else 'error';";
                 Console.WriteLine(result.Data);
                 Console.WriteLine(23123);
                 return result.Data;
-            
+
+        }
+        protected List<(Bitmap, PredictNN)> OutCaptchaLab1(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button)
+        {
+            string js =
+@"var img_captcha = " + captcha + @";
+if(img_captcha != null)
+    'captcha';
+else 'ok';";
+            string nameImage = SendJSReturn(browser, $"{title}.innerText;");
+            string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
+            SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
+            Sleep(2);
+            List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
+            for (int i = 0; i < countInput; i++)
+            {
+                Bitmap image = GetImgBrowser(browser.MainFrame, $"{input}[" + i.ToString() + "]");
+                PredictNN predict = nn.Predict(image);
+                imageHistoryPredict.Add((image, predict));
+                if (value == EnumValues[predict.Num])
+                    SendJS(browser, $"{input}[" + i + "].querySelector('input').checked = true;");
+            }
+            SendJS(browser, $"{button}.click();");
+            return imageHistoryPredict;
         }
         protected StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
         {
