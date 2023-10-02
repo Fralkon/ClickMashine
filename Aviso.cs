@@ -45,7 +45,6 @@ namespace ClickMashine
                 mSurf.GoSurf();
                 Sleep(600);
             }
-            CloseAllBrowser();
         }
         private int YouTubeSurf()
         {

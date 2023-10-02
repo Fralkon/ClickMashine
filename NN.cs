@@ -267,7 +267,7 @@ namespace ClickMashine
         public ProfitcentNN(string path) : base(new Size(75, 75), 3, path)
         {
         }
-        public PredictNN Predict(Bitmap bitmap)
+        public override PredictNN Predict(Bitmap bitmap)
         {
             Mat mat = BitmapConverter.ToMat(bitmap);
             Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2RGB);

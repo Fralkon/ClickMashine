@@ -767,6 +767,7 @@ else 'error';";
         }
         protected void AccountBlock()
         {
+            mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
             MessageBox.Show("Account block");
         }
         protected void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)

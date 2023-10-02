@@ -51,16 +51,16 @@ namespace ClickMashine
                                             siteList.Add(new WmrFast(form, auth));
                                             break;
                                         }
-                                    //case EnumTypeSite.WebofSar:
-                                    //    {
-                                    //        siteList.Add(new WebofSar(form, auth));
-                                    //        break;
-                                    //    }
-                                    //case EnumTypeSite.VipClick:
-                                    //    {
-                                    //        siteList.Add(new VipClick(form, auth));
-                                    //        break;
-                                    //    }
+                                    case EnumTypeSite.WebofSar:
+                                        {
+                                            siteList.Add(new WebofSar(form, auth));
+                                            break;
+                                        }
+                                    case EnumTypeSite.VipClick:
+                                        {
+                                            siteList.Add(new VipClick(form, auth));
+                                            break;
+                                        }
                                     case EnumTypeSite.SeoClub:
                                         {
                                             siteList.Add(new SeoClub(form, auth));
