@@ -28,8 +28,8 @@ namespace ClickMashine
             var browserAuth = GetBrowser(0);
             if (browserAuth == null) { return false; }
             LoadPage(browserAuth, "https://adaso.su/login");
-            string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
-                             "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
+            string auth_js = $"document.querySelector('input[name=\"username\"]').value = '{auth.Login}';" +
+                             $"document.querySelector('input[name=\"password\"]').value = '{auth.Password}';";
             SendJS(0, auth_js);
             StatusCaptcha status = OutCaptchaLab(browserAuth,
                nn,

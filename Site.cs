@@ -4,8 +4,6 @@ using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ClickMashine_11;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using CefSharp.DevTools;
 
 namespace ClickMashine
 {
@@ -15,6 +13,18 @@ namespace ClickMashine
         wait,
         error,
         login
+    }
+    enum StatusJS
+    {
+        Error,
+        TryError,
+        ErrorWait,
+        Continue,
+        Wait,
+        OK,
+        OK1,
+        End,
+        None
     }
     public enum EnumTypeSite
     {
@@ -164,13 +174,13 @@ namespace ClickMashine
             else
                 return "error";
         }
-    }
+    }  
     abstract class Site : MyTask
     {
         protected ManagerSurf mSurf = new ManagerSurf();
         public Form1 form;
-        protected EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
-        protected EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
+        public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
+        public EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<(IWebBrowser, IBrowser)> BrowserConrols = new List<(IWebBrowser, IBrowser)>();
         protected IBrowser? LastBrowser;
         protected string homePage = String.Empty;
@@ -209,14 +219,14 @@ namespace ClickMashine
 
             menuItemSite = new ToolStripMenuItem();
             menuItemSite.Name = Type.ToString();
-            menuItemSite.Size = new System.Drawing.Size(180, 22);
+            menuItemSite.Size = new Size(180, 22);
             menuItemSite.Text = Type.ToString();
 
             siteStripComboBox = new ToolStripComboBox()
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Name = Type.ToString(),
-                Size = new System.Drawing.Size(121, 23)
+                Size = new Size(121, 23)
             };
             foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
                 siteStripComboBox.Items.Add(flavourName);
@@ -258,6 +268,72 @@ namespace ClickMashine
             {
                 MessageBox.Show("Error");
             }
+        }
+        public StatusJS InjectJS(IFrame frame, string JS)
+        {
+            string JS_TRY = "try{\n" + JS + "\n}catch(e){" + (int)StatusJS.TryError + ";}";
+#if DEBUG
+            Console.WriteLine("---------------------------\nSend JS:");
+            Console.WriteLine(JS_TRY);
+            Console.WriteLine("Type: " + Type.ToString());
+#endif
+            var task = frame.EvaluateScriptAsync(JS_TRY);
+            task.Wait();
+            if (task.Result.Result != null)
+            {
+                int? result = task.Result.Result as int?;
+                if (result != null)
+                {
+                    StatusJS statusJS = (StatusJS)result;
+#if DEBUG
+                    Console.WriteLine("Return: " + statusJS);
+                    Console.WriteLine("---------------------------");
+#endif
+                    if (statusJS != StatusJS.TryError)
+                        return statusJS;
+                    else
+                    {
+                        throw new Exception($"Type: {Type}\nError JS : {JS}");
+                    }
+                }
+            }
+            return StatusJS.None;
+        }
+        public string ValueElement(IFrame frame, string element)
+        {
+            string JS_TRY = "try{\n" + element + "\n}catch(e){'" + StatusJS.TryError + "';}";
+#if DEBUG
+            Console.WriteLine("---------------------------\nSend JS:");
+            Console.WriteLine(JS_TRY);
+            Console.WriteLine("Type: " + Type.ToString());
+#endif
+            var task = frame.EvaluateScriptAsync(JS_TRY);
+            task.Wait();
+            if (task.Result.Result != null)
+            {
+#if DEBUG
+                Console.WriteLine("Return: " + task.Result.Result.ToString());
+                Console.WriteLine("---------------------------");
+#endif
+                if (task.Result.Result.ToString() == StatusJS.TryError.ToString())
+                {
+                    throw new Exception("Type: " + Type.ToString() + "\nError JS");
+                }
+                string? result = task.Result.Result.ToString();
+                if (result != null)
+                    return result;
+            }
+            throw new Exception("Type: " + Type.ToString() + "\nError Not return JS");
+        }
+        public string ValueElement(IBrowser browser, string element)
+        {
+            Active(browser);
+            return ValueElement(browser.MainFrame, element);
+        }
+        public StatusJS InjectJS(IBrowser browser, string JS)
+        {
+            Active(browser);
+            return InjectJS(browser.MainFrame, JS);
         }
         protected void SetBDInfo(int val)
         {
@@ -325,7 +401,7 @@ namespace ClickMashine
             if (!e.IsLoading)
                 eventLoadPage.Set();
         }
-        protected IBrowser? GetBrowser(int id)
+        public IBrowser? GetBrowser(int id)
         {
             eventLoadPage.Reset();
             if (BrowserConrols.Count <= id)
@@ -338,7 +414,7 @@ namespace ClickMashine
             Sleep(1);
             return BrowserConrols[id].Item2;
         }
-        protected IBrowser? WaitCreateBrowser()
+        public IBrowser? WaitCreateBrowser()
         {
             eventLoadPage.Reset();
             if (!eventBrowserCreated.WaitOne(15000))
@@ -346,22 +422,22 @@ namespace ClickMashine
             eventLoadPage.WaitOne(15000);
             return LastBrowser;
         }
-        protected void LoadPage(int id_browser, string page)
+        public void LoadPage(int id_browser, string page)
         {
             if (BrowserConrols.Count > id_browser)
             {
                 LoadPage(BrowserConrols[id_browser].Item2, page);
             }
         }
-        private void Active(IBrowser browser)
+        public void Active(IBrowser browser)
         {
             for (int i = 0; i < 10; i++)
                 if (browser.IsValid)
                     return;
                 else Thread.Sleep(500);
             throw new Exception("No valid browser");
-        }
-        private void Active(IFrame frame)
+        }        
+        public void Active(IFrame frame)
         {
             for (int i = 0; i < 10; i++)
                 if (frame.IsValid)
@@ -369,11 +445,11 @@ namespace ClickMashine
                 else Thread.Sleep(500);
             throw new Exception("No valid frame");
         }
-        protected void LoadPage(string page)
+        public void LoadPage(string page)
         {
             LoadPage(0, page);
         }
-        protected void LoadPage(IBrowser browser, string page)
+        public void LoadPage(IBrowser browser, string page)
         {
             if (BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier).Item2 != null)
             {
@@ -389,7 +465,7 @@ namespace ClickMashine
             else
                 throw new Exception("Not valid browser");
         }
-        protected string SendJSReturn(int id_browser, string JS)
+        public string SendJSReturn(int id_browser, string JS)
         {
             if (BrowserConrols.Count > id_browser)
             {
@@ -398,7 +474,7 @@ namespace ClickMashine
             }
             else return null;
         }
-        protected void SendJS(int id_browser, string JS)
+        public void SendJS(int id_browser, string JS)
         {
             if (BrowserConrols.Count > id_browser)
             {
@@ -406,7 +482,7 @@ namespace ClickMashine
                 SendJS(frame, JS);
             }
         }
-        protected void SendJS(IFrame frame, string JS)
+        public void SendJS(IFrame frame, string JS)
         {
             Active(frame);
             Console.WriteLine("---------------------------\nSend JS:");
@@ -415,12 +491,12 @@ namespace ClickMashine
             Console.WriteLine("---------------------------");
             frame.ExecuteJavaScriptAsync(JS);
         }
-        protected void SendJS(IBrowser browser, string JS)
+        public void SendJS(IBrowser browser, string JS)
         {
             Active(browser);
             SendJS(browser.MainFrame, JS);
         }
-        protected string SendJSReturn(IFrame frame, string JS)
+        public string SendJSReturn(IFrame frame, string JS)
         {
             Active(frame);
             string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
@@ -444,12 +520,12 @@ namespace ClickMashine
             Console.WriteLine("---------------------------");
             return null;
         }
-        protected string SendJSReturn(IBrowser browser, string JS)
+        public string SendJSReturn(IBrowser browser, string JS)
         {
             Active(browser);
             return SendJSReturn(browser.MainFrame, JS);
         }
-        protected void Error(string text)
+        public void Error(string text)
         {
             string Message = "---------------------------\nError: " +
             text +
@@ -458,7 +534,7 @@ namespace ClickMashine
             Console.WriteLine(Message);
             TCPMessageManager.SendError(Message, Type);
         }
-        protected void Info(string text)
+        public void Info(string text)
         {
             string Message = "---------------------------\nInfo: " +
             text +
@@ -467,7 +543,7 @@ namespace ClickMashine
             Console.WriteLine(Message);
             TCPMessageManager.SendInfo(Message, Type);
         }
-        protected void Error(IBrowser browser, string text)
+        public void Error(IBrowser browser, string text)
         {
             browser.GetSourceAsync().ContinueWith(v =>
             {
@@ -481,22 +557,24 @@ namespace ClickMashine
             Console.WriteLine(Message);
             TCPMessageManager.SendError(Message, Type);
         }
-        protected void CM(string text)
+        public void CM(string text)
         {
             Console.WriteLine("---------------------------");
             Console.WriteLine(text);
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
         }
-        protected void Sleep(int sec)
+        public void Sleep(int sec)
         {
+#if DEBUG
             Console.WriteLine("---------------------------");
             Console.WriteLine("Sleep: " + sec.ToString());
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
+#endif
             Task.Delay(sec * 1000).Wait();
         }
-        protected void Sleep(string sec)
+        public void Sleep(string sec)
         {
             try
             {
@@ -507,7 +585,33 @@ namespace ClickMashine
                 Console.WriteLine(ex.Message);
             }
         }
-        protected void SendKeysEvent(int id_browser, string text)
+        public bool WaitTime(IBrowser browser, string element)
+        {
+            string sec;
+            try
+            {
+                sec = ValueElement(browser, element);
+            }
+            catch
+            {
+#if DEBUG
+                Console.WriteLine("---------------------------");
+                Console.WriteLine("Error Sleep noot return");
+                Console.WriteLine("Type: " + Type.ToString());
+                Console.WriteLine("---------------------------");
+#endif
+                return false; 
+            }
+#if DEBUG
+            Console.WriteLine("---------------------------");
+            Console.WriteLine("Sleep: " + sec);
+            Console.WriteLine("Type: " + Type.ToString());
+            Console.WriteLine("---------------------------");
+#endif
+            Task.Delay(int.Parse(sec) * 1000).Wait();
+            return true;
+        }
+        public void SendKeysEvent(int id_browser, string text)
         {
             KeyEvent eventKey = new KeyEvent();
             eventKey.IsSystemKey = false;
@@ -520,7 +624,7 @@ namespace ClickMashine
                 BrowserConrols[id_browser].Item2.GetHost().SendKeyEvent(eventKey);
             }
         }
-        protected void CloseСhildBrowser()
+        public void CloseСhildBrowser()
         {
             for (int i = 1; i < BrowserConrols.Count; i++)
             {
@@ -528,33 +632,42 @@ namespace ClickMashine
             }
             Sleep(1);
         }
-        protected void CloseAllBrowser()
+        public void CloseAllBrowser()
         {
             for (int i = 0; i < BrowserConrols.Count; i++)
             {
                 BrowserConrols[i].Item2.CloseBrowser(false);
             }
         }
-        protected bool WaitButtonClick(IFrame frame, string element, int sec = 10)
+        public bool WaitButtonClick(IFrame frame, string element, int sec = 10)
         {
             string js_wait =
 @"function wait_element()
 {
     var element = " + element + @"
-    if (element != null) { element.click(); return 'click'; }
-    else return 'wait';
+    if (element != null) { element.click(); return "+(int)StatusJS.OK+@"; }
+    else return "+(int)StatusJS.Wait+@";
 }";
-            SendJS(frame, js_wait);
+            InjectJS(frame, js_wait);
             for (int i = 0; i < sec; i++)
             {
-                string ev_js_wait = SendJSReturn(frame, "wait_element();");
-                if (ev_js_wait == "click")
-                    return true;
-                Thread.Sleep(1000);
+                switch (InjectJS(frame, "wait_element();"))
+                {
+                    case StatusJS.OK:
+                        return true;
+                    case StatusJS.Wait:
+                        Thread.Sleep(1000);
+                        break;
+                }
             }
             return false;
         }
-        protected string GetMailAnswer(IFrame frame, string mail, string question, string answer, int sec = 5)
+        public bool WaitButtonClick(IBrowser browser, string element, int sec = 10)
+        {
+            Active(browser);
+            return WaitButtonClick(browser.MainFrame, element, sec);
+        }
+        public string GetMailAnswer(IFrame frame, string mail, string question, string answer, int sec = 5)
         {
             string js =
 @"function get_mail() {
@@ -590,68 +703,40 @@ get_mail();";
             }
             return "errorMail";
         }
-        protected bool WaitElement(IFrame frame, string element, int sec = 10)
+        public bool WaitElement(IFrame frame, string element, int sec = 10)
         {
             string JS =
 @"function WaitElement()
 {
     var element = " + element + @";
-    if (element != null) { return 'end'; }
-    else return 'wait';
+    if (element != null) { return "+(int)StatusJS.OK+ @"; }
+    else return "+(int)StatusJS.Wait+@";
 }
 WaitElement();";
             for (int i = 0; i < sec; i++)
             {
-                string? ev_js_wait = SendJSReturn(frame, JS);
-                if (ev_js_wait == null)
-                    continue;
-                if (ev_js_wait == "end")
-                    return true;
+                switch (InjectJS(frame, JS))
+                {
+                    case StatusJS.Wait:
+                        break;
+                    case StatusJS.OK:
+                        return true;
+                }
                 Thread.Sleep(1000);
             }
             return false;
         }
-        protected bool WaitElement(IBrowser browser, string element, int sec = 10)
+        public bool WaitElement(IBrowser browser, string element, int sec = 10)
         {
-            string JS =
-@"function WaitElement()
-{
-    var element = " + element + @";
-    if (element != null) { return 'end'; }
-    else return 'wait';
-}
-WaitElement();";
-            for (int i = 0; i < sec; i++)
-            {
-                string? ev_js_wait = SendJSReturn(browser, JS);
-                if (ev_js_wait == null)
-                    continue;
-                if (ev_js_wait == "end")
-                    return true;
-                Thread.Sleep(1000);
-            }
-            return false;
+            return WaitElement(browser.MainFrame, element, sec);
         }
-        protected bool WaitElement(IBrowser browser, string nameFrame, string element, int sec = 10)
+        public bool WaitElement(IBrowser browser, string nameFrame, string element, int sec = 10)
         {
-            string JS =
-@"function WaitElement()
-{
-    var element = " + element + @";
-    if (element != null) { return 'end'; }
-    else return 'wait';
-}
-WaitElement();";
-            for (int i = 0; i < sec; i++)
-            {
-                string ev_js_wait = SendJSReturn(browser.GetFrame(nameFrame), JS);
-                if (ev_js_wait == "end")
-                    return true;
-                Thread.Sleep(1000);
-            }
-            return false;
+            IFrame frame = browser.GetFrame(nameFrame);
+            Active(frame);
+            return WaitElement(frame, element, sec);          
         }
-        protected string WaitFunction(IFrame frame, string function, string? functionStart = null, int time = 5)
+        public string WaitFunction(IFrame frame, string function, string? functionStart = null, int time = 5)
         {
             if (functionStart != null)
                 SendJS(frame, functionStart);
@@ -664,18 +749,29 @@ WaitElement();";
             }
             return "errorWait";
         }
-        protected string WaitFunction(IBrowser browser, string nameFrame, string function, int sec = 5)
+        public string WaitFunction(IBrowser browser, string function, string? functionStart = null, int time = 5)
         {
-            for (int j = 0; j < sec; j++)
-            {
-                string ev = SendJSReturn(browser.GetFrame(nameFrame), function);
-                if (ev == "wait")
-                    Sleep(1);
-                else return ev;
-            }
-            return "errorWait";
+            return WaitFunction(browser.MainFrame, function, functionStart, time);
         }
-        protected void WaitChangeElement(IBrowser browser, BoundObject boundObject, string element)
+        public StatusJS FunctionWait(IFrame frame, string function, string? functionStart = null, int time = 5)
+        {
+            if (functionStart != null)
+                InjectJS(frame, functionStart);
+            for (int j = 0; j < time; j++)
+            {
+                StatusJS status = InjectJS(frame, function);
+                if (status == StatusJS.Wait)
+                    Sleep(1);
+                else 
+                    return status;
+            }
+            return StatusJS.ErrorWait;
+        }
+        public StatusJS FunctionWait(IBrowser browser, string function, string? functionStart = null, int time = 5)
+        {
+            return FunctionWait(browser.MainFrame, function, functionStart, time);
+        }
+        public void WaitChangeElement(IBrowser browser, BoundObject boundObject, string element)
         {
             var control = BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier);
             if (control.Item1 != null)
@@ -701,12 +797,12 @@ const callback = function (mutationsList, observer) {
 const observer = new MutationObserver(callback);
 observer.observe(target, config);
 ";
-                SendJS(control.Item2, js);
+                InjectJS(control.Item2, js);
             }
             else
                 throw new Exception("Not valid browser");
         }
-        protected Bitmap GetImgBrowser(IFrame frame, string element)
+        public Bitmap GetImgBrowser(IFrame frame, string element)
         {
             if (WaitElement(frame, element))
             {
@@ -728,11 +824,11 @@ else 'errorImg';";
             else
                 throw new Exception("Ошибка ожидания элемента для скриншота");
         }
-        protected string SendQuestion(Bitmap image, string text)
+        public string SendQuestion(Bitmap image, string text)
         {
             return TCPMessageManager.SendQuestion(image, text, Type);
         }
-        protected string GetMoney(IBrowser browser, string selector)
+        public string GetMoney(IBrowser browser, string selector)
         {
             string js =
 @"var ballans = " + selector + @";
@@ -744,15 +840,15 @@ else 'error';";
                 Info("Money: " + ev);
             return ev;
         }
-        protected void SaveImage(Bitmap bmp)
+        public void SaveImage(Bitmap bmp)
         {
             string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
             Directory.CreateDirectory(path);
             bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
         }
-        protected void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
+        public void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
         {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type.ToString()}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
             Directory.CreateDirectory(path);
             for (int i = 0; i < historyCaptcha.Count; i++)
             {
@@ -765,9 +861,9 @@ else 'error';";
                 File.WriteAllText(path + $"debug{i}.txt", file);
             }
         }
-        protected void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
+        public void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
         {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type.ToString()}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
             Directory.CreateDirectory(path);
             for (int i = 0; i < historyCaptcha.Count; i++)
             {
@@ -780,12 +876,12 @@ else 'error';";
                 File.WriteAllText(path + $"debug{i}.txt", file);
             }
         }
-        protected void AccountBlock()
+        public void AccountBlock()
         {
             mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
             MessageBox.Show("Account block");
         }
-        protected void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
+        public void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
         {
             string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
             for (int i = 0; i < count; i++)
@@ -812,7 +908,7 @@ else 'error';";
                 Sleep(2);
             }
         }
-        protected byte[] GetScreenAsync()
+        public byte[] GetScreenAsync()
         {
             Console.WriteLine(23123);
             var devToolsClient = BrowserConrols[0].Item2.GetDevToolsClient();
@@ -827,7 +923,7 @@ else 'error';";
                 return result.Data;
 
         }
-        protected List<(Bitmap, PredictNN)> OutCaptchaLab1(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button)
+        public List<(Bitmap, PredictNN)> OutCaptchaLab1(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button)
         {
             string js =
 @"var img_captcha = " + captcha + @";
@@ -850,7 +946,7 @@ else 'ok';";
             SendJS(browser, $"{button}.click();");
             return imageHistoryPredict;
         }
-        protected StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
+        public StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
         {
             string js =
 @"var img_captcha = " + captcha + @";

@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using CefSharp;
 using CefSharp.DevTools.Page;
 using CefSharp.WinForms;
@@ -32,118 +33,567 @@ namespace ClickMashine
         экскаваторами,
         яблоками
     }
+    class YouTubeSeoFastSurfing : Surfing
+    {
+        public YouTubeSeoFastSurfing(Site site, string page, string firstStep) : base()
+        {
+            Site = site;
+            Page = page;
+            FirstStep = firstStep;
+        }
+        public override bool Surf(int Wait = 5)
+        {
+            try
+            {
+                var browser = Site.GetBrowser(0);
+                if (browser == null)
+                    return false;
+                Site.LoadPage(browser, Page);
+                if (AntiBot != null)
+                    if (!AntiBot(browser))
+                        return false;
+                Site.SendJS(browser, FirstStep);
+                List<Task> youtubeWatch = new List<Task>();
+                bool f = true;
+                do
+                {
+                    Site.eventBrowserCreated.Reset();
+                    switch (Site.InjectJS(browser, "FirstStep();"))
+                    {
+                        case StatusJS.End:
+                            f = false;
+                            break;
+                        case StatusJS.Continue:
+                            break;
+                        case StatusJS.OK1:
+                            switch (Site.FunctionWait(browser, "SecondStep();"))
+                            {
+                                case StatusJS.OK:
+                                    {
+                                        var browserSurf1 = Site.WaitCreateBrowser();
+                                        if (browserSurf1 == null)
+                                        {
+                                            Error++;
+                                            break;
+                                        }
+                                        try
+                                        {
+                                            youtubeWatch.Add(YouTubeWatch(browserSurf1));
+                                            Site.Sleep(10);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Site.Error("Error watch youtube task." + ex.Message);
+                                            browserSurf1.GetHost().CloseBrowser(true);
+                                        }
+                                        break;
+                                    }
+                            }
+                            break;
+                        case StatusJS.OK:
+                            var browserSurf = Site.WaitCreateBrowser();
+                            if (browserSurf == null)
+                            {
+                                Error++;
+                                break;
+                            }
+                            try
+                            {
+                                youtubeWatch.Add(YouTubeWatch(browserSurf));
+                                Site.Sleep(10);
+                            }
+                            catch (Exception ex)
+                            {
+                                Site.Error("Error watch youtube task." + ex.Message);
+                                browserSurf.GetHost().CloseBrowser(true);
+                            }
+                            break;
+                        case StatusJS.Error:
+                            Error++;
+                            break;
+                        default:
+                            throw new Exception($"Error StatusJS");
+
+
+                    }
+                    Site.Sleep(1);
+                }
+                while (f);
+
+                if (!Task.WaitAll(youtubeWatch.ToArray(), 20000))
+                    Error++;
+            }
+            catch (Exception ex)
+            {
+                Site.Error(ex.Message);
+                return false;
+            }
+            Site.CloseСhildBrowser();
+            return true;
+        }
+        private async Task YouTubeWatch(IBrowser browserYouTube)
+        {
+            await Task.Run(() =>
+            {
+                string js =
+@"var timeYouRube = 0;
+if(rutube == '0')
+{
+    b = true;
+    var timer_youtube = document.querySelector('#tmr');
+    if (timer_youtube != null) { timeYouRube = parseInt(timer_youtube.innerText); "+(int)StatusJS.OK+@"}
+    else " + (int)StatusJS.Error + @";
+}
+else {
+    timer();
+    if(timer_v != null){
+        timeYouRube = timer_v;
+    " + (int)StatusJS.OK+@"
+    }
+    else " + (int)StatusJS.Error + @";
+}";
+                Site.Sleep(2);
+                if (Site.InjectJS(browserYouTube, js) == StatusJS.OK)
+                {
+                    Site.WaitTime(browserYouTube, "timeYouRube");
+                    string jsWaitYouTube =
+@"function WaitEnd(){
+if(document.querySelector('#capcha-tr-block').innerText.indexOf(""засчитан"") != -1)
+    return " + (int)StatusJS.OK+ @";
+else
+    return " + (int)StatusJS.Wait+@";}";
+                    Site.form.FocusTab(browserYouTube);
+                    if (Site.FunctionWait(browserYouTube, "WaitEnd();", jsWaitYouTube, 10) == StatusJS.OK)
+                        Count++;
+                    else
+                        Error++;
+                }
+                else
+                    Error++;
+                browserYouTube.GetHost().CloseBrowser(false);
+            });
+        }
+    }
     class SeoFast : Site
     {
         SeoFastNN nn;
+        Surfing Click;
+        Surfing Visit;
+        YouTubeSeoFastSurfing RuTube;
+        YouTubeSeoFastSurfing ExpensiveTube;
+        YouTubeSeoFastSurfing SimpeTube;
+        YouTubeSeoFastSurfing BonusTube;
+        SurfingMail Mail;
+        ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public SeoFast(Form1 form, Auth auth) : base(form, auth)
         {
+            Surfing.AntiBotDelegate AntiBotDelegate = new Surfing.AntiBotDelegate(AntiBotImage);
             homePage = "https://seo-fast.ru/";
             Type = EnumTypeSite.SeoFast;
+            Click = new Surfing(
+                this,
+                "https://seo-fast.ru/work_surfing",
+                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
+                function SecondStep()
+                {
+                    var start_ln = document.querySelectorAll('.start_link_a');
+                    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
+                    else { return " + (int)StatusJS.Wait + @"; }
+                }
+                function FirstStep()
+                {
+                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+                    else if (surf_cl[n].innerText == '')
+                    {
+                        n++; return " + (int)StatusJS.Continue + @";
+                    }
+                    else
+                    {
+                        surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
+                    }
+                }",
+                new Surfing.MiddleStepDelegate(ClickMiddleStep)
+            )
+            { AntiBot = AntiBotDelegate };
+
+
+            string FirstStepJSYouTube =
+                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
+                var youtube_premium = null;
+                function FirstStep()
+                {
+                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+                    else if (surf_cl[n].innerText == '')
+                    {
+                        n++; return " + (int)StatusJS.Continue + @";
+                    }
+                    else{ 
+                        youtube_premium = surf_cl[n].parentElement.parentElement.parentElement;
+                        if(youtube_premium == null){n++;return " + (int)StatusJS.Continue + @";}
+                        if(youtube_premium.id.indexOf('v123') != -1){
+                            surf_cl[n].click(); 
+                            n++; 
+                            return " + (int)StatusJS.OK1 + @";
+                        }       
+                        else{
+                            surf_cl[n].click(); 
+                            n++; 
+                            return " + (int)StatusJS.OK + @"; 
+                        }
+                    }
+                }
+                function SecondStep(){
+                    var start_ln = youtube_premium.querySelector('.start_link_youtube');
+	                if (start_ln != null) { 
+		                if(start_ln.innerText != 'Приступить к просмотру') {n++; return " + (int)StatusJS.Continue + @";}
+		                else {start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
+	                }
+	                else { return " + (int)StatusJS.Wait + @"; }
+                }";
+
+            Surfing.MiddleStepDelegate YouTubeMiddleStep = new Surfing.MiddleStepDelegate(YouTubeMiddle);
+            RuTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?rutube_video", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            SimpeTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_simple", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            ExpensiveTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_expensive", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            BonusTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_bonus", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+
+            Mail = new SurfingMail(this, "https://seo-fast.ru/work_mails",
+                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
+                function SecondStep()
+                {
+                    var start_ln = document.querySelectorAll('.start_link_a');
+                    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @";}
+                     else { return " + (int)StatusJS.Wait + @"; }
+                }
+                function FirstStep()
+                {
+                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+                    else if (surf_cl[n].innerText == '')
+                    {
+                        n++; 
+                        return " + (int)StatusJS.Continue + @";
+                    }
+                    else
+                    {
+                        surf_cl[n].click(); 
+                        return " + (int)StatusJS.OK + @";
+                    }
+                }",
+                new SurfingMail.MailClickDelegate(MailCLick), new Surfing.MiddleStepDelegate(MailMiddleClick)
+            )
+            { AntiBot = AntiBotDelegate };
+            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions",
+@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
+function SecondStep()
+{
+    var start_ln = document.querySelectorAll('.start_link_a');
+    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
+    else { return " + (int)StatusJS.Wait + @"; }
+}
+function FirstStep()
+{
+    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+    else if (surf_cl[n].innerText == '')
+    {
+        n++; return " + (int)StatusJS.Continue + @";
+    }
+    else
+    {
+        surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
+    }
+}"
+                , new Surfing.MiddleStepDelegate(VisitMIddle))
+            { AntiBot = AntiBotDelegate };
         }
         protected override void StartSurf()
         {
             nn = new SeoFastNN(@"C:/ClickMashine/Settings/Net/SeoFast.h5");
             Initialize();
-           
+            ManagerSurfing.AddSurfing(Visit);
+            ManagerSurfing.AddSurfing(Click);
+            ManagerSurfing.AddSurfing(Mail);
+            ManagerSurfing.AddSurfing(RuTube);
+            ManagerSurfing.AddSurfing(ExpensiveTube);
+            ManagerSurfing.AddSurfing(SimpeTube);
+            ManagerSurfing.AddSurfing(BonusTube);
             if (!Auth(auth))
             {
                 if (!waitHandle.WaitOne())
                     return;
             }
-
-            mSurf.AddFunction(MailSurf);
-            mSurf.AddFunction(ClickSurf);
-            mSurf.AddFunction(VisitSurf);
             while (true)
             {
-                int youTube = 10;
-                while (youTube > 9)
-                {
-                    youTube = 0;
-                    try
-                    {
-                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?rutube_video");
-                    }
-                    catch (Exception ex)
-                    {
-                        CloseСhildBrowser();
-                        Error("Error youtube1\n" + ex.Message);
-                    }
-                    try
-                    {
-                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_expensive");
-                    }
-                    catch (Exception ex)
-                    {
-                        CloseСhildBrowser();
-                        Error("Error youtube1\n" + ex.Message);
-                    }
-                    try
-                    {
-                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_simple__");
-                    }
-                    catch (Exception ex)
-                    {
-                        CloseСhildBrowser();
-                        Error("Error youtube2\n" + ex.Message);
-                    }
-                    try
-                    {
-                        youTube += YouTubeSurf("https://seo-fast.ru/work_youtube?youtube_video_bonus");
-                    }
-                    catch (Exception ex)
-                    {
-                        CloseСhildBrowser();
-                        Error("Error youtube3\n" + ex.Message);
-                    }
-                }
-                //mSurf.GoSurf();
+                ManagerSurfing.StartSurf();
                 Sleep(600);
             }
         }
         public override bool Auth(Auth auth)
         {
-            LoadPage(0, "https://seo-fast.ru/main");
+            var browser = GetBrowser(0);
+            if (browser == null)
+                return false;
+            LoadPage(browser, "https://seo-fast.ru/main");
             Sleep(5);
             eventLoadPage.Reset();
-            string ev = SendJSReturn(0, "var l_b = document.querySelector('.loginbutton');" +
-            "if (l_b != null){" +
-            "   l_b.click();" +
-            "   'login';}" +
-            "else {'go';}");
-            if (ev == "login")
+
+            switch (InjectJS(browser,
+@"var l_b = document.querySelector('.loginbutton');
+if (l_b != null){
+    l_b.click();
+    " + (int)StatusJS.Error + @";}
+else {" + (int)StatusJS.OK + @";}"))
             {
-                var browserAuth = GetBrowser(0);
-                if (browserAuth == null) return false;
-                for (int i = 0; i < 10; i++)
-                {
-                    string js = "document.querySelector('#logusername').value = '" + auth.Login + "';" +
-                            "document.querySelector('#logpassword').value = '" + auth.Password + "';";
-                    SendJS(browserAuth, js);
-                    BoundObject boundObject = new BoundObject();
-                    WaitChangeElement(browserAuth, boundObject, "document.querySelector('.result_echo')");
-                    OutCaptchaLab1(browserAuth,
-                        nn,
-                        Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
-                        "document.querySelector('.out-capcha-title').querySelector('span')",
-                        "document.querySelector('.out-capcha')",
-                        "document.querySelectorAll('.out-capcha-lab')",
-                        5,
-                        "document.querySelector('.sf_button')");
-                    if (WaitElement(browserAuth, "document.querySelector('.main_balance')"))
+                case StatusJS.Error:
                     {
-                        SendJS(browserAuth.MainFrame, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
-                        Sleep(2);
-                        return true;
+                        for (int i = 0; i < 10; i++)
+                        {
+                            Sleep(5);
+                            string js = $"document.querySelector('#logusername').value = '{auth.Login}';" +
+                                    $"document.querySelector('#logpassword').value = '{auth.Password}';";
+                            SendJS(browser, js);
+                            //BoundObject boundObject = new BoundObject();
+                            //WaitChangeElement(browser, boundObject, "document.querySelector('.result_echo')");
+                            OutCaptchaLab1(browser,
+                                nn,
+                                Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
+                                "document.querySelector('.out-capcha-title').querySelector('span')",
+                                "document.querySelector('.out-capcha')",
+                                "document.querySelectorAll('.out-capcha-lab')",
+                                5,
+                                "document.querySelector('.sf_button')");
+                            if (WaitElement(browser, "document.querySelector('.main_balance')"))
+                            {
+                                //InjectJS(browser, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
+                                Sleep(2);
+                                return true;
+                            }
+                            else
+                            {
+                                //Console.WriteLine(boundObject.GetValue());
+                                eventLoadPage.Reset();
+                                browser.Reload();
+                                eventLoadPage.WaitOne(5000);
+                            }
+                        }
+                        return false;
                     }
-                    else
-                    {
-                        Console.WriteLine(boundObject.GetValue());
-                    }
-                }
-                return false;
             }
             return true;
+        }
+        private bool ClickMiddleStep(IBrowser browser)
+        {
+            string js =
+@"function clace(){
+if (document.querySelector('#stop_clic').value == '1') { click_site(); }
+    setTimeout(clace, 1000);
+}
+function go(){
+    isa = 0;
+    if (isc > 0) clace();
+    return " + (int)StatusJS.OK + @";
+}
+go();";
+            if (InjectJS(browser.MainFrame, js) == StatusJS.OK)
+            {
+                WaitTime(browser, "document.querySelector('#time').innerText");
+                if (!WaitButtonClick(browser, "document.querySelector('.button_s');"))
+                {
+                    js =
+@"$.ajax({
+	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
+	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
+    beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
+    success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
+});";
+                    InjectJS(browser, js);
+                    if (WaitButtonClick(browser, "document.querySelector('.button_s');"))
+                        return true;
+                }
+            }
+            else
+                return true;
+            return false;
+        }
+        private bool MailCLick(IBrowser browser)
+        {
+            string ev = SendJSReturn(browser, @"surf_cl[n++].querySelector("".desctext"").innerText;");
+            ev = Regex.Replace(ev, @"\D", "", RegexOptions.IgnoreCase);
+            ev = GetMailAnswer(browser.MainFrame, $"document.querySelector('#window_mail{ev}> tbody > tr:nth-child(2) > td')",
+               "document.querySelector('.question_am')",
+               "document.querySelectorAll('.button_a_m')");
+            if (ev == "errorMail")
+            {
+                Random rnd = new Random();
+                ev = rnd.Next(0, 3).ToString();
+            }
+            string js =
+@"function WaitReturn(){
+    var start_surf_mail = document.querySelector('.start_link_a');
+    if (start_surf_mail != null)
+    {
+        start_surf_mail.click(); return "+(int)StatusJS.OK+ @";
+    }    
+    else { return "+(int)StatusJS.Wait+@"; }
+}";
+            InjectJS(browser, "document.querySelectorAll('.button_a_m')[" + ev + @"].click();");
+            if (FunctionWait(browser.MainFrame, "WaitReturn();", js)==StatusJS.OK)
+                return true;
+            return false;
+        }
+        private bool MailMiddleClick(IBrowser browser)
+        {
+            string js = @"isa = 0;";
+            InjectJS(browser, js);
+            WaitTime(browser, "document.querySelector('#time').innerText;");
+            if (!WaitButtonClick(browser.MainFrame, "document.querySelector('.button_s');"))
+            {
+                string ev = @"
+$.ajax({
+	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
+	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
+    beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
+    success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
+});";
+                InjectJS(browser, ev);
+                if (WaitButtonClick(browser, "document.querySelector('.button_s');"))
+                    return true;
+            }
+            else
+                return true;
+            return false;
+        }
+        private bool AntiBotImage(IBrowser browser)
+        {
+            //captcha_new
+            string js = @"var img_captcha = document.querySelector('.out-capcha');
+if(img_captcha != null)
+    'antiBot';
+else 'notAntiBot';";
+            if (SendJSReturn(browser.MainFrame, js) != "antiBot")
+                return true;
+            //BoundObject boundObject = new BoundObject();
+            //WaitChangeElement(browser, boundObject, "document.querySelector('.result_echo')");
+            for (int i = 0; i < 10; i++)
+            {
+                var history = OutCaptchaLab1(browser,
+                    nn,
+                    Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
+                    "document.querySelector('.out-capcha-title').querySelector('span')",
+                    "document.querySelector('.out-capcha')",
+                    "document.querySelectorAll('.out-capcha-lab')",
+                    5,
+                    "document.querySelector('.sf_button')");
+                Sleep(5);
+                if (SendJSReturn(browser.MainFrame, js) != "antiBot")
+                    return true;
+                SaveHistoryCaptcha1(history, Enum.GetNames(typeof(SeoFastEnumNN)).ToList());
+                SendJS(browser, "document.querySelector('.fa-refresh').click();");
+                Sleep(4);
+            }
+            return false;
+        }
+        private bool YouTubeMiddle(IBrowser browser)
+        {
+            //{
+            //    IBrowser? browserYouTube = WaitCreateBrowser();
+            //    if (browserYouTube == null)
+            //        continue;
+            //    try
+            //    {
+            //        youtubeWatch.Add(YouTubeWatch(browserYouTube));
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Error("Error watch youtube task." + ex.Message);
+            //        browserYouTube.GetHost().CloseBrowser(true);
+            //    }
+            //    count++;
+            //    Sleep(5);
+            //}
+            //else if (ev == "surf_premium")
+            //{
+            //    for (int i = 0; i < 10; i++)
+            //    {
+            //        ev = SendJSReturn(0, "surf();");
+            //        if (ev == "surf")
+            //        {
+            //            IBrowser? browserYouTube = WaitCreateBrowser();
+            //            if (browserYouTube == null)
+            //                continue;
+            //            try
+            //            {
+            //                youtubeWatch.Add(YouTubeWatch(browserYouTube));
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                Error("Error watch youtube task." + ex.Message);
+            //                browserYouTube.GetHost().CloseBrowser(true);
+            //            }
+            //            count++;
+            //            Sleep(5);
+            //            break;
+            //        }
+            //        else if (ev == "sec_wait")
+            //            Sleep(1);
+            //        else if (ev == "continue")
+            //            break;
+            //        if (i == 9)
+            //        {
+            //            SendJS(0, "n++;");
+            //            break;
+            //        }
+            //    }
+            //}
+            //Sleep(1);
+            //}
+            //Task.WaitAll(youtubeWatch.ToArray(), 20000);
+            //CloseСhildBrowser();
+            return false;
+        }
+        private bool VisitMIddle(IBrowser browser)
+        {
+            string js =
+@"function w() {
+    if(counter == 0) {
+	    return " + (int)StatusJS.OK + @";
+    }
+    else return " + (int)StatusJS.Wait + @";
+};";
+            if (FunctionWait(browser, "w();", js) != StatusJS.OK)
+                return false;
+            WaitTime(browser, "timer");
+            var browserVisit2 = GetBrowser(2);
+            if (browserVisit2 != null)
+            {
+                browserVisit2.CloseBrowser(false);
+                Sleep(2);
+                return true;
+            }
+            return false;
+        }
+        private void TakeMoney(IBrowser browser)
+        {
+            int money = int.Parse(SendJSReturn(browser, "document.querySelector('#ajax_load > div > div:nth-child(3) > span > span:nth-child(1)').innerText"));
+            if (money >= 30)
+            {
+                LoadPage(browser, "https://seo-fast.ru/payment_user");
+                string js =
+@"var payeer_box = document.querySelector('#echoall > table > tbody > tr:nth-child(2) > td:nth-child(2) a');
+if(payeer_box != null) payeer_box.click(); 'online';
+else 'offline';";
+                if (SendJSReturn(browser, js) == "online")
+                {
+                    eventLoadPage.Reset();
+                    if (eventLoadPage.WaitOne(10000))
+                    {
+                        SendJS(browser, "all_money();i_not_robot();payment_money();");
+                    }
+                }
+            }
         }
         private void CheckCaptcha()
         {
@@ -255,149 +705,6 @@ else 'ok';";
                 }
             }
         }
-        private int YouTubeSurf(string url)
-        {
-            int count = 0;
-            var browserMain = GetBrowser(0);
-            if (browserMain == null) return -1;
-            LoadPage(0, url);
-            Sleep(5);
-            //CheckCaptcha();
-            AntiBotImage(browserMain);
-            string js =
-@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
-var youtube_premium = null;
-function click_s()
-{
-    if (n >= surf_cl.length) return 'end_surf';
-    else if (surf_cl[n].innerText == '')
-    {
-        n++; return 'continue';
-    }
-    else{ 
-        youtube_premium = surf_cl[n].parentElement.parentElement.parentElement;
-        if(youtube_premium == null){n++;return 'continue';}
-        if(youtube_premium.id.indexOf('v123') != -1){
-            surf_cl[n].click(); 
-            n++; 
-            return 'surf_premium';
-        }       
-        else{
-            surf_cl[n].click(); 
-            n++; 
-            return 'surf'; 
-        }
-    }
-}
-function surf(){
-    var start_ln = youtube_premium.querySelector('.start_link_youtube');
-	if (start_ln != null) { 
-		if(start_ln.innerText != 'Приступить к просмотру') {n++; return 'continue';}
-		else {start_ln.click(); n++; return 'surf'; }
-	}
-	else { return 'sec_wait'; }
-}";
-
-            SendJS(browserMain, js);
-            Thread.Sleep(200);
-            while (true)
-            {
-                eventBrowserCreated.Reset();
-                string ev = SendJSReturn(0, "click_s();");
-                if (ev == "end_surf")
-                    break;
-                else if (ev == "continue")
-                    continue;
-                else if (ev == "surf")
-                {
-                    IBrowser? browserYouTube = WaitCreateBrowser();
-                    if (browserYouTube == null)
-                        continue;
-                    try
-                    {
-                        YouTubeWatch(browserYouTube);
-                    }
-                    catch (Exception ex)
-                    {
-                        Error("Error watch youtube task." + ex.Message);
-                        browserYouTube.GetHost().CloseBrowser(true);
-                    }
-                    count++;
-                    Sleep(5);
-                }
-                else if(ev == "surf_premium")
-                {
-                    for (int i = 0; i < 10; i++)
-                    {
-                        ev = SendJSReturn(0, "surf();");
-                        if (ev == "surf")
-                        {
-                            IBrowser? browserYouTube = WaitCreateBrowser();
-                            if (browserYouTube == null)
-                                continue;
-                            try
-                            {
-                                YouTubeWatch(browserYouTube);
-                            }
-                            catch (Exception ex)
-                            {
-                                Error("Error watch youtube task." + ex.Message);
-                                browserYouTube.GetHost().CloseBrowser(true);
-                            }
-                            count++;
-                            Sleep(5);
-                            break;
-                        }
-                        else if (ev == "sec_wait")
-                            Sleep(1);
-                        else if (ev == "continue")
-                            break;
-                        if (i == 9)
-                        {
-                            SendJS(0, "n++;");
-                            break;
-                        }
-                    }
-                }
-                Sleep(1);
-            }
-            CloseСhildBrowser();
-            return count;
-        }
-        private async void YouTubeWatch(IBrowser browserYouTube)
-        {
-            await Task.Run(() =>
-            {
-                string js =
-@"if(rutube == '0')
-{
-    b = true;
-    var timer_youtube = document.querySelector('#tmr');
-    if (timer_youtube != null) timer_youtube.innerText;
-    else 'error_youtube';
-}
-else {
-    timer();
-    if(timer_v != null)
-        timer_v;
-    else 'error_youtube';
-}";
-                string ev = SendJSReturn(browserYouTube.MainFrame, js);
-                if (ev != "error_youtube")
-                {
-                    Sleep(ev);
-                }
-                string jsWaitYouTube =
-@"function WaitEnd(){
-if(document.querySelector('#capcha-tr-block').innerText.indexOf(""засчитан"") != -1)
-    return 'ok';
-else
-    return 'wait';}";
-                form.FocusTab(browserYouTube);
-                WaitFunction(browserYouTube.MainFrame, "WaitEnd();", jsWaitYouTube, 10);
-                browserYouTube.GetHost().CloseBrowser(false);
-            });
-        }
         private int ClickSurf()
         {
             int Count = 0;
@@ -405,7 +712,8 @@ else
             if (browserMain == null) return -1;
             LoadPage(browserMain, "https://seo-fast.ru/work_surfing?go");
             Sleep(2);
-            AntiBotImage(browserMain);
+            if (!AntiBotImage(browserMain))
+                return -1;
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -485,7 +793,7 @@ go();";
                 }
                 CloseСhildBrowser();
             }
-            return Count;
+            return Count;           
         }
         private int VisitSurf()
         {
@@ -494,7 +802,8 @@ go();";
             if (browserMain == null) return -1;
             LoadPage(0, "https://seo-fast.ru/work_transitions");
             Sleep(2);
-            AntiBotImage(browserMain);
+            if (!AntiBotImage(browserMain))
+                return -1;
             string js =
            @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
 function surf()
@@ -573,7 +882,8 @@ else { return 'wait' }};";
             if (browserMain == null) return -1;
             LoadPage(0, "https://seo-fast.ru/work_mails");
             Sleep(2);
-            AntiBotImage(browserMain);
+            if (!AntiBotImage(browserMain))
+                return -1;
             string js =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
 function surf()
@@ -630,36 +940,7 @@ function click_s()
                         ev = WaitFunction(browserMain.MainFrame, "waitReturn();", js);
                         if (ev == "click")
                         {
-                            var browserSurf = GetBrowser(1);
-                            if (browserSurf != null)
-                            {
-                                js =
-@"function go(){
-    isa = 0;
-    return document.querySelector('#time').innerText;
-}
-go();";
-                                ev = SendJSReturn(browserSurf.MainFrame, js);
-                                Sleep(ev);
-                                if (!WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
-                                {
-                                    ev = @"
-$.ajax({
-	type: 'POST', url: domail_s+'/ajax/ajax_surfing2.php',  
-	data: { 'sf' : 'load_captcha_sf', 'v_surfing_lc' : v_surfing_lc, 'id_rek' : id_rek, 'type' : 'surf' }, 
-    beforeSend: function(){ $('#timer_lo').remove(); $('#timer_lo_error').remove(); $('#code').css({display: 'block'}); },
-    success: function(data){ localStorage.setItem('id_rek_l', id_rek); $('#code').html(data); }
-});";
-                                    SendJS(browserSurf.MainFrame, ev);
-                                    if (WaitButtonClick(browserSurf.MainFrame, "document.querySelector('.button_s');"))
-                                    {
-                                        Count++;
-                                    }
-                                }
-                                else
-                                    Count++;
-                                Sleep(2);
-                            }
+                           
                         }
                     }
                 }
@@ -721,56 +1002,6 @@ else 'notAntiBot';";
                 Sleep(2);
                 CloseСhildBrowser();
                 LoadPage(0, oldURL);
-            }
-        }
-        private bool AntiBotImage(IBrowser browser)
-        {
-            //captcha_new
-            string js = @"var img_captcha = document.querySelector('.out-capcha');
-if(img_captcha != null)
-    'antiBot';
-else 'notAntiBot';";
-            if(SendJSReturn(browser.MainFrame, js) != "antiBot")
-                return true;
-            //BoundObject boundObject = new BoundObject();
-            //WaitChangeElement(browser, boundObject, "document.querySelector('.result_echo')");
-            for (int i = 0; i< 10; i++)
-            {
-                var history = OutCaptchaLab1(browser,
-                    nn,
-                    Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
-                    "document.querySelector('.out-capcha-title').querySelector('span')",
-                    "document.querySelector('.out-capcha')",
-                    "document.querySelectorAll('.out-capcha-lab')",
-                    5,
-                    "document.querySelector('.sf_button')");
-                Sleep(5);
-                if (SendJSReturn(browser.MainFrame, js) != "antiBot")
-                    return true;
-                SaveHistoryCaptcha1(history, Enum.GetNames(typeof(SeoFastEnumNN)).ToList());
-                SendJS(browser, "document.querySelector('.fa-refresh').click();");
-                Sleep(4);
-            }
-            return false;
-        }
-        private void TakeMoney(IBrowser browser)
-        {
-            int money = int.Parse(SendJSReturn(browser, "document.querySelector('#ajax_load > div > div:nth-child(3) > span > span:nth-child(1)').innerText"));
-            if (money >= 30)
-            {
-                LoadPage(browser, "https://seo-fast.ru/payment_user");
-                string js =
-@"var payeer_box = document.querySelector('#echoall > table > tbody > tr:nth-child(2) > td:nth-child(2) a');
-if(payeer_box != null) payeer_box.click(); 'online';
-else 'offline';";
-                if (SendJSReturn(browser, js) == "online")
-                {
-                    eventLoadPage.Reset();
-                    if (eventLoadPage.WaitOne(10000))
-                    {
-                        SendJS(browser,"all_money();i_not_robot();payment_money();");
-                    }
-                }
             }
         }
     }

@@ -85,14 +85,12 @@ namespace ClickMashine
         }
         private void TCPControl_MessageReceived(object? sender, EventArgTCPClient e)
         {
-            foreach(Site site in siteList)
-            {
-                if(site.Type == e.Message.Site)
+            foreach (Site site in siteList)
+                if (site.Type == e.Message.Site)
                 {
                     site.TCPMessageManager.SetMessage(message: e.Message);
                     return;
                 }
-            }
         }
         public void ClickSurf()
         {
