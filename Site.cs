@@ -178,6 +178,7 @@ namespace ClickMashine
     abstract class Site : MyTask
     {
         protected ManagerSurf mSurf = new ManagerSurf();
+        protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public Form1 form;
         public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         public EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -208,10 +209,24 @@ namespace ClickMashine
             TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public abstract bool Auth(Auth auth);
+        protected override void StartSurf()
+        {
+            Initialize();
+            if (!Auth(auth))
+            {
+                if (!waitHandle.WaitOne())
+                    return;
+            }
+            while (true)
+            {
+                ManagerSurfing.StartSurf();
+                Sleep(600);
+            }
+        }
         public void SomedoIt()
         {
         }
-        public void Initialize()
+        protected virtual void Initialize()
         {
             lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
@@ -585,12 +600,12 @@ namespace ClickMashine
                 Console.WriteLine(ex.Message);
             }
         }
-        public bool WaitTime(IBrowser browser, string element)
+        public bool WaitTime(IFrame frame, string element)
         {
             string sec;
             try
             {
-                sec = ValueElement(browser, element);
+                sec = ValueElement(frame, element);
             }
             catch
             {
@@ -600,7 +615,7 @@ namespace ClickMashine
                 Console.WriteLine("Type: " + Type.ToString());
                 Console.WriteLine("---------------------------");
 #endif
-                return false; 
+                return false;
             }
 #if DEBUG
             Console.WriteLine("---------------------------");
@@ -610,6 +625,11 @@ namespace ClickMashine
 #endif
             Task.Delay(int.Parse(sec) * 1000).Wait();
             return true;
+        }
+        public bool WaitTime(IBrowser browser, string element)
+        {
+            Active(browser);
+            return WaitTime(browser.MainFrame, element);
         }
         public void SendKeysEvent(int id_browser, string text)
         {

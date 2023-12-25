@@ -184,7 +184,6 @@ else
         YouTubeSeoFastSurfing SimpeTube;
         YouTubeSeoFastSurfing BonusTube;
         SurfingMail Mail;
-        ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public SeoFast(Form1 form, Auth auth) : base(form, auth)
         {
             Surfing.AntiBotDelegate AntiBotDelegate = new Surfing.AntiBotDelegate(AntiBotImage);
@@ -308,11 +307,7 @@ function FirstStep()
 }"
                 , new Surfing.MiddleStepDelegate(VisitMIddle))
             { AntiBot = AntiBotDelegate };
-        }
-        protected override void StartSurf()
-        {
-            nn = new SeoFastNN(@"C:/ClickMashine/Settings/Net/SeoFast.h5");
-            Initialize();
+
             ManagerSurfing.AddSurfing(Visit);
             ManagerSurfing.AddSurfing(Click);
             ManagerSurfing.AddSurfing(Mail);
@@ -320,16 +315,11 @@ function FirstStep()
             ManagerSurfing.AddSurfing(ExpensiveTube);
             ManagerSurfing.AddSurfing(SimpeTube);
             ManagerSurfing.AddSurfing(BonusTube);
-            if (!Auth(auth))
-            {
-                if (!waitHandle.WaitOne())
-                    return;
-            }
-            while (true)
-            {
-                ManagerSurfing.StartSurf();
-                Sleep(600);
-            }
+        }
+        protected override void Initialize()
+        {
+            nn = new SeoFastNN(@"C:/ClickMashine/Settings/Net/SeoFast.h5");
+            base.Initialize();
         }
         public override bool Auth(Auth auth)
         {

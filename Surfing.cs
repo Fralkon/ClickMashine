@@ -13,12 +13,28 @@ namespace ClickMashine
         public AntiBotDelegate? AntiBot { get; set; }
         public delegate bool MiddleStepDelegate(IBrowser browser);
         public MiddleStepDelegate MiddleStep { get; set; }
+
+        public delegate void OpenPageDelegate(IBrowser browser, string Page);
+        public OpenPageDelegate OpenPage { get; set; }
         public Surfing(Site site, string page, string firstStep, MiddleStepDelegate middleStep)
         {
             Site = site;
             Page = page;
+            OpenPage = new OpenPageDelegate(OpenNormalPath);
             FirstStep = firstStep;
             MiddleStep = middleStep;
+        }
+        public Surfing(Site site, OpenPageDelegate openPage, string page, string firstStep, MiddleStepDelegate middleStep)
+        {
+            Site = site;
+            Page = page;
+            OpenPage = openPage;
+            FirstStep = firstStep;
+            MiddleStep = middleStep;
+        }
+        public void OpenNormalPath(IBrowser browser, string Page)
+        {
+            Site.LoadPage(browser, Page);
         }
         protected Surfing() { }
         public virtual bool Surf(int Wait = 5)
@@ -26,7 +42,7 @@ namespace ClickMashine
             var browser = Site.GetBrowser(0);
             if (browser == null)
                 return false;
-            Site.LoadPage(browser, Page);
+            OpenPage(browser, Page);
             if (AntiBot != null)
                 if (!AntiBot(browser))
                     return false;
@@ -98,12 +114,16 @@ namespace ClickMashine
         {
             MailClick = mailClick;
         }
+        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, middleStep)
+        {
+            MailClick = mailClick;
+        }
         public override bool Surf(int Wait = 5)
         {
             var browser = Site.GetBrowser(0);
             if (browser == null)
                 return false;
-            Site.LoadPage(browser, Page);
+            OpenPage(browser, Page);
             if (AntiBot != null)
                 if (!AntiBot(browser))
                     return false;
