@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using CefSharp;
 using CefSharp.DevTools.Page;
@@ -189,110 +190,7 @@ else
             Surfing.AntiBotDelegate AntiBotDelegate = new Surfing.AntiBotDelegate(AntiBotImage);
             homePage = "https://seo-fast.ru/";
             Type = EnumTypeSite.SeoFast;
-            Click = new Surfing(
-                this,
-                "https://seo-fast.ru/work_surfing",
-                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
-                function SecondStep()
-                {
-                    var start_ln = document.querySelectorAll('.start_link_a');
-                    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
-                    else { return " + (int)StatusJS.Wait + @"; }
-                }
-                function FirstStep()
-                {
-                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
-                    else if (surf_cl[n].innerText == '')
-                    {
-                        n++; return " + (int)StatusJS.Continue + @";
-                    }
-                    else
-                    {
-                        surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
-                    }
-                }",
-                new Surfing.MiddleStepDelegate(ClickMiddleStep)
-            )
-            { AntiBot = AntiBotDelegate };
-
-
-            string FirstStepJSYouTube =
-                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
-                var youtube_premium = null;
-                function FirstStep()
-                {
-                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
-                    else if (surf_cl[n].innerText == '')
-                    {
-                        n++; return " + (int)StatusJS.Continue + @";
-                    }
-                    else{ 
-                        youtube_premium = surf_cl[n].parentElement.parentElement.parentElement;
-                        if(youtube_premium == null){n++;return " + (int)StatusJS.Continue + @";}
-                        if(youtube_premium.id.indexOf('v123') != -1){
-                            surf_cl[n].click(); 
-                            n++; 
-                            return " + (int)StatusJS.OK1 + @";
-                        }       
-                        else{
-                            surf_cl[n].click(); 
-                            n++; 
-                            return " + (int)StatusJS.OK + @"; 
-                        }
-                    }
-                }
-                function SecondStep(){
-                    var start_ln = youtube_premium.querySelector('.start_link_youtube');
-	                if (start_ln != null) { 
-		                if(start_ln.innerText != 'Приступить к просмотру') {n++; return " + (int)StatusJS.Continue + @";}
-		                else {start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
-	                }
-	                else { return " + (int)StatusJS.Wait + @"; }
-                }";
-
-            Surfing.MiddleStepDelegate YouTubeMiddleStep = new Surfing.MiddleStepDelegate(YouTubeMiddle);
-            RuTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?rutube_video", FirstStepJSYouTube)
-            { AntiBot = AntiBotDelegate };
-            SimpeTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_simple", FirstStepJSYouTube)
-            { AntiBot = AntiBotDelegate };
-            ExpensiveTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_expensive", FirstStepJSYouTube)
-            { AntiBot = AntiBotDelegate };
-            BonusTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_bonus", FirstStepJSYouTube)
-            { AntiBot = AntiBotDelegate };
-
-            Mail = new SurfingMail(this, "https://seo-fast.ru/work_mails",
-                @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
-                function SecondStep()
-                {
-                    var start_ln = document.querySelectorAll('.start_link_a');
-                    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @";}
-                     else { return " + (int)StatusJS.Wait + @"; }
-                }
-                function FirstStep()
-                {
-                    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
-                    else if (surf_cl[n].innerText == '')
-                    {
-                        n++; 
-                        return " + (int)StatusJS.Continue + @";
-                    }
-                    else
-                    {
-                        surf_cl[n].click(); 
-                        return " + (int)StatusJS.OK + @";
-                    }
-                }",
-                new SurfingMail.MailClickDelegate(MailCLick), new Surfing.MiddleStepDelegate(MailMiddleClick)
-            )
-            { AntiBot = AntiBotDelegate };
-            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions",
-@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
-function SecondStep()
-{
-    var start_ln = document.querySelectorAll('.start_link_a');
-    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
-    else { return " + (int)StatusJS.Wait + @"; }
-}
+            string clickFirstStep = @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1; 
 function FirstStep()
 {
     if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
@@ -304,8 +202,109 @@ function FirstStep()
     {
         surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
     }
-}"
-                , new Surfing.MiddleStepDelegate(VisitMIddle))
+}";
+            string clickSecondStep =
+@"function SecondStep()
+{
+    var start_ln = document.querySelectorAll('.start_link_a');
+    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
+    else { return " + (int)StatusJS.Wait + @"; }
+}";
+            Click = new Surfing(this,"https://seo-fast.ru/work_surfing",clickFirstStep,clickSecondStep,new Surfing.MiddleStepDelegate(ClickMiddleStep))
+            { AntiBot = AntiBotDelegate };
+
+            string FirstStepJSYouTube =
+@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
+var youtube_premium = null;
+function FirstStep()
+{
+    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+    else if (surf_cl[n].innerText == '')
+    {
+        n++; return " + (int)StatusJS.Continue + @";
+    }
+else{ 
+    youtube_premium = surf_cl[n].parentElement.parentElement.parentElement;
+    if(youtube_premium == null){n++;return " + (int)StatusJS.Continue + @";}
+    if(youtube_premium.id.indexOf('v123') != -1){
+        surf_cl[n].click(); 
+        n++; 
+        return " + (int)StatusJS.OK1 + @";
+    }       
+    else{
+        surf_cl[n].click(); 
+        n++; 
+        return " + (int)StatusJS.OK + @"; 
+        }
+    }
+}
+function SecondStep()
+{
+    var start_ln = youtube_premium.querySelector('.start_link_youtube');
+	if (start_ln != null)
+    { 
+		if(start_ln.innerText != 'Приступить к просмотру') {n++; return " + (int)StatusJS.Continue + @";}
+		else {start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
+	}
+	else { return " + (int)StatusJS.Wait + @"; }
+}";
+
+            Surfing.MiddleStepDelegate YouTubeMiddleStep = new Surfing.MiddleStepDelegate(YouTubeMiddle);
+            RuTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?rutube_video", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            SimpeTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_simple", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            ExpensiveTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_expensive", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            BonusTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_bonus", FirstStepJSYouTube)
+            { AntiBot = AntiBotDelegate };
+            string mailFirstStep =
+@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 0;
+function SecondStep()
+{
+    var start_ln = document.querySelectorAll('.start_link_a');
+    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @";}
+    else { return " + (int)StatusJS.Wait + @"; }
+}";
+            string mailSecondStep =
+@"function FirstStep()
+{
+    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+    else if (surf_cl[n].innerText == '')
+    {
+        n++; 
+        return " + (int)StatusJS.Continue + @";
+    }
+    else
+    {
+        surf_cl[n].click(); 
+        return " + (int)StatusJS.OK + @";
+    }
+}";
+            Mail = new SurfingMail(this, "https://seo-fast.ru/work_mails", mailFirstStep, mailSecondStep, new SurfingMail.MailClickDelegate(MailCLick), new Surfing.MiddleStepDelegate(MailMiddleClick))
+            { AntiBot = AntiBotDelegate };
+            string visitFirstStep =
+@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
+function FirstStep()
+{
+    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+    else if (surf_cl[n].innerText == '')
+    {
+        n++; return " + (int)StatusJS.Continue + @";
+    }
+    else
+    {
+        surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
+    }
+}";
+            string visitSecondStep =
+@"function SecondStep()
+{
+    var start_ln = document.querySelectorAll('.start_link_a');
+    if (start_ln.length != 0) { start_ln[0].click(); return "" + (int)StatusJS.OK + @""; }
+    else { return "" + (int)StatusJS.Wait + @""; }
+}";
+            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions", visitFirstStep, visitSecondStep, new Surfing.MiddleStepDelegate(VisitMIddle))
             { AntiBot = AntiBotDelegate };
 
             ManagerSurfing.AddSurfing(Visit);

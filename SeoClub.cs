@@ -28,8 +28,7 @@ namespace ClickMashine
             homePage = "https://seoclub.su/";
             Type = EnumTypeSite.SeoClub;
             Surfing.OpenPageDelegate openPage = new Surfing.OpenPageDelegate(OpenPage);
-            YouTube = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href",
-@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+            string youTubeFirstStep = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function FirstStep()
 {
 	if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
@@ -37,8 +36,9 @@ function FirstStep()
 	{
 		surf_cl[n].querySelector('span').click(); return " + (int)StatusJS.OK + @";
 	}
-}
-function SecondStep()
+}";
+            string youTubeSecondStep =
+@"function SecondStep()
 {
 	var start_ln = surf_cl[n].querySelector('.youtube-button');
 	if (start_ln != null) { 
@@ -46,33 +46,36 @@ function SecondStep()
 		else {start_ln.querySelector('span').click(); n++; return " + (int)StatusJS.OK + @"; }
 	}
 	else { return " + (int)StatusJS.Wait + @"; }
-}", new Surfing.MiddleStepDelegate(YouTubeMiddle));
+}";
+            YouTube = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href", youTubeFirstStep, youTubeSecondStep, new Surfing.MiddleStepDelegate(YouTubeMiddle));
 
-            Click = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href",
+            string clickFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
-function SecondStep()
-{
-	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
-	if (start_ln != null) { start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
-	else { return " + (int)StatusJS.Wait + @"; }
-}
 function FirstStep()
 {
-	if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+	if (n >= surf_cl.length) return "" + (int)StatusJS.End + @"";
 	else
 	{	
 		if(surf_cl[n].querySelector('[id]')!=null)
 			{
 				if(surf_cl[n].querySelector('a')==null || surf_cl[n].getBoundingClientRect().height == 0)
-					{n++; return " + (int)StatusJS.Continue + @";}
-				else {surf_cl[n].querySelector('a').click(); return " + (int)StatusJS.OK + @";}
+					{n++; return "" + (int)StatusJS.Continue + @"";}
+				else {surf_cl[n].querySelector('a').click(); return "" + (int)StatusJS.OK + @"";}
 			}
 		else
-			{n++;return " + (int)StatusJS.Continue + @";}
+			{n++;return "" + (int)StatusJS.Continue + @"";}
 	}
-}", new Surfing.MiddleStepDelegate(ClickMiddle));
+}";
+            string clickSecondStep =
+@"function SecondStep()
+{
+	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
+	if (start_ln != null) { start_ln.click(); n++; return "" + (int)StatusJS.OK + @""; }
+	else { return "" + (int)StatusJS.Wait + @""; }
+}";
+            Click = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href", clickFirstStep,clickSecondStep, new Surfing.MiddleStepDelegate(ClickMiddle));
 
-            Visit = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(5)').href",
+            string visitFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function FirstStep()
 {
@@ -84,27 +87,27 @@ function FirstStep()
 					{n++; return " + (int)StatusJS.Continue + @";}
 		else {link.querySelector('a').click(); n++; return " + (int)StatusJS.OK + @";}
 	}
-}
-function SecondStep()
-{
-return "+(int)StatusJS.OK+";}", new Surfing.MiddleStepDelegate(VisitMiddle));
+}";
+            Visit = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(5)').href", visitFirstStep, new Surfing.MiddleStepDelegate(VisitMiddle));
 
-            Mail = new SurfingMail(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href",
+            string mailFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
-function SecondStep()
-{
-	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
-	if (start_ln != null) { start_ln.click(); n++; return "+(int)StatusJS.OK+ @"; }
-	else { return "+(int)StatusJS.Wait+ @"; }
-}
 function FirstStep()
 {
-	if (n >= surf_cl.length) return "+(int)StatusJS.End+ @";
+	if (n >= surf_cl.length) return ""+(int)StatusJS.End+ @"";
 	else
 	{
-		surf_cl[n].querySelector('a').click(); return "+(int)StatusJS.OK+@";
+		surf_cl[n].querySelector('a').click(); return ""+(int)StatusJS.OK+@"";
 	}
-}", new SurfingMail.MailClickDelegate(MailClick), new Surfing.MiddleStepDelegate(ClickMiddle));
+}";
+            string mailSecondStep =
+@"function SecondStep()
+{
+	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
+	if (start_ln != null) { start_ln.click(); n++; return ""+(int)StatusJS.OK+ @""; }
+	else { return ""+(int)StatusJS.Wait+ @""; }
+}";
+            Mail = new SurfingMail(this, openPage,mailFirstStep,mailSecondStep, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href",new SurfingMail.MailClickDelegate(MailClick), new Surfing.MiddleStepDelegate(ClickMiddle));
 
             ManagerSurfing.AddSurfing(YouTube);
             ManagerSurfing.AddSurfing(Click);
@@ -119,7 +122,7 @@ function FirstStep()
             string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
                              "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
             InjectJS(browserAuth, auth_js);
-            StatusCaptcha status = OutCaptchaLab(browserAuth,
+            StatusJS status = OutCaptchaLab(browserAuth,
                nn,
                Enum.GetNames(typeof(SeoClubEnumNN)).ToList(),
                "document.querySelector('.out-capcha-title')",
@@ -128,7 +131,7 @@ function FirstStep()
                5,
                "document.querySelector('.btn')",
                "document.querySelector('.login-error')");
-            if (status == StatusCaptcha.OK)
+            if (status == StatusJS.OK)
             {
                 //string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
                 //if (ev == "error")
@@ -156,7 +159,7 @@ function FirstStep()
         private bool ClickMiddle(IBrowser browser)
         {
             IFrame frame = browser.GetFrame("frminfo");
-            if (WaitTime(frame, @"b = false; window.top.start = 0; timerWait.innerText;"))
+            if (WaitTime(frame, @"b = false; window.top.start = 0; document.querySelector('#timer_inp').innerText;"))
             {
                 if (!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
                 {

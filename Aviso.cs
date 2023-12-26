@@ -32,20 +32,6 @@ namespace ClickMashine
             CM("Auth Aviso");
             return true;
         }
-        protected override void StartSurf()
-        {
-            Initialize();
-            if (!Auth(auth))
-                return;
-            mSurf.AddFunction(YouTubeSurf);
-            mSurf.AddFunction(MailSurf);
-            mSurf.AddFunction(ClickSurf);
-            while (true)
-            {
-                mSurf.GoSurf();
-                Sleep(600);
-            }
-        }
         private int YouTubeSurf()
         {
             int LinkCount = 0;

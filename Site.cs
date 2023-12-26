@@ -24,7 +24,8 @@ namespace ClickMashine
         OK,
         OK1,
         End,
-        None
+        None,
+        Block
     }
     public enum EnumTypeSite
     {
@@ -39,15 +40,6 @@ namespace ClickMashine
         SeoClub,
         VipClick,
         Adaso
-    }
-    enum EnumAnswerBot { 
-        replace,
-        exit
-    }
-    enum StatusCaptcha { 
-        OK,
-        BLOCK,
-        ERROR
     }
     class Auth
     {
@@ -104,58 +96,6 @@ namespace ClickMashine
             return "errorMail";
         }
     }
-    class Report {
-        int Click { get; set; }
-        int Visit { get; set; }
-        int YouTube { get; set; }
-        public Report()
-        {
-
-        }
-    }
-    class Surf {
-        public Surf(FunctionSurf function)
-        {
-            Count = 10;
-            Function = function;
-        }
-        public int Count { get; set; }
-        public FunctionSurf Function { get; set; }
-        public delegate int FunctionSurf();
-    }
-    class ManagerSurf {
-        public ManagerSurf() { }
-        private List<Surf> ListSurf = new List<Surf>();
-        public void AddFunction(Surf.FunctionSurf functionSurf)
-        {
-            ListSurf.Add(new Surf(functionSurf));
-        }
-        public void GoSurf()
-        {
-            bool b;
-            do
-            {
-                b = false;
-                for (int i = 0; i < ListSurf.Count; i++)
-                {
-                    if (ListSurf[i].Count > 5)
-                    {
-                        try{
-                            ListSurf[i].Count = ListSurf[i].Function();
-                        }
-                        catch(Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
-                        b = true;
-                    }
-                }
-            }
-            while (b);
-            for (int i = 0; i < ListSurf.Count; i++)
-                ListSurf[i].Count = 10;
-        }
-    }
     public class BoundObject
     {
         private EventWaitHandle EventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
@@ -177,7 +117,6 @@ namespace ClickMashine
     }  
     abstract class Site : MyTask
     {
-        protected ManagerSurf mSurf = new ManagerSurf();
         protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public Form1 form;
         public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -826,20 +765,10 @@ observer.observe(target, config);
         {
             if (WaitElement(frame, element))
             {
-                string js = @"var elementImg = " + element + @";
-if(elementImg != null){
-    var js = elementImg.getBoundingClientRect().toJSON();
-    JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});
-}
-else 'errorImg';";
-                string ev = SendJSReturn(frame, js);
-                if (ev != "errorImg")
-                {
-                    Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ev);
-                    return form.MakeScreenshot(frame.Browser, rectElement);
-                }
-                else
-                    throw new Exception("Ошибка скриншота");
+                string js = @"var js = elementImg.getBoundingClientRect().toJSON();
+JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});";
+                Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ValueElement(frame, js));
+                return form.MakeScreenshot(frame.Browser, rectElement);
             }
             else
                 throw new Exception("Ошибка ожидания элемента для скриншота");
@@ -966,15 +895,15 @@ else 'ok';";
             SendJS(browser, $"{button}.click();");
             return imageHistoryPredict;
         }
-        public StatusCaptcha OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
+        public StatusJS OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
         {
             string js =
 @"var img_captcha = " + captcha + @";
 if(img_captcha != null)
-    'captcha';
-else 'ok';";
-            if (SendJSReturn(browser.MainFrame, js) != "captcha")
-                return StatusCaptcha.OK;           
+    "+(int)StatusJS.Error+ @";
+else "+(int)StatusJS.OK+@";";
+            if(InjectJS(browser, js) == StatusJS.OK)
+                return StatusJS.OK;           
             BoundObject boundObject = new BoundObject();
             WaitChangeElement(browser, boundObject, information);
             for (int iteration = 0; iteration < 10; iteration++)
@@ -982,7 +911,7 @@ else 'ok';";
                 string nameImage = SendJSReturn(browser, $"{title}.innerText;");
                 string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
                 if (value == null)
-                    return StatusCaptcha.ERROR;
+                    return StatusJS.Error;
                 SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
                 Sleep(2);
                 List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
@@ -1008,15 +937,15 @@ else 'ok';";
                 else if (ev == "Ваш аккаунт заблокирован")
                 {
                     AccountBlock();
-                    return StatusCaptcha.BLOCK;
+                    return StatusJS.Block;
                 }
                 else
-                    return StatusCaptcha.OK;
+                    return StatusJS.OK;
                 if(reload != null)
                     SendJS(browser, $"{reload}.click();");
                 Sleep(3);
             }
-            return StatusCaptcha.ERROR;
+            return StatusJS.Error;
         }
     }
 }

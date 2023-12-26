@@ -22,6 +22,8 @@ namespace ClickMashine
         {
             homePage = "https://adaso.su/";
             Type = EnumTypeSite.Adaso;
+
+
         }
         public override bool Auth(Auth auth)
         {
@@ -30,8 +32,8 @@ namespace ClickMashine
             LoadPage(browserAuth, "https://adaso.su/login");
             string auth_js = $"document.querySelector('input[name=\"username\"]').value = '{auth.Login}';" +
                              $"document.querySelector('input[name=\"password\"]').value = '{auth.Password}';";
-            SendJS(0, auth_js);
-            StatusCaptcha status = OutCaptchaLab(browserAuth,
+            InjectJS(browserAuth, auth_js);
+            StatusJS status = OutCaptchaLab(browserAuth,
                nn,
                Enum.GetNames(typeof(AdasoEnumNN)).ToList(),
                "document.querySelector('.out-capcha-title')",
@@ -40,7 +42,7 @@ namespace ClickMashine
                5,
                "document.querySelector('.btn')",
                "document.querySelector('.login-error')");
-            if (status == StatusCaptcha.OK)
+            if (status == StatusJS.OK)
             {
                 //string ev = GetMoney(browserAuth, "document.querySelector('#new-money-ballans')");
                 //if (ev == "error")
@@ -50,20 +52,10 @@ namespace ClickMashine
             }
             return false;          
         }
-        protected override void StartSurf()
+        protected override void Initialize()
         {
             nn = new SeoClubNN(@"C:/ClickMashine/Settings/Net/SeoClub.h5");
-            Initialize();
-            if (!Auth(auth))
-                waitHandle.WaitOne();
-            mSurf.AddFunction(YouTubeSurf);
-            mSurf.AddFunction(MailSurf);
-            mSurf.AddFunction(ClickSurf);
-            while (true)
-            {
-                mSurf.GoSurf();
-                Sleep(600);
-            }
+            base.Initialize();
         }
         private int ClickSurf()
         {

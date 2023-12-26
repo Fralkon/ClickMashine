@@ -5,239 +5,130 @@ namespace ClickMashine
     class WmrFast : Site
 	{
 		ImageControlWmrClick imageConrolWmrClick;
-		public WmrFast(Form1 form, Auth auth) : base(form, auth)
+        public WmrFast(Form1 form, Auth auth) : base(form, auth)
 		{
 			homePage = "https://wmrfast.com/";
 			HostName = "wmrfast.com";
-            Type = EnumTypeSite.WmrFast; 
-			imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
-		}
+            Type = EnumTypeSite.WmrFast;
+
+			string FirstStep =
+@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
+function FirstStep()
+{
+	if (n >= surf_cl.length) return "+(int)StatusJS.End+ @";
+	else
+	{
+		surf_cl[n].click();
+		n++;
+		return "+(int)StatusJS.OK+@";
+	}
+}";
+			ManagerSurfing.AddSurfing(new Surfing(this, "https://wmrfast.com/serfing_ytn.php", FirstStep, new Surfing.MiddleStepDelegate(YouTubeMiddle)));
+			ManagerSurfing.AddSurfing(new Surfing(this, "https://wmrfast.com/serfing.php", FirstStep, new Surfing.MiddleStepDelegate(ClickMiddle)));
+            ManagerSurfing.AddSurfing(new Surfing(this, "https://wmrfast.com/serfing.php", FirstStep, new Surfing.MiddleStepDelegate(VisitMiddle)));
+        }
 		public override bool Auth(Auth auth)
         {
             var browserAuth = GetBrowser(0);
             if (browserAuth == null) return false;
             LoadPage("https://wmrfast.com/");
-			Sleep(2);
 			ImageControlWmrAuth imageConrolWmrAuth = new ImageControlWmrAuth(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastAuth.h5");
 			while (true)
 			{
-				string ev = SendJSReturn(browserAuth, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); 'login';} else 'end';");
-				if (ev == "login")
+				if (InjectJS(browserAuth, "var but_log = document.querySelector('#logbtn'); if(but_log != null) {but_log.click(); " + (int)StatusJS.Error + ";} else " + (int)StatusJS.OK + ";") == StatusJS.Error)
 				{
 					Sleep(2);
-                    ev = SendJSReturn(browserAuth,
-@"if(document.querySelector(""#anchor"")) 'anchor';
-else if(document.querySelector(""#login_cap"")) 'login_cap';
-else 'wait_login';");
-					SendJS(browserAuth,
+					InjectJS(browserAuth,
 @"document.querySelector('#vhusername').value = '" + auth.Login + @"';
 document.querySelector('#vhpass').value = '" + auth.Password + @"';");
-					if (ev == "login_cap")
-                    {
-						string js =
-@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browserAuth.MainFrame, "document.querySelector('#login_cap')")) + @"';
-                        document.querySelector('#vhod1').click();";
-						eventLoadPage.Reset();
-						SendJS(browserAuth, js);
-						eventLoadPage.WaitOne();
-						Sleep(3);
-					}
-					else if(ev == "anchor")
-                    {
-                        return false;
-                    }
-					else
+					switch (InjectJS(browserAuth,
+@"if(document.querySelector(""#anchor"")) " + (int)StatusJS.OK1 + @";
+else if(document.querySelector(""#login_cap"")) " + (int)StatusJS.OK + @";
+else 'wait_login';"))
 					{
-						return false;
+						case StatusJS.OK:
+							string js =
+	@"document.querySelector('#cap_text').value = '" + imageConrolWmrAuth.Predict(GetImgBrowser(browserAuth.MainFrame, "document.querySelector('#login_cap')")) + @"';
+document.querySelector('#vhod1').click();";
+							eventLoadPage.Reset();
+							SendJS(browserAuth, js);
+							eventLoadPage.WaitOne();
+							Sleep(3);
+							break;
+						default:
+							return false;
 					}
-                }
+				}
 				else
 					break;
 			}
             TakeMoney(browserAuth);
             return true;
 		}
-		protected override void StartSurf()
+		protected override void Initialize()
+        {
+            imageConrolWmrClick = new ImageControlWmrClick(@"C:/ClickMashine/Settings/Net/WmrFast/WmrFastClick.h5");
+            base.Initialize();
+        }
+        private bool YouTubeMiddle(IBrowser browser)
 		{
-			Initialize();
-			if (!Auth(auth))
-			{
-				waitHandle.WaitOne();
-			}
-			mSurf.AddFunction(YouTubeSurf);
-            //mSurf.AddFunction(ClickSurf);
-            while (true)
+            if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
             {
-                mSurf.GoSurf();
-                Sleep(300);
-			}
+                if(WaitTime(browser, "vs = true;timer;"))
+                {
+                    WaitButtonClick(browser, "document.querySelector('a');");
+					return true;
+                }
+            }
+            return false;
 		}
-		private int YouTubeSurf()
+		private bool ClickMiddle(IBrowser browser)
 		{
-			int Count = 0;
-			LoadPage(0, "https://wmrfast.com/serfing_ytn.php");
-            Sleep(2);
-            string js =
-@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
-function click_s()
-{
-	if (n >= surf_cl.length) return 'end';
-	else
-	{
-		surf_cl[n].click(); n++; return 'surf';
-	}
-}";
-			SendJS(0, js);
-			while (true)
-            {
-                eventBrowserCreated.Reset();
-				try
-				{
-					string ev = SendJSReturn(0, "click_s();");
-					if (ev == "surf")
-					{
-						IBrowser? browser = WaitCreateBrowser();
-						if (browser == null)
-						{
-							CloseСhildBrowser();
-							continue;
-						}
-						if (WaitElement(browser.MainFrame, "document.querySelector(\"#tt\")"))
-						{
-							ev = SendJSReturn(browser, "vs = true;timer.toString();");
-							if (ev != "error")
-							{
-								Sleep(ev);
-								WaitButtonClick(browser.MainFrame, "document.querySelector('a');");
-								Count++;
-								Sleep(2);
-							}
-						}
-					}
-					else if (ev == "end")
-						break;
+			if (WaitTime(browser, "counter"))
+			{
+				if (ValueElement(browser, "counter") != "-1") {
+					InjectJS(browser, "counter = 0;flag = 1;");
+					Sleep(2);
 				}
-				catch (Exception ex) { CM(ex.Message); }
-				CloseСhildBrowser();
-				Sleep(1);
-			}
-			return Count;
-		}
-		private int ClickSurf()
-		{
-			int Count = 0;
-			LoadPage("https://wmrfast.com/serfing.php");
-			Sleep(2);
-			string js =
-@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
-function click_s()
-{
-	if (n >= surf_cl.length) return 'end';
-	else
-	{
-		surf_cl[n].click(); n++; return 'surf';
-	}
-}";
-			SendJS(0, js);
-			while (true)
-			{
-				eventBrowserCreated.Reset();
-				string ev = SendJSReturn(0, "click_s();");
-				if (ev == "surf")
+				for (int i = 0; i < 10; i++)
 				{
-					IBrowser? browser = WaitCreateBrowser();
-					if (browser != null)
+					string value;
+					try
 					{
-						ev = SendJSReturn(browser, "counter.toString();");
-						if (ev != "error")
-						{
-							Sleep(ev);
-							ev = SendJSReturn(browser, "counter.toString();");
-							if (ev != "-1")
-							{
-								SendJS(browser, "counter = 0;flag = 1;");
-								Sleep(2);
-							}
-							for (int i = 0; i < 10; i++)
-							{
-								Sleep(1);
-								string value;
-								try
-								{
-									value = imageConrolWmrClick.Predict(GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha-image')"));
-								}
-								catch (Exception ex)
-								{
-									Console.WriteLine(ex.ToString());
-									SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-									Sleep(2);
-									continue;
-								}
-								if (value.Length == 3)
-								{
-									js = @"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
+						value = imageConrolWmrClick.Predict(GetImgBrowser(browser.MainFrame, "document.querySelector('#captcha-image')"));
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(ex.ToString());
+						InjectJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+						Sleep(2);
+						continue;
+					}
+					if (value.Length == 3)
+					{
+						string js =
+@"function endClick() {var butRet = document.querySelectorAll('[method=""POST""]');
 for (var i = 0; i < butRet.length; i++)
 {
 	if (butRet[i].querySelector('.submit').value == " + value + @")
-	{ butRet[i].querySelector('.submit').click(); return 'ok'}
+	{ butRet[i].querySelector('.submit').click(); return " + (int)StatusJS.OK + @";}
 }
-return 'errorClick';}endClick();";
-									if (SendJSReturn(browser, js) == "ok")
-									{
-										Sleep(2);
-										Count++;
-										break;
-									}
-								}
-								SendJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
-								Sleep(2);
-							}
-						}
+return " + (int)StatusJS.Error + @";}endClick();";
+						if (InjectJS(browser, js) == StatusJS.OK)
+							return true;
 					}
+					InjectJS(browser, "document.querySelector('#capcha > tbody > tr > td:nth-child(1) > a').click();");
+					Sleep(2);
 				}
-				else if (ev == "end")
-					break;
-				CloseСhildBrowser();
-				Sleep(2);
 			}
-			return Count;
+			return false;
 		}
-		private int VisitSurf()
-        {
-			int Count = 0;
-			LoadPage("https://wmrfast.com/serfing.php");
-			Sleep(2);
-			string js =
-@"var surf_cl = document.querySelectorAll('.serf_hash');var n = 0;		
-function click_s()
-{
-	if (n < surf_cl.length) {
-		surf_cl[n].click(); 
-		return surf_cl[n++].getAttribute('timer').toString();
-	}
-	else
-	{
-		return 'end';
-	}
-}";
-			SendJS(0, js);
-			while (true)
-			{
-				eventBrowserCreated.Reset();
-				string ev = SendJSReturn(0, "click_s();");
-				if (ev == "end")
-					break;
-                else
-                {
-					WaitCreateBrowser();
-					Sleep(2);					
-					Sleep(ev);
-					Count++;
-				}
-				CloseСhildBrowser();
-				Sleep(2);
-			}
-			return Count;
+		private bool VisitMiddle(IBrowser browser)
+		{
+			var browserStart = GetBrowser(0);
+			if (WaitTime(browserStart, "surf_cl[n-1].getAttribute('timer')"))
+				return true;
+			return false;
 		}
         protected bool Anchor(IBrowser browser, string captcha, string picture, string input, string button)
         {

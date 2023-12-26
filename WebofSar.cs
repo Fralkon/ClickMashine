@@ -2,23 +2,13 @@
 {
     internal class WebofSar : Site
     {
+        Surfing Click; 
+        Surfing Visit; 
+        Surfing AutoClick;
         public WebofSar(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://webof-sar.ru/";
             Type = EnumTypeSite.WebofSar;
-        }
-        protected override void StartSurf()
-        {
-            Initialize();
-            if (!Auth(auth))
-                return;
-            mSurf.AddFunction(ClickSurf);
-            mSurf.AddFunction(VisitSites);
-            mSurf.AddFunction(AutoClick);
-            while (true)
-            {
-                mSurf.GoSurf();
-            }
         }
         public override bool Auth(Auth auth)
         {
@@ -278,7 +268,7 @@ fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
             }
             return Count;
         }
-        private int AutoClick()
+        private int AutoClickMiddle()
         {
             int Count = 0;
             var mainBrowser = GetBrowser(0);
