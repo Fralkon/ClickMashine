@@ -217,7 +217,7 @@ function surf()
                                     if (!WaitButtonClick(yotube_frame, "document.querySelector('.butt-nw');"))
                                         Error("Error end youtube watch");
                                     Count++;
-                                    Sleep(2);
+                                    Sleep(3);
                                 }
                                 break;
                             }

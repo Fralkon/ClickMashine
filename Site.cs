@@ -195,14 +195,14 @@ namespace ClickMashine
         protected ToolStripMenuItem menuItemSite;
         protected ToolStripComboBox siteStripComboBox;
         protected EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-        public Site(Form1 form, Auth auth)
+        public Site(Form1 form, Auth auth) : base()
         {
             this.form = form;
             this.mySQL = form.mySQL;
             this.auth = auth;
             TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
-        public Site(Form1 form)
+        public Site(Form1 form) : base()
         {
             this.form = form;
             this.mySQL = form.mySQL;
