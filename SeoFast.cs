@@ -66,7 +66,7 @@ namespace ClickMashine
                             break;
                         case StatusJS.Continue:
                             break;
-                        case StatusJS.OK1:
+                        case StatusJS.OK:
                             switch (Site.FunctionWait(browser, "SecondStep();"))
                             {
                                 case StatusJS.OK:
@@ -91,7 +91,7 @@ namespace ClickMashine
                                     }
                             }
                             break;
-                        case StatusJS.OK:
+                        case StatusJS.OK1:
                             var browserSurf = Site.WaitCreateBrowser();
                             if (browserSurf == null)
                             {
@@ -202,15 +202,14 @@ function FirstStep()
     {
         surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
     }
-}";
-            string clickSecondStep =
-@"function SecondStep()
+}
+function SecondStep()
 {
     var start_ln = document.querySelectorAll('.start_link_a');
     if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
     else { return " + (int)StatusJS.Wait + @"; }
 }";
-            Click = new Surfing(this,"https://seo-fast.ru/work_surfing",clickFirstStep,clickSecondStep,new Surfing.MiddleStepDelegate(ClickMiddleStep))
+            Click = new Surfing(this,"https://seo-fast.ru/work_surfing",clickFirstStep,new Surfing.MiddleStepDelegate(ClickMiddleStep))
             { AntiBot = AntiBotDelegate };
 
             string FirstStepJSYouTube =
@@ -229,12 +228,12 @@ else{
     if(youtube_premium.id.indexOf('v123') != -1){
         surf_cl[n].click(); 
         n++; 
-        return " + (int)StatusJS.OK1 + @";
+        return " + (int)StatusJS.OK + @";
     }       
     else{
         surf_cl[n].click(); 
         n++; 
-        return " + (int)StatusJS.OK + @"; 
+        return " + (int)StatusJS.OK1 + @"; 
         }
     }
 }
@@ -265,9 +264,8 @@ function SecondStep()
     var start_ln = document.querySelectorAll('.start_link_a');
     if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @";}
     else { return " + (int)StatusJS.Wait + @"; }
-}";
-            string mailSecondStep =
-@"function FirstStep()
+}
+function FirstStep()
 {
     if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
     else if (surf_cl[n].innerText == '')
@@ -281,7 +279,7 @@ function SecondStep()
         return " + (int)StatusJS.OK + @";
     }
 }";
-            Mail = new SurfingMail(this, "https://seo-fast.ru/work_mails", mailFirstStep, mailSecondStep, new SurfingMail.MailClickDelegate(MailCLick), new Surfing.MiddleStepDelegate(MailMiddleClick))
+            Mail = new SurfingMail(this, "https://seo-fast.ru/work_mails", mailFirstStep, new SurfingMail.MailClickDelegate(MailCLick), new Surfing.MiddleStepDelegate(MailMiddleClick))
             { AntiBot = AntiBotDelegate };
             string visitFirstStep =
 @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1;
@@ -296,15 +294,14 @@ function FirstStep()
     {
         surf_cl[n].click(); n++; return " + (int)StatusJS.OK + @";
     }
-}";
-            string visitSecondStep =
-@"function SecondStep()
+}
+function SecondStep()
 {
     var start_ln = document.querySelectorAll('.start_link_a');
     if (start_ln.length != 0) { start_ln[0].click(); return "" + (int)StatusJS.OK + @""; }
     else { return "" + (int)StatusJS.Wait + @""; }
 }";
-            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions", visitFirstStep, visitSecondStep, new Surfing.MiddleStepDelegate(VisitMIddle))
+            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions", visitFirstStep, new Surfing.MiddleStepDelegate(VisitMIddle))
             { AntiBot = AntiBotDelegate };
 
             ManagerSurfing.AddSurfing(Visit);

@@ -8,7 +8,6 @@ namespace ClickMashine
         public int Count { get; protected set; } = 0;
         public int Error { get; protected set; } = 0;
         public string FirstStep { get; set; }
-        public string? SecondStep { get; set; }
         public string Page { get; set; }
         public delegate bool AntiBotDelegate(IBrowser browser);
         public AntiBotDelegate? AntiBot { get; set; }
@@ -25,30 +24,12 @@ namespace ClickMashine
             FirstStep = firstStep;
             MiddleStep = middleStep;
         }
-        public Surfing(Site site, string page, string firstStep, string secondStep, MiddleStepDelegate middleStep)
-        {
-            Site = site;
-            Page = page;
-            OpenPage = new OpenPageDelegate(OpenNormalPath);
-            FirstStep = firstStep;
-            SecondStep = secondStep;
-            MiddleStep = middleStep;
-        }
         public Surfing(Site site, OpenPageDelegate openPage, string page, string firstStep, MiddleStepDelegate middleStep)
         {
             Site = site;
             Page = page;
             OpenPage = openPage;
             FirstStep = firstStep;
-            MiddleStep = middleStep;
-        }
-        public Surfing(Site site, OpenPageDelegate openPage, string page, string firstStep, string secondStep, MiddleStepDelegate middleStep)
-        {
-            Site = site;
-            Page = page;
-            OpenPage = openPage;
-            FirstStep = firstStep;
-            SecondStep = secondStep;
             MiddleStep = middleStep;
         }
         public void OpenNormalPath(IBrowser browser, string Page)
@@ -66,8 +47,6 @@ namespace ClickMashine
                 if (!AntiBot(browser))
                     return false;
             Site.InjectJS(browser, FirstStep);
-            if(SecondStep != null)
-                Site.InjectJS(browser, SecondStep);
             bool f = true;
             try
             {
@@ -82,17 +61,15 @@ namespace ClickMashine
                         case StatusJS.Continue:
                             break;
                         case StatusJS.OK:
-                            if (SecondStep != null)
-                                switch (Site.FunctionWait(browser, "SecondStep();"))
-                                {
-                                    case StatusJS.OK:
-                                        {
-                                            Middle();
-                                            break;
-                                        }
-                                }
-                            else
-                                Middle();
+                            switch (Site.FunctionWait(browser, "SecondStep();"))
+                            {
+                                case StatusJS.OK:
+                                    Middle();
+                                    break;
+                            }
+                            break;
+                        case StatusJS.OK1:
+                            Middle();
                             break;
                         case StatusJS.Error:
                             Error++;
@@ -100,6 +77,7 @@ namespace ClickMashine
                         default:
                             throw new Exception($"Error StatusJS");
                     }
+                    Site.Sleep(2);
                     Site.CloseСhildBrowser();
                 }
                 while (f);
@@ -143,15 +121,7 @@ namespace ClickMashine
         {
             MailClick = mailClick;
         }
-        public SurfingMail(Site site, string page, string firstStep, string secondStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, page, firstStep, secondStep, middleStep)
-        {
-            MailClick = mailClick;
-        }
         public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, middleStep)
-        {
-            MailClick = mailClick;
-        }
-        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, string secondStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, secondStep, middleStep)
         {
             MailClick = mailClick;
         }
@@ -165,8 +135,6 @@ namespace ClickMashine
                 if (!AntiBot(browser))
                     return false;
             Site.InjectJS(browser, FirstStep);
-            if (SecondStep != null)
-                Site.InjectJS(browser, SecondStep);
             bool f = true;
             try
             {
@@ -181,34 +149,27 @@ namespace ClickMashine
                         case StatusJS.Continue:
                             break;
                         case StatusJS.OK:
-                            if (SecondStep != null)
+                            switch (Site.FunctionWait(browser, "SecondStep();"))
                             {
-                                switch (Site.FunctionWait(browser, "SecondStep();"))
-                                {
-                                    case StatusJS.OK:
+                                case StatusJS.OK:
+                                    {
+                                        if (MailClick(browser))
                                         {
-                                            if (MailClick(browser))
-                                            {
-                                                Middle();
-                                            }
-                                            else
-                                                Error++;
-                                            Site.Sleep(2);
-                                            break;
+                                            Middle();
                                         }
-                                }
+                                        else
+                                            Error++;
+                                        break;
+                                    }
+                            }
+                            break;
+                        case StatusJS.OK1:
+                            if (MailClick(browser))
+                            {
+                                Middle();
                             }
                             else
-                            {
-                                if (MailClick(browser))
-                                {
-                                    Middle();
-                                }
-                                else
-                                    Error++;
-                                Site.Sleep(2);
-                                break;
-                            }
+                                Error++;
                             break;
                         case StatusJS.Error:
                             Error++;
@@ -216,6 +177,7 @@ namespace ClickMashine
                         default:
                             throw new Exception($"Error StatusJS");
                     }
+                    Site.Sleep(2);
                     Site.CloseСhildBrowser();
                 }
                 while (f);

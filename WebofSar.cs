@@ -1,14 +1,57 @@
-﻿namespace ClickMashine
+﻿using CefSharp;
+
+namespace ClickMashine
 {
     internal class WebofSar : Site
     {
-        Surfing Click; 
-        Surfing Visit; 
-        Surfing AutoClick;
         public WebofSar(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://webof-sar.ru/";
             Type = EnumTypeSite.WebofSar;
+            string clickJSFunction =
+@"var surf_cl = document.querySelectorAll('.wfsts');var n = 0;
+function FirstStep()
+{
+    if (n >= surf_cl.length) return "+(int)StatusJS.End+ @";
+    else
+    {
+        surf_cl[n].querySelector('.work-surf-start').click(); return "+(int)StatusJS.OK+ @";
+    }
+}
+function SecondStep()
+{
+    var start_ln = surf_cl[n].querySelector('button');
+    if (start_ln != null) { start_ln.click(); n++; return "+(int)StatusJS.OK+ @"; }
+    else { return "+(int)StatusJS.Wait+@"; }
+}";
+            ManagerSurfing.AddSurfing(new Surfing(this, "https://webof-sar.ru/work-surfings", clickJSFunction, ClickMiddle));
+
+            string visitJSFunction =
+@"var surf_cl = document.querySelectorAll('.td-work');var n = 0;
+function surf()
+{
+    var start_ln = surf_cl[n].querySelector('.sub_work');
+    if (start_ln != null) { start_ln.click(); n++; return 'click'; }
+    else { return 'wait'; }
+}
+function click_s()
+{
+    if (n >= surf_cl.length) return 'end_surf';
+    else
+    {
+        surf_cl[n].click(); return 'surf';
+    }
+}";
+            ManagerSurfing.AddSurfing(new Surfing(this, "https://webof-sar.ru/work-pay-visits", visitJSFunction, VisitMiddle));
+
+            string autoClickJSFunction =
+@"function FirstStep(){
+    if(document.querySelector('.text-bold')!=null)
+        if(document.querySelector('.text-bold').innerText!='0')
+            return "+(int)StatusJS.OK1+@";
+    return "+StatusJS.End+@";
+}";
+            ManagerSurfing.AddSurfing(new Surfing(this, "https://webof-sar.ru/work-auto-surfings", autoClickJSFunction, AutoVisitMiddle));
         }
         public override bool Auth(Auth auth)
         {
@@ -35,6 +78,75 @@
                 SendJS(0, js);
                 eventLoadPage.WaitOne();
                 Sleep(2);
+            }
+            return true;
+        }
+        private bool ClickMiddle(IBrowser browser)
+        {
+            InjectJS(browser,
+    @"loadFrame();
+$(window).on(""focus"", function () {   
+    wFocus = true;
+    dFocus = true;
+});
+$(window).on(""blur"", function() {                       
+    wFocus = true;
+    dFocus = true;
+});
+$(window).focus();");
+            browser.GetHost().SetFocus(true);
+            Sleep(1);
+            if (WaitElement(browser, "document.querySelector('#Timer')"))
+            {
+                if (WaitTime(browser, @"document.querySelector('#Timer').innerText;"))
+                {
+                    if (!WaitButtonClick(browser, "document.querySelector('[class=\"block-success work-check\"]')", 5))
+                    {
+                        InjectJS(browser,
+    @"clearInterval(idInterval[""Timer""]);
+$(""#BlockWait"").remove();
+$(""#BlockTimer"").fadeIn(""fast"");
+var aDefOpts = {
+    elemTimer: selectorTimer, 
+    interval: intervalTimer, 
+}
+var aOpts = $.extend(aDefOpts);
+var param = $(aOpts.elemTimer);
+
+statusTimer = 1;
+clearTimeout(idTimeout[""Timer""]);
+clearInterval(idInterval[""Timer""]);
+fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
+                        if (WaitButtonClick(browser, "document.querySelector('[class=\"block-success work-check\"]')"))
+                            return true;
+                    }
+                    else
+                        return true;
+                }
+            }
+            return false;
+        }
+        private bool VisitMiddle(IBrowser browser)
+        {
+            Sleep(7);
+            return true;
+        }
+        private bool AutoVisitMiddle(IBrowser browser)
+        {
+            while (true)
+            {
+                if (WaitElement(browser.MainFrame, "document.querySelector('.timer')"))
+                {
+                    StatusJS status = InjectJS(browser,
+@"var timer_r = document.querySelector('.timer');
+if(timer_r != null) "+(int)StatusJS.OK+@";
+else "+(int)StatusJS.End+@";");
+                    if (status == StatusJS.End)
+                        break;
+                    else { Sleep(TimeSpan.Parse(ValueElement(browser, "timer_r.innerText")).TotalMinutes.ToString()); Sleep(2); }
+                }
+                else
+                    break;
             }
             return true;
         }

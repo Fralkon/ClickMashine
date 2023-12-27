@@ -20,7 +20,7 @@ function FirstStep()
 	{
 		surf_cl[n].click();
 		n++;
-		return "+(int)StatusJS.OK+@";
+		return "+(int)StatusJS.OK1 +@";
 	}
 }";
 			ManagerSurfing.AddSurfing(new Surfing(this, "https://wmrfast.com/serfing_ytn.php", FirstStep, new Surfing.MiddleStepDelegate(YouTubeMiddle)));
