@@ -118,8 +118,8 @@ function SecondStep()
             LoadPage(browserAuth, "https://seoclub.su/login");
             string auth_js = "document.querySelector('input[name=\"username\"]').value = '" + auth.Login + "';" +
                              "document.querySelector('input[name=\"password\"]').value = '" + auth.Password + "';";
-            SendJS(0, auth_js);
-            StatusCaptcha status = OutCaptchaLab(browserAuth,
+            InjectJS(browserAuth, auth_js);
+            StatusJS status = OutCaptchaLab(browserAuth,
                nn,
                Enum.GetNames(typeof(SeoClubEnumNN)).ToList(),
                "document.querySelector('.out-capcha-title')",
@@ -141,16 +141,66 @@ function SecondStep()
         protected override void Initialize()
         {
             nn = new SeoClubNN(@"C:/ClickMashine/Settings/Net/SeoClub.h5");
-            Initialize();
-            //TrainBD();
-            //waitHandle.WaitOne();
-            if (!Auth(auth))
-                waitHandle.WaitOne();
-            mSurf.AddFunction(YouTubeSurf);
-            mSurf.AddFunction(VisitSurf);
-            mSurf.AddFunction(MailSurf);
-            mSurf.AddFunction(ClickSurf);
-            while (true)
+            base.Initialize();
+        }
+        private bool YouTubeMiddle(IBrowser browser)
+        {
+            if(WaitTime(browser, "c = true;  b = true; document.querySelector('#tmr').innerText;"))
+            {
+                if (!WaitButtonClick(browser, "document.querySelector('.butt-nw');"))
+                    Error("Error end youtube watch");
+                return true;
+            }
+            return false;
+        }
+        private bool ClickMiddle(IBrowser browser)
+        {
+            IFrame frame = browser.GetFrame("frminfo");
+            if (WaitTime(frame, @"b = false; window.top.start = 0; document.querySelector('#timer_inp').innerText;"))
+            {
+                if (!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
+                {
+                    SendJS(frame, "location.replace(\"vlss?view=ok\");");
+                    if (!WaitElement(frame, "document.querySelector('[type=\"range\"]')"))
+                        return false;
+                }
+                if (InjectJS(frame,
+@"var range = document.querySelector('[type=""range""]');
+if (range != null)
+{
+	range.value = range.max;
+	document.querySelector('button').click();
+	" + (int)StatusJS.OK + @";
+}
+else
+	" + (int)StatusJS.Error + @";") == StatusJS.OK)
+                    return true;
+            }
+            return false;
+        }
+        private bool VisitMiddle(IBrowser browser)
+        {
+            var browserMain = GetBrowser(0);
+            if (browserMain != null)
+            {
+                string element = ValueElement(browserMain, "surf_cl[n-1].querySelectorAll('td')[1].querySelectorAll('div')[1].innerText");
+                int pointStart = element.IndexOf("Таймер: ") + 8;
+                int pointEnd = element.IndexOf(' ', pointStart);
+                int countText = pointEnd - pointStart;
+                if (pointStart == -1 || pointEnd == -1 || countText > 0)
+                {
+                    Sleep(element.Substring(pointStart, pointEnd - pointStart));
+                    return true;
+                }
+            }
+            return false;
+        }
+        private bool MailClick(IBrowser browser)
+        {
+            string ev = GetMailAnswer(browser.MainFrame, "document.querySelector('#js-popup > div:nth-child(3)')",
+                               "document.querySelector('#js-popup > div:nth-child(4)')",
+                               "document.querySelectorAll('.mails-otvet-new a')");
+            if (ev == "errorMail")
             {
                 Random rnd = new Random();
                 ev = rnd.Next(0, 2).ToString();

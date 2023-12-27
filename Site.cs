@@ -728,7 +728,6 @@ WaitElement();";
         }
         public StatusJS FunctionWait(IBrowser browser, string function, string? functionStart = null, int time = 5)
         {
-            Active(browser);
             return FunctionWait(browser.MainFrame, function, functionStart, time);
         }
         public void WaitChangeElement(IBrowser browser, BoundObject boundObject, string element)
