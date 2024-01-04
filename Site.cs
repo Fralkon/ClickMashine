@@ -114,7 +114,17 @@ namespace ClickMashine
             else
                 return "error";
         }
-    }  
+    }
+    class ExceptionJS : Exception
+    {
+        public EnumTypeSite TypeSite { get; set; }
+        string JS;
+        public ExceptionJS(EnumTypeSite typeSite, string js, string? message) : base(message)
+        {
+            TypeSite = typeSite;
+            JS = js;
+        }
+    }
     abstract class Site : MyTask
     {
         protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
@@ -247,7 +257,7 @@ namespace ClickMashine
                         return statusJS;
                     else
                     {
-                        throw new Exception($"Type: {Type}\nError JS : {JS}");
+                        throw new ExceptionJS(Type,JS,task.Result.Message);
                     }
                 }
             }
@@ -255,13 +265,13 @@ namespace ClickMashine
         }
         public string ValueElement(IFrame frame, string element)
         {
-            string JS_TRY = "try{\n" + element + "\n}catch(e){'" + StatusJS.TryError + "';}";
+            string JS = "try{\n" + element + "\n}catch(e){'" + StatusJS.TryError + "';}";
 #if DEBUG
             Console.WriteLine("---------------------------\nSend JS:");
-            Console.WriteLine(JS_TRY);
+            Console.WriteLine(JS);
             Console.WriteLine("Type: " + Type.ToString());
 #endif
-            var task = frame.EvaluateScriptAsync(JS_TRY);
+            var task = frame.EvaluateScriptAsync(JS);
             task.Wait();
             if (task.Result.Result != null)
             {
@@ -277,7 +287,7 @@ namespace ClickMashine
                 if (result != null)
                     return result;
             }
-            throw new Exception("Type: " + Type.ToString() + "\nError Not return JS");
+            throw new ExceptionJS(Type, JS, task.Result.Message);
         }
         public string ValueElement(IBrowser browser, string element)
         {

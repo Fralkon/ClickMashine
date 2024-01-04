@@ -48,10 +48,17 @@ namespace ClickMashine
         }
         private void SendTCPMesage(TCPMessage message)
         {
-            TcpClient ControlServer = new TcpClient();
-            ControlServer.Connect(endPointTelebot);
-            ControlServer.GetStream().Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize<TCPMessage>(message) + "\0"));
-            ControlServer.Close();
+            try
+            {
+                TcpClient ControlServer = new TcpClient();
+                ControlServer.Connect(endPointTelebot);
+                ControlServer.GetStream().Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize<TCPMessage>(message) + "\0"));
+                ControlServer.Close();
+            }
+            catch(Exception ex)
+            {
+
+            }
         }
         public string SendQuestion(Bitmap image, string text, EnumTypeSite site)
         {

@@ -2,8 +2,28 @@
 
 namespace ClickMashine
 {
+    enum SurfingType
+    {
+        Surfing,
+        YouTube,
+        RuTube,
+        Mail,
+        Click,
+        Visit
+    }
+    class ExceptionSurfing : Exception
+    {
+        public SurfingType SurfingType {  get; set; }
+        public EnumTypeSite SiteType { get; set; }
+        public ExceptionSurfing(SurfingType surfingType, EnumTypeSite siteType, string message) : base(message)
+        {
+            SurfingType = surfingType;
+            SiteType = siteType;
+        }
+    }
     class Surfing
     {
+        protected SurfingType Type { get; set; }
         public Site Site { get; set; }
         public int Count { get; protected set; } = 0;
         public int Error { get; protected set; } = 0;
@@ -16,21 +36,23 @@ namespace ClickMashine
 
         public delegate void OpenPageDelegate(IBrowser browser, string Page);
         public OpenPageDelegate OpenPage { get; set; }
-        public Surfing(Site site, string page, string firstStep, MiddleStepDelegate middleStep)
+        public Surfing(Site site, string page, string firstStep, MiddleStepDelegate middleStep, SurfingType type = SurfingType.Surfing)
         {
             Site = site;
             Page = page;
             OpenPage = new OpenPageDelegate(OpenNormalPath);
             FirstStep = firstStep;
             MiddleStep = middleStep;
+            Type = type; 
         }
-        public Surfing(Site site, OpenPageDelegate openPage, string page, string firstStep, MiddleStepDelegate middleStep)
+        public Surfing(Site site, OpenPageDelegate openPage, string page, string firstStep, MiddleStepDelegate middleStep, SurfingType type = SurfingType.Surfing)
         {
             Site = site;
             Page = page;
             OpenPage = openPage;
             FirstStep = firstStep;
             MiddleStep = middleStep;
+            Type = type;
         }
         public void OpenNormalPath(IBrowser browser, string Page)
         {
@@ -66,6 +88,8 @@ namespace ClickMashine
                                 case StatusJS.OK:
                                     Middle();
                                     break;
+                                default:
+                                    throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
                             }
                             break;
                         case StatusJS.OK1:
@@ -75,7 +99,7 @@ namespace ClickMashine
                             Error++;
                             break;
                         default:
-                            throw new Exception($"Error StatusJS");
+                            throw new ExceptionSurfing(Type,Site.Type,$"Error StatusJS");
                     }
                     Site.Sleep(2);
                     Site.CloseСhildBrowser();
@@ -117,11 +141,11 @@ namespace ClickMashine
     {
         public delegate bool MailClickDelegate(IBrowser browser);
         public MailClickDelegate MailClick { get; set; }
-        public SurfingMail(Site site, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, page, firstStep, middleStep)
+        public SurfingMail(Site site, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, page, firstStep, middleStep, SurfingType.Mail)
         {
             MailClick = mailClick;
         }
-        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, middleStep)
+        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, middleStep, SurfingType.Mail)
         {
             MailClick = mailClick;
         }
@@ -161,6 +185,8 @@ namespace ClickMashine
                                             Error++;
                                         break;
                                     }
+                                default:
+                                    throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
                             }
                             break;
                         case StatusJS.OK1:
@@ -175,7 +201,7 @@ namespace ClickMashine
                             Error++;
                             break;
                         default:
-                            throw new Exception($"Error StatusJS");
+                            throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
                     }
                     Site.Sleep(2);
                     Site.CloseСhildBrowser();

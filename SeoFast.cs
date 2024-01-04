@@ -190,7 +190,8 @@ else
             Surfing.AntiBotDelegate AntiBotDelegate = new Surfing.AntiBotDelegate(AntiBotImage);
             homePage = "https://seo-fast.ru/";
             Type = EnumTypeSite.SeoFast;
-            string clickFirstStep = @"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1; 
+            string clickFirstStep = 
+@"var surf_cl = document.querySelectorAll('a.surf_ckick');var n = 1; 
 function FirstStep()
 {
     if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
