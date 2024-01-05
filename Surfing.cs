@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using System.Windows.Forms;
 
 namespace ClickMashine
 {
@@ -103,6 +104,7 @@ namespace ClickMashine
                     }
                     Site.Sleep(2);
                     Site.CloseСhildBrowser();
+                    Site.form.FocusTab(browser);
                 }
                 while (f);
             }

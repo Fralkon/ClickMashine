@@ -775,7 +775,7 @@ observer.observe(target, config);
         {
             if (WaitElement(frame, element))
             {
-                string js = @"var js = elementImg.getBoundingClientRect().toJSON();
+                string js = @"var js = " + element + @".getBoundingClientRect().toJSON();
 JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});";
                 Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ValueElement(frame, js));
                 return form.MakeScreenshot(frame.Browser, rectElement);

@@ -249,7 +249,6 @@ function SecondStep()
 	else { return " + (int)StatusJS.Wait + @"; }
 }";
 
-            Surfing.MiddleStepDelegate YouTubeMiddleStep = new Surfing.MiddleStepDelegate(YouTubeMiddle);
             RuTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?rutube_video", FirstStepJSYouTube)
             { AntiBot = AntiBotDelegate };
             SimpeTube = new YouTubeSeoFastSurfing(this, "https://seo-fast.ru/work_youtube?youtube_video_simple", FirstStepJSYouTube)
@@ -299,10 +298,10 @@ function FirstStep()
 function SecondStep()
 {
     var start_ln = document.querySelectorAll('.start_link_a');
-    if (start_ln.length != 0) { start_ln[0].click(); return "" + (int)StatusJS.OK + @""; }
-    else { return "" + (int)StatusJS.Wait + @""; }
+    if (start_ln.length != 0) { start_ln[0].click(); return " + (int)StatusJS.OK + @"; }
+    else { return " + (int)StatusJS.Wait + @"; }
 }";
-            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions", visitFirstStep, new Surfing.MiddleStepDelegate(VisitMIddle))
+            Visit = new Surfing(this, "https://seo-fast.ru/work_transitions", visitFirstStep, new Surfing.MiddleStepDelegate(VisitMiddle))
             { AntiBot = AntiBotDelegate };
 
             ManagerSurfing.AddSurfing(Visit);
@@ -541,7 +540,7 @@ else 'notAntiBot';";
             //CloseСhildBrowser();
             return false;
         }
-        private bool VisitMIddle(IBrowser browser)
+        private bool VisitMiddle(IBrowser browser)
         {
             string js =
 @"function w() {
@@ -549,14 +548,26 @@ else 'notAntiBot';";
 	    return " + (int)StatusJS.OK + @";
     }
     else return " + (int)StatusJS.Wait + @";
+};
+window.onfocus = function () {
+	$.ajax({ 
+		type: ""POST"", url: ""https://seo-fast.ru/site_transitions/ajax/ajax_transitions_pay.php"", data: { 'sf' : 'viewing_transitions', 'id' : id, 'timer' : timer, 'pam' : '2' }, 
+		success: function(data){
+			if(data == '1'){ close(); }else{ $('#start_transitions').html(data); }
+		}
+	});	
+    $.cookie('win'+id, 'false', { expires: -1, path: '/', });
 };";
-            if (FunctionWait(browser, "w();", js) != StatusJS.OK)
+            InjectJS(browser, js);
+            if (FunctionWait(browser, "w();") != StatusJS.OK)
                 return false;
             WaitTime(browser, "timer");
             var browserVisit2 = GetBrowser(2);
             if (browserVisit2 != null)
             {
+                Sleep(2);
                 browserVisit2.CloseBrowser(false);
+                form.FocusTab(browser);
                 Sleep(2);
                 return true;
             }
