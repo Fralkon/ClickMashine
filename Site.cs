@@ -119,11 +119,14 @@ namespace ClickMashine
     {
         public EnumTypeSite TypeSite { get; set; }
         string JS;
-        public ExceptionJS(EnumTypeSite typeSite, string js, string? message) : base(message)
+        string mess;
+        public ExceptionJS(EnumTypeSite typeSite, string js, string message) : base()
         {
             TypeSite = typeSite;
             JS = js;
+            mess = message;
         }
+        public new string Message {  get { return $"Site : {TypeSite}\nJS : {JS}\nMessage : {mess}"; } }
     }
     abstract class Site : MyTask
     {
@@ -235,7 +238,14 @@ namespace ClickMashine
         }
         public StatusJS InjectJS(IFrame frame, string JS)
         {
-            string JS_TRY = "try{\n" + JS + "\n}catch(e){" + (int)StatusJS.TryError + ";}";
+            string JS_TRY = 
+@"try{
+    " + JS + @"
+}
+catch(e)
+{
+    " + (int)StatusJS.TryError + @";
+}";
 #if DEBUG
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS_TRY);
@@ -265,7 +275,14 @@ namespace ClickMashine
         }
         public string ValueElement(IFrame frame, string element)
         {
-            string JS = "try{\n" + element + "\n}catch(e){'" + StatusJS.TryError + "';}";
+            string JS =
+@"try{
+    " + element + @"
+}
+catch(e)
+{
+    '" + StatusJS.TryError + @"';
+}";
 #if DEBUG
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS);
@@ -371,11 +388,10 @@ namespace ClickMashine
             if (BrowserConrols.Count <= id)
             {
                 eventBrowserCreated.Reset();
-                if (!eventBrowserCreated.WaitOne(5000))
+                if (!eventBrowserCreated.WaitOne(15000))
                     return null;
             }
             eventLoadPage.WaitOne(5000);
-            Sleep(1);
             return BrowserConrols[id].Item2;
         }
         public IBrowser? WaitCreateBrowser()

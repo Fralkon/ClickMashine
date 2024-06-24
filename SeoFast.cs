@@ -1,10 +1,5 @@
-﻿using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
+﻿using System.Text.RegularExpressions;
 using CefSharp;
-using CefSharp.DevTools.Page;
-using CefSharp.WinForms;
-using Microsoft.VisualBasic;
 
 namespace ClickMashine
 {
@@ -41,6 +36,7 @@ namespace ClickMashine
             Site = site;
             Page = page;
             FirstStep = firstStep;
+            Type = SurfingType.YouTube;
         }
         public override bool Surf(int Wait = 5)
         {
@@ -339,18 +335,19 @@ else {" + (int)StatusJS.OK + @";}"))
                         {
                             Sleep(5);
                             string js = $"document.querySelector('#logusername').value = '{auth.Login}';" +
-                                    $"document.querySelector('#logpassword').value = '{auth.Password}';";
+                                    $"document.querySelector('#logpassword').value = '{auth.Password}';" +
+                                    $"document.querySelector('.sf_button');";
                             SendJS(browser, js);
                             //BoundObject boundObject = new BoundObject();
                             //WaitChangeElement(browser, boundObject, "document.querySelector('.result_echo')");
-                            OutCaptchaLab1(browser,
-                                nn,
-                                Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
-                                "document.querySelector('.out-capcha-title').querySelector('span')",
-                                "document.querySelector('.out-capcha')",
-                                "document.querySelectorAll('.out-capcha-lab')",
-                                5,
-                                "document.querySelector('.sf_button')");
+                            //OutCaptchaLab1(browser,
+                            //    nn,
+                            //    Enum.GetNames(typeof(SeoFastEnumNN)).ToList(),
+                            //    "document.querySelector('.out-capcha-title').querySelector('span')",
+                            //    "document.querySelector('.out-capcha')",
+                            //    "document.querySelectorAll('.out-capcha-lab')",
+                            //    5,
+                            //    "document.querySelector('.sf_button')");
                             if (WaitElement(browser, "document.querySelector('.main_balance')"))
                             {
                                 //InjectJS(browser, @"if(document.querySelector('.popup2').style.display != 'none'){document.querySelector('.popup2-content .sf_button').click();}");
@@ -565,10 +562,8 @@ window.onfocus = function () {
             var browserVisit2 = GetBrowser(2);
             if (browserVisit2 != null)
             {
-                Sleep(2);
                 browserVisit2.CloseBrowser(false);
                 form.FocusTab(browser);
-                Sleep(2);
                 return true;
             }
             return false;
@@ -858,7 +853,7 @@ else { return 'wait' }};";
                                     {
                                         Sleep(SendJSReturn(browserVisit, "document.title.toString();"));
                                         Sleep(1);
-                                        CloseBrowser(browserVisit2);
+                                        browserVisit2.GetHost().CloseBrowser(false);
                                         Count++;
                                         Sleep(1);
                                         break;

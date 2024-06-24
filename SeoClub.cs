@@ -27,8 +27,8 @@ namespace ClickMashine
         {
             homePage = "https://seoclub.su/";
             Type = EnumTypeSite.SeoClub;
-            Surfing.OpenPageDelegate openPage = new Surfing.OpenPageDelegate(OpenPage);
-            string youTubeFirstStep = @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+            string youTubeFirstStep = 
+@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function FirstStep()
 {
 	if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
@@ -46,32 +46,32 @@ function SecondStep()
 	}
 	else { return " + (int)StatusJS.Wait + @"; }
 }";
-            YouTube = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href", youTubeFirstStep, new Surfing.MiddleStepDelegate(YouTubeMiddle));
+            YouTube = new Surfing(this, OpenPage, "document.querySelector('#mnu_tblock1 > a:nth-child(2)').href", youTubeFirstStep, YouTubeMiddle);
 
             string clickFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
 function FirstStep()
 {
-	if (n >= surf_cl.length) return "" + (int)StatusJS.End + @"";
+	if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
 	else
 	{	
 		if(surf_cl[n].querySelector('[id]')!=null)
 			{
 				if(surf_cl[n].querySelector('a')==null || surf_cl[n].getBoundingClientRect().height == 0)
-					{n++; return "" + (int)StatusJS.Continue + @"";}
-				else {surf_cl[n].querySelector('a').click(); return "" + (int)StatusJS.OK + @"";}
+					{n++; return " + (int)StatusJS.Continue + @";}
+				else {surf_cl[n].querySelector('a').click(); return " + (int)StatusJS.OK + @";}
 			}
 		else
-			{n++;return "" + (int)StatusJS.Continue + @"";}
+			{n++;return " + (int)StatusJS.Continue + @";}
 	}
 }
 function SecondStep()
 {
 	var start_ln = surf_cl[n].querySelector('.start-yes-serf');
-	if (start_ln != null) { start_ln.click(); n++; return "" + (int)StatusJS.OK + @""; }
-	else { return "" + (int)StatusJS.Wait + @""; }
+	if (start_ln != null) { start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
+	else { return " + (int)StatusJS.Wait + @"; }
 }";
-            Click = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href", clickFirstStep, new Surfing.MiddleStepDelegate(ClickMiddle));
+            Click = new Surfing(this, OpenPage, "document.querySelector('#mnu_tblock1 > a:nth-child(4)').href", clickFirstStep, ClickMiddle);
 
             string visitFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
@@ -86,7 +86,7 @@ function FirstStep()
 		else {link.querySelector('a').click(); n++; return " + (int)StatusJS.OK1 + @";}
 	}
 }";
-            Visit = new Surfing(this, openPage, "document.querySelector('#mnu_tblock1 > a:nth-child(5)').href", visitFirstStep, new Surfing.MiddleStepDelegate(VisitMiddle));
+            Visit = new Surfing(this, OpenPage, "document.querySelector('#mnu_tblock1 > a:nth-child(5)').href", visitFirstStep, VisitMiddle);
 
             string mailFirstStep =
 @"var surf_cl = document.querySelectorAll('.work-serf');var n = 1;
@@ -104,12 +104,12 @@ function SecondStep()
 	if (start_ln != null) { start_ln.click(); n++; return " + (int)StatusJS.OK + @"; }
 	else { return " + (int)StatusJS.Wait + @"; }
 }";
-            Mail = new SurfingMail(this, openPage,mailFirstStep, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href",new SurfingMail.MailClickDelegate(MailClick), new Surfing.MiddleStepDelegate(ClickMiddle));
+            Mail = new SurfingMail(this, OpenPage, "document.querySelector('#mnu_tblock1 > a:nth-child(6)').href", mailFirstStep, MailClick, ClickMiddle);
 
             ManagerSurfing.AddSurfing(YouTube);
             ManagerSurfing.AddSurfing(Click);
-            ManagerSurfing.AddSurfing(Mail);
             ManagerSurfing.AddSurfing(Visit);
+            ManagerSurfing.AddSurfing(Mail);
         }
         public override bool Auth(Auth auth)
         {

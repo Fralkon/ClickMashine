@@ -16,11 +16,14 @@ namespace ClickMashine
     {
         public SurfingType SurfingType {  get; set; }
         public EnumTypeSite SiteType { get; set; }
-        public ExceptionSurfing(SurfingType surfingType, EnumTypeSite siteType, string message) : base(message)
+        string mess;
+        public ExceptionSurfing(SurfingType surfingType, EnumTypeSite siteType, string message) : base()
         {
             SurfingType = surfingType;
             SiteType = siteType;
+            mess = message;
         }
+        public new string Message { get { return $"Site : {SiteType}\nSirfing : {SurfingType}\nMessage : {mess}"; } }
     }
     class Surfing
     {
@@ -84,10 +87,14 @@ namespace ClickMashine
                         case StatusJS.Continue:
                             break;
                         case StatusJS.OK:
-                            switch (Site.FunctionWait(browser, "SecondStep();"))
+                            switch (Site.FunctionWait(browser, "SecondStep();",time: 10))
                             {
                                 case StatusJS.OK:
                                     Middle();
+                                    break;
+                                case StatusJS.ErrorWait:
+                                    Error++;
+                                    Site.InjectJS(browser, "n++");
                                     break;
                                 default:
                                     throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
@@ -99,6 +106,10 @@ namespace ClickMashine
                         case StatusJS.Error:
                             Error++;
                             break;
+                        case StatusJS.ErrorWait:
+                            Error++;
+                            Site.InjectJS(browser, "n++");
+                            break;
                         default:
                             throw new ExceptionSurfing(Type,Site.Type,$"Error StatusJS");
                     }
@@ -108,9 +119,14 @@ namespace ClickMashine
                 }
                 while (f);
             }
-            catch (Exception e)
+            catch (ExceptionSurfing ex)
             {
-                Site.Error(e.Message);
+                Site.Error(ex.Message);
+                return false;
+            }
+            catch (ExceptionJS ex)
+            {
+                Site.Error(ex.Message);
                 return false;
             }
             return true;
@@ -184,9 +200,16 @@ namespace ClickMashine
                                             Middle();
                                         }
                                         else
+                                        {
                                             Error++;
+                                            Site.InjectJS(browser, "n++");
+                                        }
                                         break;
                                     }
+                                case StatusJS.ErrorWait:
+                                    Error++;
+                                    Site.InjectJS(browser, "n++");
+                                    break;
                                 default:
                                     throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
                             }
@@ -202,6 +225,10 @@ namespace ClickMashine
                         case StatusJS.Error:
                             Error++;
                             break;
+                        case StatusJS.ErrorWait:
+                            Error++;
+                            Site.InjectJS(browser, "n++");
+                            break;
                         default:
                             throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
                     }
@@ -210,9 +237,14 @@ namespace ClickMashine
                 }
                 while (f);
             }
-            catch (Exception e)
+            catch (ExceptionSurfing ex)
             {
-                Site.Error(e.Message);
+                Site.Error(ex.Message);
+                return false;
+            }
+            catch (ExceptionJS ex)
+            {
+                Site.Error(ex.Message);
                 return false;
             }
             return true;

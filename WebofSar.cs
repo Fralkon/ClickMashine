@@ -137,13 +137,8 @@ fnWork(param, param.data(""id""), param.data(""op""), param.data(""token""));");
             {
                 if (WaitElement(browser.MainFrame, "document.querySelector('.timer')"))
                 {
-                    StatusJS status = InjectJS(browser,
-@"var timer_r = document.querySelector('.timer');
-if(timer_r != null) "+(int)StatusJS.OK+@";
-else "+(int)StatusJS.End+@";");
-                    if (status == StatusJS.End)
+                    if(!WaitTime(browser,"document.querySelector('.timer').innerText"))
                         break;
-                    else { Sleep(TimeSpan.Parse(ValueElement(browser, "timer_r.innerText")).TotalMinutes.ToString()); Sleep(2); }
                 }
                 else
                     break;

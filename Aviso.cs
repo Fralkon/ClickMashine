@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using PureHDF.Selections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,26 +11,161 @@ namespace ClickMashine
 {
     class Aviso : Site
     {
+        Surfing YouTube;
+        Surfing Click;
+        SurfingMail Mail;
         public Aviso(Form1 form, Auth auth) : base(form, auth)
         {
             homePage = "https://aviso.bz";
             Type = EnumTypeSite.Aviso;
+
+            string YouTubeJS =
+@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+function FirstStep()
+{
+	if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+	else{
+        if (surf_cl[n].attributes.id.value.at(0) == 'p') { n++; return " + (int)StatusJS.Continue + @"; }
+		else if (surf_cl[n].attributes.id.value.at(0) == 'a') { 
+    		surf_cl[n].querySelector('span').click();
+            n++; return " + (int)StatusJS.OK1 + @"; }
+		else if (surf_cl[n].attributes.id.value.at(0) == 'l') { n++; return " + (int)StatusJS.Continue + @"; }
+		else { n++; return " + (int)StatusJS.Continue + @"; } 
+	}
+}";
+            YouTube = new Surfing(this, "https://aviso.bz/work-youtube", YouTubeJS, YouTubeMiddle, SurfingType.YouTube);
+
+            string ClickJS =
+@"var surf_cl = document.querySelectorAll('.work-serf');var n = 0;
+function SecondStep()
+{
+    var start_ln = surf_cl[n].querySelector('.start-yes-serf');
+    if (start_ln != null) { n++; start_ln.click(); return "+(int) StatusJS.OK+@"'; }
+    else { return "+(int)StatusJS.Wait+@"; }
+}
+function FirstpStep()
+{
+    if (n >= surf_cl.length) return " + (int) StatusJS.End+ @";
+    else if (surf_cl[n].innerText.length > 200) { n++; "+(int) StatusJS.Continue+ @"; }
+    else
+    {
+        surf_cl[n].querySelector('a').click(); return "+(int) StatusJS.OK+@";
+    }
+}";
+            Click = new Surfing(this, "https://aviso.bz/work-serf", ClickJS, ClickMiddle, SurfingType.Click);
+            Mail = new SurfingMail(this, "https://aviso.bz/mails_new", ClickJS, MailClick, MailMiddle);
+
+            ManagerSurfing.AddSurfing(YouTube);
+            ManagerSurfing.AddSurfing(Click);
+            ManagerSurfing.AddSurfing(Mail);
         }
         public override bool Auth(Auth auth)
         {
-            LoadPage(0, "https://aviso.bz/login");
-            Sleep(2);
-            string js_auth = "var login_box = document.querySelector('.login-box');" +
-            "if (login_box != null) {document.querySelector('[name=\"username\"]').value = '" + auth.Login + "';" +
-            "document.querySelector('[name=\"password\"]').value = '" + auth.Password + "';" +
-            "document.querySelector('.button__text').click();" +
-            "'login'; }" +
-            "else { 'is_auth' };";
-            string ev_lodin = SendJSReturn(0, js_auth);
-            CM(ev_lodin);
-            if (ev_lodin == "login")
+            IBrowser? browser = GetBrowser(0);
+            if (browser == null)
+                return false;
+            LoadPage(browser, "https://aviso.bz/login");
+            Sleep(3);
+            string js_auth =
+@"var login_box = document.querySelector('.login-box');
+if (login_box != null) 
+{
+    document.querySelector('[name=""username""]').value = '" + auth.Login + @"';
+    document.querySelector('[name=""password""]').value = '" + auth.Password + @"';
+    document.querySelector('#button-login > span').click();
+    " + (int)StatusJS.OK + @"; 
+}
+else " + (int)StatusJS.End + @";";
+
+            if (StatusJS.OK == InjectJS(browser, js_auth))
                 Sleep(7);
-            CM("Auth Aviso");
+            return true;
+        }
+        private bool YouTubeMiddle(IBrowser browser)
+        {
+            WaitElement(browser, "player");
+            if (WaitTime(browser, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;"))
+            {
+                string jsWaitYouTube =
+@"function WaitEnd(){
+if(document.querySelector('#capcha-tr-block').innerText.length > 3)
+    return "+(int)StatusJS.OK+ @";
+else
+    return "+(int)StatusJS.Wait+@";}";
+                form.FocusTab(browser);
+                if (StatusJS.OK != FunctionWait(browser, "WaitEnd();", jsWaitYouTube))
+                {
+                    WaitElement(browser, "player");
+                    if (WaitTime(browser, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;"))
+                    {
+                        form.FocusTab(browser);
+                        if(StatusJS.OK == FunctionWait(browser, "WaitEnd();", jsWaitYouTube))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+        private bool ClickMiddle(IBrowser browser)
+        {
+            List<long> frameIndif = browser.GetFrameIdentifiers();
+            foreach (long id in frameIndif)
+            {
+                IFrame frame = browser.GetFrame(id);
+                if (frame.Url.IndexOf("vlss") == -1)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (WaitElement(frame, "document.querySelector('.timer')"))
+                    {
+                        if (WaitTime(frame, "document.querySelector('.timer').innerText"))
+                        {
+                            if (!WaitButtonClick(frame, "document.querySelector('.btn_capt')", 5))
+                            {
+                                SendJS(frame, "document.querySelector('.timer').innerText = 0");
+                                if (WaitButtonClick(frame, "document.querySelector('.btn_capt')", 5))
+                                    return true;
+                            }
+                            else
+                                return true;
+                        }
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+        private bool MailMiddle(IBrowser browser)
+        {
+            if(WaitTime(browser, "document.querySelector('#tmr').innerText"))
+            {
+                string js =
+@"var range = document.querySelector('[type=""range""]');
+if (range != null)
+{
+    range.value = range.max;
+    document.querySelector('form').submit(); " + (int)StatusJS.End + @";
+}
+else { " + (int)StatusJS.Error +@"; }";
+
+                if(InjectJS(browser, js) == StatusJS.End)
+                    return true;
+            }
+            return false;
+        }
+        private bool MailClick(IBrowser browser)
+        {
+            string ev = GetMailAnswer(browser.MainFrame, "document.querySelector('#js-popup > div > div:nth-child(3)')",
+                               "document.querySelector('#js-popup > div > div:nth-child(4)')",
+                               "document.querySelectorAll('.mails-otvet-new a')");
+            if (ev == "errorMail")
+            {
+                Random rnd = new Random();
+                ev = rnd.Next(0, 3).ToString();
+            }
+            InjectJS(browser, "document.querySelectorAll('.mails-otvet-new a')[" + ev + "].click();");
             return true;
         }
         private int YouTubeSurf()
