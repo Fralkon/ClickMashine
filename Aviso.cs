@@ -40,10 +40,10 @@ function FirstStep()
 function SecondStep()
 {
     var start_ln = surf_cl[n].querySelector('.start-yes-serf');
-    if (start_ln != null) { n++; start_ln.click(); return "+(int) StatusJS.OK+@"'; }
-    else { return "+(int)StatusJS.Wait+@"; }
+    if (start_ln != null) { n++; start_ln.click(); return "+(int) StatusJS.OK+@"; }
+    else { return "+(int)StatusJS.Wait+ @"; }
 }
-function FirstpStep()
+function FirstStep()
 {
     if (n >= surf_cl.length) return " + (int) StatusJS.End+ @";
     else if (surf_cl[n].innerText.length > 200) { n++; "+(int) StatusJS.Continue+ @"; }
@@ -55,7 +55,7 @@ function FirstpStep()
             Click = new Surfing(this, "https://aviso.bz/work-serf", ClickJS, ClickMiddle, SurfingType.Click);
             Mail = new SurfingMail(this, "https://aviso.bz/mails_new", ClickJS, MailClick, MailMiddle);
 
-            ManagerSurfing.AddSurfing(YouTube);
+            //ManagerSurfing.AddSurfing(YouTube);
             ManagerSurfing.AddSurfing(Click);
             ManagerSurfing.AddSurfing(Mail);
         }
@@ -76,7 +76,6 @@ if (login_box != null)
     " + (int)StatusJS.OK + @"; 
 }
 else " + (int)StatusJS.End + @";";
-
             if (StatusJS.OK == InjectJS(browser, js_auth))
                 Sleep(7);
             return true;

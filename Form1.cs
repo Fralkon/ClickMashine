@@ -9,35 +9,11 @@ namespace ClickMashine
     public partial class Form1 : Form
     {
         AutoClicker? autoClicker;
-        public MySQL mySQL = new MySQL("ClickMashine");
-        public int Step { private set; get; }
-        public int ID { private set; get; }
-        public const string PATH_SETTING = @"C:/ClickMashine/Settings/";
         public Form1(string[] args)
         {
             InitializeComponent();
-            CefSettings settings = new CefSettings();
-            if (args.Length > 0) { Step = int.Parse(args[0]); }
-            else { Step = 0; }
-            using (StreamReader reader = new StreamReader(PATH_SETTING + "IDMashine.txt"))
-            {
-                string text = reader.ReadToEnd();
-                ID = int.Parse(text);
-            }
-            using (DataTable settingData = mySQL.GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
-            {
-                if (settingData.Rows.Count > 0)
-                {
-                    settings.UserAgent = settingData.Rows[0]["user_agent"].ToString();
-                    settings.AcceptLanguageList = settingData.Rows[0]["language"].ToString();
-                }
-                else
-                {
-                    throw new Exception("Error load setting CefSharp");
-                }
-                settings.CachePath = PATH_SETTING + "Cache/" + Step.ToString();
-                settings.CefCommandLineArgs.Add("disable-gpu", "");
-            }
+            CefSettings settings = new CefSettings();          
+            settings.CefCommandLineArgs.Add("disable-gpu", "");
             Cef.Initialize(settings);
         }
         public EventWaitHandle event_eny = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -48,13 +24,14 @@ namespace ClickMashine
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             autoClicker.Close();
-            mySQL.SendSQL("UPDATE object SET status = 'offline' WHERE id = " + ID.ToString());
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            autoClicker = new AutoClicker(this,mySQL);
-            Thread thread = new Thread(autoClicker.ClickSurf);
-            thread.Start();
+            autoClicker = new AutoClicker(this);
+            Task.Run(() =>
+            {
+                autoClicker.ClickSurf();
+            });
         }
         public void FocusTab(IBrowser browser)
         {

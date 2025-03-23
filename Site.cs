@@ -150,15 +150,11 @@ namespace ClickMashine
         public Site(Form1 form, Auth auth) : base()
         {
             this.form = form;
-            this.mySQL = form.mySQL;
             this.auth = auth;
-            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public Site(Form1 form) : base()
         {
             this.form = form;
-            this.mySQL = form.mySQL;
-            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
         }
         public abstract bool Auth(Auth auth);
         protected override void StartSurf()
@@ -316,22 +312,22 @@ catch(e)
             Active(browser);
             return InjectJS(browser.MainFrame, JS);
         }
-        protected void SetBDInfo(int val)
-        {
-            mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void SetBDInfoStart()
-        {
-            mySQL.SendSQL("UPDATE auth SET status = 'Surf' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void SetBDInfoStop()
-        {
-            mySQL.SendSQL("UPDATE auth SET status = 'Activate' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void WaitConnect()
-        {
+        //protected void SetBDInfo(int val)
+        //{
+        //    mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        //}
+        //protected void SetBDInfoStart()
+        //{
+        //    mySQL.SendSQL("UPDATE auth SET status = 'Surf' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        //}
+        //protected void SetBDInfoStop()
+        //{
+        //    mySQL.SendSQL("UPDATE auth SET status = 'Activate' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        //}
+        //protected void WaitConnect()
+        //{
 
-        }
+        //}
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
             LastBrowser = browser;
@@ -512,7 +508,6 @@ catch(e)
             "\nType: " + Type.ToString() +
             "\n---------------------------";
             Console.WriteLine(Message);
-            TCPMessageManager.SendError(Message, Type);
         }
         public void Info(string text)
         {
@@ -521,7 +516,6 @@ catch(e)
             "\nType: " + Type.ToString() +
             "\n---------------------------";
             Console.WriteLine(Message);
-            TCPMessageManager.SendInfo(Message, Type);
         }
         public void Error(IBrowser browser, string text)
         {
@@ -823,37 +817,37 @@ else 'error';";
         }
         public void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
         {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
-            Directory.CreateDirectory(path);
-            for (int i = 0; i < historyCaptcha.Count; i++)
-            {
-                string file = "";
-                (Bitmap, PredictNN) captcha = historyCaptcha[i];
-                captcha.Item1.Save(path + i.ToString() + ".png");
-                var tensor = captcha.Item2.Tensor.ToArray<float>();
-                for (int j = 0; j < tensor.Length; j++)
-                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
-                File.WriteAllText(path + $"debug{i}.txt", file);
-            }
+            //string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+            //Directory.CreateDirectory(path);
+            //for (int i = 0; i < historyCaptcha.Count; i++)
+            //{
+            //    string file = "";
+            //    (Bitmap, PredictNN) captcha = historyCaptcha[i];
+            //    captcha.Item1.Save(path + i.ToString() + ".png");
+            //    var tensor = captcha.Item2.Tensor.ToArray<float>();
+            //    for (int j = 0; j < tensor.Length; j++)
+            //        file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
+            //    File.WriteAllText(path + $"debug{i}.txt", file);
+            //}
         }
         public void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
         {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
-            Directory.CreateDirectory(path);
-            for (int i = 0; i < historyCaptcha.Count; i++)
-            {
-                string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
-                (Bitmap, PredictNN) captcha = historyCaptcha[i];
-                captcha.Item1.Save(path + i.ToString() + ".png");
-                var tensor = captcha.Item2.Tensor.ToArray<float>();
-                for (int j = 0; j < tensor.Length; j++)
-                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
-                File.WriteAllText(path + $"debug{i}.txt", file);
-            }
+            //string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+            //Directory.CreateDirectory(path);
+            //for (int i = 0; i < historyCaptcha.Count; i++)
+            //{
+            //    string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
+            //    (Bitmap, PredictNN) captcha = historyCaptcha[i];
+            //    captcha.Item1.Save(path + i.ToString() + ".png");
+            //    var tensor = captcha.Item2.Tensor.ToArray<float>();
+            //    for (int j = 0; j < tensor.Length; j++)
+            //        file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
+            //    File.WriteAllText(path + $"debug{i}.txt", file);
+            //}
         }
         public void AccountBlock()
         {
-            mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+            //mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
             MessageBox.Show("Account block");
         }
         public void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
