@@ -1,4 +1,7 @@
 ﻿using CefSharp;
+using ClickMashine.Exceptions;
+using ClickMashine.Models;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace ClickMashine
@@ -33,12 +36,12 @@ namespace ClickMashine
         public int Error { get; protected set; } = 0;
         public string FirstStep { get; set; }
         public string Page { get; set; }
-        public delegate bool AntiBotDelegate(IBrowser browser);
+        public delegate Task<bool> AntiBotDelegate(IBrowser browser);
         public AntiBotDelegate? AntiBot { get; set; }
-        public delegate bool MiddleStepDelegate(IBrowser browser);
+        public delegate Task<bool> MiddleStepDelegate(IBrowser browser);
         public MiddleStepDelegate MiddleStep { get; set; }
 
-        public delegate void OpenPageDelegate(IBrowser browser, string Page);
+        public delegate Task OpenPageDelegate(IBrowser browser, string Page);
         public OpenPageDelegate OpenPage { get; set; }
         public Surfing(Site site, string page, string firstStep, MiddleStepDelegate middleStep, SurfingType type = SurfingType.Surfing)
         {
@@ -58,90 +61,94 @@ namespace ClickMashine
             MiddleStep = middleStep;
             Type = type;
         }
-        public void OpenNormalPath(IBrowser browser, string Page)
+        public async Task OpenNormalPath(IBrowser browser, string Page)
         {
-            Site.LoadPage(browser, Page);
+            await Site.LoadPageAsync(browser, Page);
         }
         protected Surfing() { }
-        public virtual bool Surf(int Wait = 5)
+        public virtual async Task<bool> SurfAsync(int waitTime = 5)
         {
-            var browser = Site.GetBrowser(0);
+            var browser = await Site.GetBrowserAsync(0);
             if (browser == null)
                 return false;
-            OpenPage(browser, Page);
-            if (AntiBot != null)
-                if (!AntiBot(browser))
-                    return false;
-            Site.InjectJS(browser, FirstStep);
-            bool f = true;
+
+            await OpenPage(browser, Page);
+
+            if (AntiBot != null && await AntiBot(browser))
+                return false;
+
+            await Site.InjectJSAsync(browser, FirstStep);
+            bool isRunning = true;
+
             try
             {
-                do
+                while (isRunning)
                 {
                     Site.eventBrowserCreated.Reset();
-                    switch (Site.InjectJS(browser, "FirstStep();"))
+                    StatusJS status = await Site.InjectJSAsync(browser, "FirstStep();");
+
+                    switch (status)
                     {
                         case StatusJS.End:
-                            f = false;
+                            isRunning = false;
                             break;
                         case StatusJS.Continue:
-                            break;
+                            continue;
                         case StatusJS.OK:
-                            switch (Site.FunctionWait(browser, "SecondStep();",time: 10))
+                            if (await Site.FunctionWaitAsync(browser, "SecondStep();", time: 10) == StatusJS.OK)
                             {
-                                case StatusJS.OK:
-                                    Middle();
-                                    break;
-                                case StatusJS.ErrorWait:
-                                    Error++;
-                                    Site.InjectJS(browser, "n++");
-                                    break;
-                                default:
-                                    throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
+                                await Middle();
+                            }
+                            else
+                            {
+                                await HandleErrorAsync(browser);
                             }
                             break;
                         case StatusJS.OK1:
-                            Middle();
+                            await Middle();
                             break;
                         case StatusJS.Error:
-                            Error++;
-                            break;
                         case StatusJS.ErrorWait:
-                            Error++;
-                            Site.InjectJS(browser, "n++");
+                            await HandleErrorAsync(browser);
                             break;
                         default:
-                            throw new ExceptionSurfing(Type,Site.Type,$"Error StatusJS");
+                            throw new ExceptionSurfing(Type, Site.Type, "Unexpected StatusJS value");
                     }
-                    Site.Sleep(2);
+
+                    await Site.SleepAsync(2000);
                     Site.CloseСhildBrowser();
                     Site.form.FocusTab(browser);
                 }
-                while (f);
             }
-            catch (ExceptionSurfing ex)
+            catch (Exception ex) when (ex is ExceptionSurfing || ex is ExceptionJS)
             {
                 Site.Error(ex.Message);
                 return false;
             }
-            catch (ExceptionJS ex)
-            {
-                Site.Error(ex.Message);
-                return false;
-            }
+
             return true;
         }
-        protected void Middle()
+
+
+        private async Task HandleErrorAsync(IBrowser browser)
         {
-            var browserSurf = Site.GetBrowser(1);
+            Error++;
+            await Site.InjectJSAsync(browser, "n++");
+        }
+
+        protected async Task Middle()
+        {
+            var browserSurf = await Site.GetBrowserAsync(1);
             if (browserSurf == null)
             {
+                Site.Error("Ошибка: BrowserSurf не найден!");
                 Error++;
                 return;
             }
+
             try
             {
-                if (MiddleStep(browserSurf))
+                if (await MiddleStep(browserSurf))
                     Count++;
                 else
                     Error++;
@@ -150,116 +157,116 @@ namespace ClickMashine
             {
                 Site.Error(ex.Message);
                 Error++;
+                return;
             }
-            Site.Sleep(2);
-            return;
+
+            await Site.SleepAsync(2);
         }
+
     }
     class SurfingMail : Surfing
     {
-        public delegate bool MailClickDelegate(IBrowser browser);
+        public delegate Task<bool> MailClickDelegate(IBrowser browser);
         public MailClickDelegate MailClick { get; set; }
-        public SurfingMail(Site site, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, page, firstStep, middleStep, SurfingType.Mail)
+
+        public SurfingMail(Site site, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep)
+            : base(site, page, firstStep, middleStep, SurfingType.Mail)
         {
             MailClick = mailClick;
         }
-        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep) : base(site, openPage, page, firstStep, middleStep, SurfingType.Mail)
+
+        public SurfingMail(Site site, OpenPageDelegate openPage, string page, string firstStep, MailClickDelegate mailClick, MiddleStepDelegate middleStep)
+            : base(site, openPage, page, firstStep, middleStep, SurfingType.Mail)
         {
             MailClick = mailClick;
         }
-        public override bool Surf(int Wait = 5)
+
+        public override async Task<bool> SurfAsync(int waitTime = 5)
         {
-            var browser = Site.GetBrowser(0);
+            var browser = await Site.GetBrowserAsync(0);
             if (browser == null)
                 return false;
-            OpenPage(browser, Page);
-            if (AntiBot != null)
-                if (!AntiBot(browser))
-                    return false;
-            Site.InjectJS(browser, FirstStep);
-            bool f = true;
+
+            await OpenPage(browser, Page);
+            if (AntiBot != null && await AntiBot(browser))
+                return false;
+
+            await Site.InjectJSAsync(browser, FirstStep);
+            bool isRunning = true;
+
             try
             {
-                do
+                while (isRunning)
                 {
                     Site.eventBrowserCreated.Reset();
-                    switch (Site.InjectJS(browser, "FirstStep();"))
+                    StatusJS status = await Site.InjectJSAsync(browser, "FirstStep();");
+
+                    switch (status)
                     {
                         case StatusJS.End:
-                            f = false;
+                            isRunning = false;
                             break;
                         case StatusJS.Continue:
-                            break;
+                            continue;
                         case StatusJS.OK:
-                            switch (Site.FunctionWait(browser, "SecondStep();"))
+                            if (await Site.FunctionWaitAsync(browser, "SecondStep();") == StatusJS.OK)
                             {
-                                case StatusJS.OK:
-                                    {
-                                        if (MailClick(browser))
-                                        {
-                                            Middle();
-                                        }
-                                        else
-                                        {
-                                            Error++;
-                                            Site.InjectJS(browser, "n++");
-                                        }
-                                        break;
-                                    }
-                                case StatusJS.ErrorWait:
-                                    Error++;
-                                    Site.InjectJS(browser, "n++");
-                                    break;
-                                default:
-                                    throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
+                                if (await MailClick(browser))
+                                    await Middle();
+                                else
+                                    await HandleErrorAsync(browser);
+                            }
+                            else
+                            {
+                                await HandleErrorAsync(browser);
                             }
                             break;
                         case StatusJS.OK1:
-                            if (MailClick(browser))
-                            {
-                                Middle();
-                            }
+                            if (await MailClick(browser))
+                                await Middle();
                             else
                                 Error++;
                             break;
                         case StatusJS.Error:
-                            Error++;
-                            break;
                         case StatusJS.ErrorWait:
-                            Error++;
-                            Site.InjectJS(browser, "n++");
+                            await HandleErrorAsync(browser);
                             break;
                         default:
-                            throw new ExceptionSurfing(Type, Site.Type, $"Error StatusJS");
+                            throw new ExceptionSurfing(Type, Site.Type, "Unexpected StatusJS value");
                     }
-                    Site.Sleep(2);
+
+                    await Site.SleepAsync(2000);                    
                     Site.CloseСhildBrowser();
                 }
-                while (f);
             }
-            catch (ExceptionSurfing ex)
+            catch (Exception ex) when (ex is ExceptionSurfing || ex is ExceptionJS)
             {
                 Site.Error(ex.Message);
                 return false;
             }
-            catch (ExceptionJS ex)
-            {
-                Site.Error(ex.Message);
-                return false;
-            }
+
             return true;
         }
+
+
+        private async Task HandleErrorAsync(IBrowser browser)
+        {
+            Error++;
+            await Site.InjectJSAsync(browser, "n++");
+        }
+
     }
+
     class ManagerSurfing
     {
         List<Surfing> Surfings = new List<Surfing>();
         public ManagerSurfing() { }
         public void AddSurfing(Surfing s) => Surfings.Add(s);
-        public void StartSurf()
+        public async Task StartSurf()
         {
             foreach (Surfing s in Surfings)
             {
-                s.Surf();
+                await s.SurfAsync();
             }
         }
     }

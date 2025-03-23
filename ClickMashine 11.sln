@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickMashine 11", "ClickMashine 11.csproj", "{9E07A5EE-6FA4-4F8F-8B73-21175EF404E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickMashine", "ClickMashine.csproj", "{9E07A5EE-6FA4-4F8F-8B73-21175EF404E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

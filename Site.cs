@@ -1,137 +1,19 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
-using System.Xml.Linq;
 using System.Text.Json;
+using ClickMashine.Models;
+using ClickMashine.Exceptions;
+using ClickMashine.Api;
+using System.Threading;
+using System.Text;
 using System.Text.RegularExpressions;
-using ClickMashine_11;
 
 namespace ClickMashine
 {
-    enum StatusSite { 
-        online,
-        offline,
-        wait,
-        error,
-        login
-    }
-    enum StatusJS
-    {
-        Error,
-        TryError,
-        ErrorWait,
-        Continue,
-        Wait,
-        OK,
-        OK1,
-        End,
-        None,
-        Block
-    }
-    public enum EnumTypeSite
-    {
-        None,
-        Router,
-        SeoFast,
-        Aviso,
-        Profitcentr,
-        WmrFast,
-        WebofSar,
-        Losena,
-        SeoClub,
-        VipClick,
-        Adaso
-    }
-    class Auth
-    {
-        public string Login { get; set; }
-        public string Password { get; set; }
-        public Auth(string login, string password)
-        {
-            Login = login;
-            Password = password;
-        }
-        public Auth(XElement? xml)
-        {
-            if (xml == null)
-                throw new Exception("Not valid auth site");
-            Login = xml.Element("login").Value.Trim();
-            Password = xml.Element("password").Value.Trim();
-        }
-    }
-    class MailSurf
-    {
-        public string Mail { get; set; }
-        public string Question { get; set; }
-        public List<string> Answer { get; set; }
-        public string GetAnswer()
-        {
-
-            Mail = Mail.ToLower();
-            Mail = Regex.Replace(Mail, @"\s", "", RegexOptions.IgnoreCase);
-            List<bool> tryValye = new List<bool>();
-            int try_int_val = 0;
-            for (int i = 0; i < Answer.Count; i++)
-            {
-                Answer[i] = Answer[i].ToLower();
-                Answer[i] = Regex.Replace(Answer[i], @"\s", "", RegexOptions.IgnoreCase);
-                tryValye.Add(false);
-                if (Mail.IndexOf(Answer[i]) != -1)
-                {
-                    tryValye[i] = true;
-                    try_int_val++;
-                }
-            }
-            Console.WriteLine(Mail);
-            Console.WriteLine(Answer[0]);
-            Console.WriteLine(Answer[1]);
-            Console.WriteLine(Answer[2]);
-            if (try_int_val == 1)
-            {
-                for (int i = 0; i < Answer.Count; i++)
-                {
-                    if (tryValye[i])
-                        return i.ToString();
-                }
-            }
-            return "errorMail";
-        }
-    }
-    public class BoundObject
-    {
-        private EventWaitHandle EventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-        string Text { get; set; }
-        public void ResetEvent() =>
-            EventWaitHandle.Reset();
-        public void Event(string text)
-        {
-            Text = text;
-            EventWaitHandle.Set();
-        }
-        public string GetValue(int time = 20)
-        {
-            if (EventWaitHandle.WaitOne(time * 1000))
-                return Text;
-            else
-                return "error";
-        }
-    }
-    class ExceptionJS : Exception
-    {
-        public EnumTypeSite TypeSite { get; set; }
-        string JS;
-        string mess;
-        public ExceptionJS(EnumTypeSite typeSite, string js, string message) : base()
-        {
-            TypeSite = typeSite;
-            JS = js;
-            mess = message;
-        }
-        public new string Message {  get { return $"Site : {TypeSite}\nJS : {JS}\nMessage : {mess}"; } }
-    }
-    abstract class Site : MyTask
+    abstract class Site
     {
         protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
-        public Form1 form;
+        public MainForm form;
         public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
         public EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<(IWebBrowser, IBrowser)> BrowserConrols = new List<(IWebBrowser, IBrowser)>();
@@ -141,42 +23,47 @@ namespace ClickMashine
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser? main_browser;
         public MyLifeSplanHandler? lifeSplanHandler;
-        protected Auth? auth;
+        protected AuthData? auth;
         public TCPMessageManager TCPMessageManager;
-        protected MySQL mySQL;
         protected ToolStripMenuItem menuItemSite;
         protected ToolStripComboBox siteStripComboBox;
-        protected EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-        public Site(Form1 form, Auth auth) : base()
+        public CancellationTokenSource cancellationToken { get; set; } = new CancellationTokenSource();
+
+        protected TaskCompletionSource<bool> waitHandle = new TaskCompletionSource<bool>();
+        protected ApiClient ApiClient { get; set; }
+        public Site(MainForm form, AuthData auth) : base()
         {
             this.form = form;
-            this.mySQL = form.mySQL;
             this.auth = auth;
-            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
+            //TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
+            ApiClient = new ApiClient();
         }
-        public Site(Form1 form) : base()
-        {
-            this.form = form;
-            this.mySQL = form.mySQL;
-            TCPMessageManager = new TCPMessageManager(form.ID, IPManager.GetEndPoint(mySQL, 1));
-        }
-        public abstract bool Auth(Auth auth);
-        protected override void StartSurf()
+        public abstract Task<bool> Auth(AuthData auth);
+        public async Task StartSurf()
         {
             Initialize();
-            if (!Auth(auth))
+
+            if (!await Auth(auth))
             {
-                if (!waitHandle.WaitOne())
+                if (!await waitHandle.Task)
                     return;
             }
-            while (true)
-            {
-                ManagerSurfing.StartSurf();
-                Sleep(600);
-            }
+
+            //while (!cancellationToken.IsCancellationRequested) // Используем токен отмены
+            //{
+            //    await ManagerSurfing.StartSurf();
+            //    await Task.Delay(600);
+            //}
         }
-        public void SomedoIt()
+        public void Stop()
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine("[Warning] Задача не запущена или уже остановлена.");
+                return;
+            }
+
+            cancellationToken.Cancel();
         }
         protected virtual void Initialize()
         {
@@ -219,6 +106,50 @@ namespace ClickMashine
 
             eventLoadPage.WaitOne(15000);
         }
+        protected string LoadJSOnFileBase(string nameFile,params object[] args)
+        {
+            string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sites", nameFile + ".js");
+
+            if (!File.Exists(scriptPath))
+                throw new FileNotFoundException($"Файл {scriptPath} не найден.");
+
+            string script = File.ReadAllText(scriptPath);
+
+            // Подставляем значения enum StatusJS
+            foreach (StatusJS status in Enum.GetValues(typeof(StatusJS)))
+            {
+                script = script.Replace($"STATUS_{status.ToString().ToUpper()}", ((int)status).ToString());
+            }
+            script = Regex.Replace(script, @"\{(\d+)\}", m =>
+            {
+                int index = int.Parse(m.Groups[1].Value);
+                return index < args.Length ? args[index].ToString() : m.Value;
+            });
+            return script;
+        }
+        protected string LoadJSOnFile(string nameFile, params object[] args)
+        {
+            string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sites", Type.ToString(), nameFile + ".js");
+
+            if (!File.Exists(scriptPath))
+                throw new FileNotFoundException($"Файл {scriptPath} не найден.");
+
+            string script = File.ReadAllText(scriptPath, Encoding.UTF8);
+
+  
+            // Подставляем значения enum StatusJS
+            foreach (StatusJS status in Enum.GetValues(typeof(StatusJS)))
+            {
+                script = script.Replace($"STATUS_{status.ToString().ToUpper()}", ((int)status).ToString());
+            }
+            script = Regex.Replace(script, @"\{(\d+)\}", m =>
+            {
+                int index = int.Parse(m.Groups[1].Value);
+                return index < args.Length ? args[index].ToString() : m.Value;
+            });
+
+            return script;
+        }
         private void SiteStripComboBox_TextChanged(object? sender, EventArgs e)
         {
             ToolStripComboBox? item = sender as ToolStripComboBox;
@@ -227,7 +158,7 @@ namespace ClickMashine
                 switch ((StatusSite)item.SelectedIndex)
                 {
                     case StatusSite.online:
-                        waitHandle.Set();
+                        waitHandle.TrySetResult(true); // Разблокировать ожидание
                         break;
                 }
             }
@@ -236,101 +167,82 @@ namespace ClickMashine
                 MessageBox.Show("Error");
             }
         }
-        public StatusJS InjectJS(IFrame frame, string JS)
+        public async Task<StatusJS> InjectJSAsync(IFrame frame, string JS)
         {
-            string JS_TRY = 
-@"try{
-    " + JS + @"
-}
-catch(e)
-{
-    " + (int)StatusJS.TryError + @";
-}";
+            string JS_TRY = LoadJSOnFileBase("injectJS" ,JS);
+
 #if DEBUG
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS_TRY);
-            Console.WriteLine("Type: " + Type.ToString());
+            Console.WriteLine("Type: " + Type);
 #endif
-            var task = frame.EvaluateScriptAsync(JS_TRY);
-            task.Wait();
-            if (task.Result.Result != null)
+
+            try
             {
-                int? result = task.Result.Result as int?;
-                if (result != null)
+                var task = await frame.EvaluateScriptAsync(JS_TRY);
+                if (task.Result != null && task.Result is int result)
                 {
                     StatusJS statusJS = (StatusJS)result;
+
 #if DEBUG
                     Console.WriteLine("Return: " + statusJS);
                     Console.WriteLine("---------------------------");
 #endif
-                    if (statusJS != StatusJS.TryError)
-                        return statusJS;
-                    else
-                    {
-                        throw new ExceptionJS(Type,JS,task.Result.Message);
-                    }
+
+                    if (statusJS == StatusJS.TryError)
+                        throw new ExceptionJS(Type, JS, task.Message);
+
+                    return statusJS;
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"JS Execution Error: {ex.Message}");
+            }
+
             return StatusJS.None;
         }
-        public string ValueElement(IFrame frame, string element)
+        public async Task<string> ValueElementAsync(IFrame frame, string element)
         {
-            string JS =
-@"try{
-    " + element + @"
-}
-catch(e)
-{
-    '" + StatusJS.TryError + @"';
-}";
+            string JS = 
+            @"try{
+                " + element + @"
+            }
+            catch(e)
+            {
+                '" + StatusJS.TryError + @"';
+            }";
 #if DEBUG
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS);
             Console.WriteLine("Type: " + Type.ToString());
 #endif
-            var task = frame.EvaluateScriptAsync(JS);
-            task.Wait();
-            if (task.Result.Result != null)
+            var result = await frame.EvaluateScriptAsync(JS);
+            if (result.Result != null)
             {
 #if DEBUG
-                Console.WriteLine("Return: " + task.Result.Result.ToString());
+                Console.WriteLine("Return: " + result.Result.ToString());
                 Console.WriteLine("---------------------------");
 #endif
-                if (task.Result.Result.ToString() == StatusJS.TryError.ToString())
+                if (result.Result.ToString() == StatusJS.TryError.ToString())
                 {
                     throw new Exception("Type: " + Type.ToString() + "\nError JS");
                 }
-                string? result = task.Result.Result.ToString();
-                if (result != null)
-                    return result;
+                string? val = result.Result.ToString();
+                if (val != null)
+                    return val;
             }
-            throw new ExceptionJS(Type, JS, task.Result.Message);
+            throw new ExceptionJS(Type, JS, result.Message);
         }
-        public string ValueElement(IBrowser browser, string element)
+        public async Task<string> ValueElementAsync(IBrowser browser, string element)
         {
-            Active(browser);
-            return ValueElement(browser.MainFrame, element);
+            await ActiveAsync(browser);
+            return await ValueElementAsync(browser.MainFrame, element);
         }
-        public StatusJS InjectJS(IBrowser browser, string JS)
+        public async Task<StatusJS> InjectJSAsync(IBrowser browser, string JS)
         {
-            Active(browser);
-            return InjectJS(browser.MainFrame, JS);
-        }
-        protected void SetBDInfo(int val)
-        {
-            mySQL.SendSQL("UPDATE auth SET last_day = last_day + " + val.ToString() + " WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void SetBDInfoStart()
-        {
-            mySQL.SendSQL("UPDATE auth SET status = 'Surf' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void SetBDInfoStop()
-        {
-            mySQL.SendSQL("UPDATE auth SET status = 'Activate' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-        }
-        protected void WaitConnect()
-        {
-
+            await ActiveAsync(browser);
+            return await InjectJSAsync(browser.MainFrame, JS);
         }
         public void AfterCreated(IWebBrowser browserControl, IBrowser browser)
         {
@@ -382,128 +294,171 @@ catch(e)
             if (!e.IsLoading)
                 eventLoadPage.Set();
         }
-        public IBrowser? GetBrowser(int id)
+        public async Task<IBrowser> GetBrowserAsync(int id)
         {
             eventLoadPage.Reset();
             if (BrowserConrols.Count <= id)
             {
                 eventBrowserCreated.Reset();
-                if (!eventBrowserCreated.WaitOne(15000))
-                    return null;
+                if (!await Task.Run(() => eventBrowserCreated.WaitOne(15000)))
+                {
+                    Console.WriteLine("Ошибка: браузер не был создан за 15 секунд!");
+                    throw new Exception();
+                }
             }
-            eventLoadPage.WaitOne(5000);
+
+            await Task.Delay(100); // Минимальная задержка для избежания deadlock
+            bool loaded = await Task.Run(() => eventLoadPage.WaitOne(5000));
+
+            if (!loaded)
+            {
+                Console.WriteLine("Ошибка: страница не загрузилась за 5 секунд!");
+            }
+
             return BrowserConrols[id].Item2;
         }
-        public IBrowser? WaitCreateBrowser()
+        public async Task<IBrowser?> WaitCreateBrowserAsync()
         {
             eventLoadPage.Reset();
-            if (!eventBrowserCreated.WaitOne(15000))
+
+            var browserCreated = await Task.Run(() => eventBrowserCreated.WaitOne(15000));
+            if (!browserCreated)
                 return null;
-            eventLoadPage.WaitOne(15000);
-            return LastBrowser;
+
+            var pageLoaded = await Task.Run(() => eventLoadPage.WaitOne(15000));
+            return pageLoaded ? LastBrowser : null;
         }
-        public void LoadPage(int id_browser, string page)
+        public async Task LoadPageAsync(int id_browser, string page)
         {
-            if (BrowserConrols.Count > id_browser)
+            if (id_browser < BrowserConrols.Count)
             {
-                LoadPage(BrowserConrols[id_browser].Item2, page);
-            }
-        }
-        public void Active(IBrowser browser)
-        {
-            for (int i = 0; i < 10; i++)
-                if (browser.IsValid)
-                    return;
-                else Thread.Sleep(500);
-            throw new Exception("No valid browser");
-        }        
-        public void Active(IFrame frame)
-        {
-            for (int i = 0; i < 10; i++)
-                if (frame.IsValid)
-                    return;
-                else Thread.Sleep(500);
-            throw new Exception("No valid frame");
-        }
-        public void LoadPage(string page)
-        {
-            LoadPage(0, page);
-        }
-        public void LoadPage(IBrowser browser, string page)
-        {
-            if (BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier).Item2 != null)
-            {
-                Active(browser);
-                Console.WriteLine("---------------------------\nOpen: " + page);
-                Console.WriteLine("Type: " + Type.ToString());
-                Console.WriteLine("---------------------------");
-                eventLoadPage.Reset();
-                Active(browser.MainFrame);
-                browser.MainFrame.LoadUrl(page);
-                eventLoadPage.WaitOne();
+                await LoadPageAsync(BrowserConrols[id_browser].Item2, page);
             }
             else
+            {
+                throw new Exception("Browser index out of range");
+            }
+        }
+        public async Task ActiveAsync(IBrowser browser, int timeoutMs = 5000, int checkIntervalMs = 500)
+        {
+            int elapsedTime = 0;
+
+            while (elapsedTime < timeoutMs)
+            {
+                if (browser.IsValid)
+                    return;
+
+                await Task.Delay(checkIntervalMs);
+                elapsedTime += checkIntervalMs;
+            }
+
+            throw new Exception("No valid browser");
+        }
+        public async Task ActiveAsync(IFrame frame, int timeoutMs = 5000, int checkIntervalMs = 500)
+        {
+            int elapsedTime = 0;
+
+            while (elapsedTime < timeoutMs)
+            {
+                if (frame.IsValid)
+                    return;
+
+                await Task.Delay(checkIntervalMs);
+                elapsedTime += checkIntervalMs;
+            }
+
+            throw new Exception("No valid frame");
+        }
+
+        public Task LoadPageAsync(string page)
+        {
+            return LoadPageAsync(0, page);
+        }
+        public async Task LoadPageAsync(IBrowser browser, string page)
+        {
+            var browserItem = BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier);
+            if (browserItem.Item2 == null)
                 throw new Exception("Not valid browser");
+
+            await ActiveAsync(browser);
+
+            Console.WriteLine("---------------------------\nOpen: " + page);
+            Console.WriteLine("Type: " + Type.ToString());
+            Console.WriteLine("---------------------------");
+
+            await ActiveAsync(browser.MainFrame);
+            eventLoadPage.Reset();
+            browser.MainFrame.LoadUrl(page);
+            eventLoadPage.WaitOne();
         }
-        public string SendJSReturn(int id_browser, string JS)
+
+        public async Task<string?> SendJSReturnAsync(int id_browser, string JS)
         {
             if (BrowserConrols.Count > id_browser)
             {
                 IFrame frame = BrowserConrols[id_browser].Item2.MainFrame;
-                return SendJSReturn(frame, JS);
+                return await SendJSReturnAsync(frame, JS);
             }
-            else return null;
+            return null;
         }
-        public void SendJS(int id_browser, string JS)
+
+        public Task SendJSAsync(int id_browser, string JS)
         {
-            if (BrowserConrols.Count > id_browser)
-            {
-                IFrame frame = BrowserConrols[id_browser].Item2.MainFrame;
-                SendJS(frame, JS);
-            }
+            if (BrowserConrols.Count <= id_browser)
+                throw new ArgumentOutOfRangeException(nameof(id_browser), "Некорректный индекс браузера");
+
+            IFrame frame = BrowserConrols[id_browser].Item2.MainFrame;
+            return SendJSAsync(frame, JS);
         }
-        public void SendJS(IFrame frame, string JS)
+        public async Task SendJSAsync(IFrame frame, string JS)
         {
-            Active(frame);
+            await ActiveAsync(frame);
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS);
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
             frame.ExecuteJavaScriptAsync(JS);
         }
-        public void SendJS(IBrowser browser, string JS)
+        public async Task SendJSAsync(IBrowser browser, string JS)
         {
-            Active(browser);
-            SendJS(browser.MainFrame, JS);
+            await ActiveAsync(browser);
+            await SendJSAsync(browser.MainFrame, JS);
         }
-        public string SendJSReturn(IFrame frame, string JS)
+        public async Task<string> SendJSReturnAsync(IFrame frame, string JS)
         {
-            Active(frame);
-            string JS_TRY = "try{\n" + JS + "\n}catch(e){'error';}";
+            await ActiveAsync(frame);
+            string JS_TRY = $"try{{\n{JS}\n}}catch(e){{'error';}}";
+
             Console.WriteLine("---------------------------\nSend JS:");
             Console.WriteLine(JS_TRY);
             Console.WriteLine("Type: " + Type.ToString());
-            var task = frame.EvaluateScriptAsync(JS_TRY);
-            task.Wait();
-            if (task.Result.Result != null)
+
+            var task = await frame.EvaluateScriptAsync(JS_TRY);
+
+            if (task.Result != null)
             {
-                if (task.Result.Result.ToString() == "error")
+                string? result = task.Result.ToString();
+
+                if (result == "error")
                 {
-                    throw new Exception("Type: " + Type.ToString() + "\nError JS");
+                    throw new Exception($"Type: {Type}\nError JS");
                 }
-                Console.WriteLine("Return: " + task.Result.Result.ToString());
+
+                Console.WriteLine("Return: " + result);
                 Console.WriteLine("---------------------------");
-                return task.Result.Result.ToString();
+                if(result != null)
+                    return result;
             }
 
             Console.WriteLine("Not return!!!!!!!");
             Console.WriteLine("---------------------------");
-            return null;
+            throw new ArgumentNullException();
         }
-        public string SendJSReturn(IBrowser browser, string JS)
+
+        public async Task<string> SendJSReturnAsync(IBrowser browser, string JS)
         {
-            Active(browser);
-            return SendJSReturn(browser.MainFrame, JS);
+            await ActiveAsync(browser);
+            return await SendJSReturnAsync(browser.MainFrame, JS);
         }
         public void Error(string text)
         {
@@ -512,7 +467,6 @@ catch(e)
             "\nType: " + Type.ToString() +
             "\n---------------------------";
             Console.WriteLine(Message);
-            TCPMessageManager.SendError(Message, Type);
         }
         public void Info(string text)
         {
@@ -544,33 +498,35 @@ catch(e)
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
         }
-        public void Sleep(int sec)
+        public async Task SleepAsync(int sec)
         {
 #if DEBUG
             Console.WriteLine("---------------------------");
-            Console.WriteLine("Sleep: " + sec.ToString());
+            Console.WriteLine("Sleep: " + sec);
             Console.WriteLine("Type: " + Type.ToString());
             Console.WriteLine("---------------------------");
 #endif
-            Task.Delay(sec * 1000).Wait();
+            await Task.Delay(sec * 1000);
         }
-        public void Sleep(string sec)
+
+        public async Task SleepAsync(string sec)
         {
-            try
+            if (int.TryParse(sec, out int seconds))
             {
-                Sleep(int.Parse(sec));
+                await SleepAsync(seconds);
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Ошибка: не удалось распознать число.");
             }
         }
-        public bool WaitTime(IFrame frame, string element)
+
+        public async Task<bool> WaitTimeAsync(IFrame frame, string element)
         {
             string sec;
             try
             {
-                sec = ValueElement(frame, element);
+                sec = await ValueElementAsync(frame, element);
             }
             catch
             {
@@ -591,10 +547,10 @@ catch(e)
             Task.Delay(int.Parse(sec) * 1000).Wait();
             return true;
         }
-        public bool WaitTime(IBrowser browser, string element)
+        public async Task<bool> WaitTimeAsync(IBrowser browser, string element)
         {
-            Active(browser);
-            return WaitTime(browser.MainFrame, element);
+            await ActiveAsync(browser);
+            return await WaitTimeAsync(browser.MainFrame, element);
         }
         public void SendKeysEvent(int id_browser, string text)
         {
@@ -615,7 +571,7 @@ catch(e)
             {
                 BrowserConrols[i].Item2.CloseBrowser(false);
             }
-            Sleep(1);
+            SleepAsync(1).Wait();
         }
         public void CloseAllBrowser()
         {
@@ -623,59 +579,40 @@ catch(e)
             {
                 BrowserConrols[i].Item2.CloseBrowser(false);
             }
+            SleepAsync(1).Wait();
         }
-        public bool WaitButtonClick(IFrame frame, string element, int sec = 10)
+        public async Task<bool> WaitButtonClickAsync(IFrame frame, string element, int sec = 10)
         {
-            string js_wait =
-@"function wait_element()
-{
-    var element = " + element + @"
-    if (element != null) { element.click(); return "+(int)StatusJS.OK+@"; }
-    else return "+(int)StatusJS.Wait+@";
-}";
-            InjectJS(frame, js_wait);
+            string js_wait = LoadJSOnFileBase("waitButtonClick", element);
+
+            await InjectJSAsync(frame, js_wait); // Асинхронная вставка JS
+
             for (int i = 0; i < sec; i++)
             {
-                switch (InjectJS(frame, "wait_element();"))
-                {
-                    case StatusJS.OK:
-                        return true;
-                    case StatusJS.Wait:
-                        Thread.Sleep(1000);
-                        break;
-                }
+                StatusJS status = await InjectJSAsync(frame, "wait_element();"); // Асинхронный вызов JS
+
+                if (status == StatusJS.OK)
+                    return true;
+                else if (status == StatusJS.Wait)
+                    await Task.Delay(1000); // Асинхронная задержка
             }
+
             return false;
         }
-        public bool WaitButtonClick(IBrowser browser, string element, int sec = 10)
+
+        public async Task<bool> WaitButtonClickAsync(IBrowser browser, string element, int sec = 10)
         {
-            Active(browser);
-            return WaitButtonClick(browser.MainFrame, element, sec);
+            await ActiveAsync(browser);
+            return await WaitButtonClickAsync(browser.MainFrame, element, sec);
         }
-        public string GetMailAnswer(IFrame frame, string mail, string question, string answer, int sec = 5)
+        public async Task<string> GetMailAnswerAsync(IFrame frame, string mail, string question, string answer, int sec = 5)
         {
-            string js =
-@"function get_mail() {
-    var mail_text = " + mail + @";
-    if (mail_text != null) {
-        var answer = " + answer + @";
-        var quest = " + question + @";
-        return JSON.stringify(
-        {Mail : mail_text.innerText,
-        Question : quest.innerText,
-        Answer : [answer[0].innerText,
-        answer[1].innerText,
-        answer[2].innerText]
-        });
-    }
-    else { return 'wait'; }
-};
-get_mail();";
+            string js = LoadJSOnFileBase("getMailAnswer", mail, answer, question);
             for (int i = 0; i < sec; i++)
             {
-                string ev = SendJSReturn(frame, js);
-                if (ev == "wait")
-                    Sleep(1);
+                string ev = await SendJSReturnAsync(frame, js);
+                if (ev == ((int)StatusJS.Wait).ToString())
+                    await SleepAsync(1);
                 else
                 {
                     MailSurf? mailSurf = JsonSerializer.Deserialize<MailSurf>(ev);
@@ -688,201 +625,167 @@ get_mail();";
             }
             return "errorMail";
         }
-        public bool WaitElement(IFrame frame, string element, int sec = 10)
+        public async Task<bool> WaitElementAsync(IFrame frame, string element, int sec = 10)
         {
-            string JS =
-@"function WaitElement()
-{
-    var element = " + element + @";
-    if (element != null) { return "+(int)StatusJS.OK+ @"; }
-    else return "+(int)StatusJS.Wait+@";
-}
-WaitElement();";
+            string JS = LoadJSOnFileBase("waiitElement");
             for (int i = 0; i < sec; i++)
             {
-                switch (InjectJS(frame, JS))
+                switch (await InjectJSAsync(frame, JS))
                 {
                     case StatusJS.Wait:
                         break;
                     case StatusJS.OK:
                         return true;
                 }
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
             return false;
         }
-        public bool WaitElement(IBrowser browser, string element, int sec = 10)
+        public Task<bool> WaitElementAsync(IBrowser browser, string element, int sec = 10)
         {
-            return WaitElement(browser.MainFrame, element, sec);
+            return WaitElementAsync(browser.MainFrame, element, sec);
         }
-        public bool WaitElement(IBrowser browser, string nameFrame, string element, int sec = 10)
+        public async Task<bool> WaitElementAsync(IBrowser browser, string nameFrame, string element, int sec = 10)
         {
-            IFrame frame = browser.GetFrame(nameFrame);
-            Active(frame);
-            return WaitElement(frame, element, sec);          
+            IFrame frame = browser.GetFrameByName(nameFrame);
+            await ActiveAsync(frame);
+            return await WaitElementAsync(frame, element, sec);          
         }
-        public string WaitFunction(IFrame frame, string function, string? functionStart = null, int time = 5)
+        public async Task<string> WaitFunctionAsync(IFrame frame, string function, string? functionStart = null, int time = 5)
         {
             if (functionStart != null)
-                SendJS(frame, functionStart);
+                await SendJSAsync(frame, functionStart);
             for (int j = 0; j < time; j++)
             {
-                string ev = SendJSReturn(frame, function);
+                string ev = await SendJSReturnAsync(frame, function);
                 if (ev == "wait")
-                    Sleep(1);
+                    await SleepAsync(1);
                 else return ev;
             }
             return "errorWait";
         }
-        public string WaitFunction(IBrowser browser, string function, string? functionStart = null, int time = 5)
+        public Task<string> WaitFunctionAsync(IBrowser browser, string function, string? functionStart = null, int time = 5)
         {
-            return WaitFunction(browser.MainFrame, function, functionStart, time);
+            return WaitFunctionAsync(browser.MainFrame, function, functionStart, time);
         }
-        public StatusJS FunctionWait(IFrame frame, string function, string? functionStart = null, int time = 5)
+        public async Task<StatusJS> FunctionWaitAsync(IFrame frame, string function, string? functionStart = null, int time = 5)
         {
             if (functionStart != null)
-                InjectJS(frame, functionStart);
+                await InjectJSAsync(frame, functionStart); // Асинхронный вызов JS
+
             for (int j = 0; j < time; j++)
             {
-                StatusJS status = InjectJS(frame, function);
+                StatusJS status = await InjectJSAsync(frame, function); // Ожидание результата
+
                 if (status == StatusJS.Wait)
-                    Sleep(1);
-                else 
+                    await Task.Delay(1000); // Асинхронная задержка
+                else
                     return status;
             }
+
             return StatusJS.ErrorWait;
         }
-        public StatusJS FunctionWait(IBrowser browser, string function, string? functionStart = null, int time = 5)
+
+        public Task<StatusJS> FunctionWaitAsync(IBrowser browser, string function, string? functionStart = null, int time = 5)
         {
-            return FunctionWait(browser.MainFrame, function, functionStart, time);
+            return FunctionWaitAsync(browser.MainFrame, function, functionStart, time);
         }
-        public void WaitChangeElement(IBrowser browser, BoundObject boundObject, string element)
+        public async Task WaitChangeElementAsync(IBrowser browser, BoundObject boundObject, string element)
         {
             var control = BrowserConrols.Find(item => item.Item2.Identifier == browser.Identifier);
+
             if (control.Item1 != null)
             {
                 control.Item1.JavascriptObjectRepository.Register("boundAsync", boundObject, BindingOptions.DefaultBinder);
-                string js =
-@"var target = " + element + @";
-const config = {
-  childList: true,
-        attributes: true,
-        subtree: true,
-        characterData: true,
-        attributeOldValue: true,
-        characterDataOldValue: true
-};
-const callback = function (mutationsList, observer) {
-(async function()
-{
-	await CefSharp.BindObjectAsync(""boundAsync"");
-	boundAsync.event(target.innerText);
-})();
-};
-const observer = new MutationObserver(callback);
-observer.observe(target, config);
-";
-                InjectJS(control.Item2, js);
+                string js = LoadJSOnFileBase("boundAsync", element);
+
+                await InjectJSAsync(control.Item2, js); // Асинхронный вызов InjectJS
             }
             else
-                throw new Exception("Not valid browser");
-        }
-        public Bitmap GetImgBrowser(IFrame frame, string element)
-        {
-            if (WaitElement(frame, element))
             {
-                string js = @"var js = " + element + @".getBoundingClientRect().toJSON();
-JSON.stringify({ X: parseInt(js.x), Y: parseInt(js.y),  Height: parseInt(js.height), Width: parseInt(js.width)});";
-                Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(ValueElement(frame, js));
+                throw new Exception("Not valid browser");
+            }
+        }
+        public async Task<Bitmap> GetImgBrowserAsync(IFrame frame, string element)
+        {
+            if (await WaitElementAsync(frame, element))
+            {
+                string js = LoadJSOnFileBase("getImgBrowser", element);
+                string rec = await ValueElementAsync(frame, js);
+                Rectangle rectElement = JsonSerializer.Deserialize<Rectangle>(rec);
                 return form.MakeScreenshot(frame.Browser, rectElement);
             }
             else
                 throw new Exception("Ошибка ожидания элемента для скриншота");
         }
-        public string SendQuestion(Bitmap image, string text)
-        {
-            return TCPMessageManager.SendQuestion(image, text, Type);
-        }
-        public string GetMoney(IBrowser browser, string selector)
-        {
-            string js =
-@"var ballans = " + selector + @";
-if(ballans != null)
-    ballans.innerText;
-else 'error';";
-            string ev = SendJSReturn(browser.MainFrame, js);
-            if (ev != "error")
-                Info("Money: " + ev);
-            return ev;
-        }
-        public void SaveImage(Bitmap bmp)
-        {
-            string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
-            Directory.CreateDirectory(path);
-            bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
-        }
-        public void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
-        {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
-            Directory.CreateDirectory(path);
-            for (int i = 0; i < historyCaptcha.Count; i++)
-            {
-                string file = "";
-                (Bitmap, PredictNN) captcha = historyCaptcha[i];
-                captcha.Item1.Save(path + i.ToString() + ".png");
-                var tensor = captcha.Item2.Tensor.ToArray<float>();
-                for (int j = 0; j < tensor.Length; j++)
-                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
-                File.WriteAllText(path + $"debug{i}.txt", file);
-            }
-        }
-        public void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
-        {
-            string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
-            Directory.CreateDirectory(path);
-            for (int i = 0; i < historyCaptcha.Count; i++)
-            {
-                string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
-                (Bitmap, PredictNN) captcha = historyCaptcha[i];
-                captcha.Item1.Save(path + i.ToString() + ".png");
-                var tensor = captcha.Item2.Tensor.ToArray<float>();
-                for (int j = 0; j < tensor.Length; j++)
-                    file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
-                File.WriteAllText(path + $"debug{i}.txt", file);
-            }
-        }
-        public void AccountBlock()
-        {
-            mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
-            MessageBox.Show("Account block");
-        }
-        public void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
-        {
-            string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
-            for (int i = 0; i < count; i++)
-            {
-                string name = SendJSReturn(browser.MainFrame, title + ".innerText");
-                string[] name_item = name.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                Directory.CreateDirectory(path + name_item[name_item.Length - 1] + @"\");
-                SendJS(0, element + ".forEach((element) => element.style.border = '0px');");
-                Sleep(1);
-                for (int j = 0; j < countElement; j++)
-                {
-                    //PredictNN predict = nn.Predict(GetImgBrowser(Browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
-                    //foreach (var v in predict.Tensor.numpy())
-                    //{
-                    //    foreach (var v2 in v)
-                    //        Console.WriteLine(v2.ToString());
-                    //}
-                    //Console.WriteLine((ProfiCentrEnumNN)predict.Num);
-                    //Console.ReadLine();
-                    GetImgBrowser(browser.MainFrame, element + "[" + j.ToString() + "]")
-                        .Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
-                }
-                SendJS(0, reload + ".click();");
-                Sleep(2);
-            }
-        }
+        //public void SaveImage(Bitmap bmp)
+        //{
+        //    string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
+        //    Directory.CreateDirectory(path);
+        //    bmp.Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
+        //}
+        //public void SaveHistoryCaptcha1(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString)
+        //{
+        //    string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+        //    Directory.CreateDirectory(path);
+        //    for (int i = 0; i < historyCaptcha.Count; i++)
+        //    {
+        //        string file = "";
+        //        (Bitmap, PredictNN) captcha = historyCaptcha[i];
+        //        captcha.Item1.Save(path + i.ToString() + ".png");
+        //        var tensor = captcha.Item2.Tensor.ToArray<float>();
+        //        for (int j = 0; j < tensor.Length; j++)
+        //            file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
+        //        File.WriteAllText(path + $"debug{i}.txt", file);
+        //    }
+        //}
+        //public void SaveHistoryCaptcha(List<(Bitmap, PredictNN)> historyCaptcha, List<string> enumString, string value)
+        //{
+        //    string path = $"{Form1.PATH_SETTING}Image/Errors/{Type}/{DateTime.Now.ToString("dd/MM/yyyy HH.mm.ss")}/";
+        //    Directory.CreateDirectory(path);
+        //    for (int i = 0; i < historyCaptcha.Count; i++)
+        //    {
+        //        string file = $"{value}{Environment.NewLine}----------------------------{Environment.NewLine}";
+        //        (Bitmap, PredictNN) captcha = historyCaptcha[i];
+        //        captcha.Item1.Save(path + i.ToString() + ".png");
+        //        var tensor = captcha.Item2.Tensor.ToArray<float>();
+        //        for (int j = 0; j < tensor.Length; j++)
+        //            file += enumString[j] + " : " + tensor[j].ToString() + Environment.NewLine;
+        //        File.WriteAllText(path + $"debug{i}.txt", file);
+        //    }
+        //}
+        //public void AccountBlock()
+        //{
+        //    mySQL.SendSQL("UPDATE auth SET status = 'Block' WHERE id_object = " + form.ID.ToString() + " , step = " + form.Step.ToString() + " , site = " + Type.ToString());
+        //    MessageBox.Show("Account block");
+        //}
+        //public void GetTrainBD(IBrowser browser, string title, string element, string reload, int countElement, int count)
+        //{
+        //    string path = @"C:\ClickMashine\Settings\Image\" + Type.ToString() + @"\";
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        string name = SendJSReturn(browser.MainFrame, title + ".innerText");
+        //        string[] name_item = name.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        //        Directory.CreateDirectory(path + name_item[name_item.Length - 1] + @"\");
+        //        SendJS(0, element + ".forEach((element) => element.style.border = '0px');");
+        //        Sleep(1);
+        //        for (int j = 0; j < countElement; j++)
+        //        {
+        //            //PredictNN predict = nn.Predict(GetImgBrowser(Browsers[0].MainFrame, "document.querySelectorAll('.out-capcha-lab')[" + j.ToString() + "]"));
+        //            //foreach (var v in predict.Tensor.numpy())
+        //            //{
+        //            //    foreach (var v2 in v)
+        //            //        Console.WriteLine(v2.ToString());
+        //            //}
+        //            //Console.WriteLine((ProfiCentrEnumNN)predict.Num);
+        //            //Console.ReadLine();
+        //            //GetImgBrowser(browser.MainFrame, element + "[" + j.ToString() + "]")
+        //            //    .Save(path + new DirectoryInfo(path).GetFiles().Length.ToString() + ".png");
+        //        }
+        //        SendJS(0, reload + ".click();");
+        //        Sleep(2);
+        //    }
+        //}
         public byte[] GetScreenAsync()
         {
             Console.WriteLine(23123);
@@ -898,79 +801,104 @@ else 'error';";
                 return result.Data;
 
         }
-        public List<(Bitmap, PredictNN)> OutCaptchaLab1(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button)
+        //        public List<(Bitmap, PredictNN)> OutCaptchaLab1(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button)
+        //        {
+        //            string js =
+        //@"var img_captcha = " + captcha + @";
+        //if(img_captcha != null)
+        //    'captcha';
+        //else 'ok';";
+        //            string nameImage = SendJSReturn(browser, $"{title}.innerText;");
+        //            string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
+        //            SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
+        //            Sleep(2);
+        //            List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
+        //            for (int i = 0; i < countInput; i++)
+        //            {
+        //                var task = GetImgBrowser(browser.MainFrame, $"{input}[" + i.ToString() + "]");
+        //                task.Wait();
+        //                Bitmap image = task.Result;
+        //                PredictNN predict = nn.Predict(image);
+        //                imageHistoryPredict.Add((image, predict));
+        //                if (value == EnumValues[predict.Num])
+        //                    SendJS(browser, $"{input}[" + i + "].querySelector('input').checked = true;");
+        //            }
+        //            SendJS(browser, $"{button}.click();");
+        //            return imageHistoryPredict;
+        //        }
+        public async Task<StatusJS> OutCaptchaLabAsync(
+          IBrowser browser,
+          List<string> EnumValues,
+          string title,
+          string captcha,
+          string input,
+          int countInput,
+          string button,
+          string information,
+          string? reload = null)
         {
-            string js =
-@"var img_captcha = " + captcha + @";
-if(img_captcha != null)
-    'captcha';
-else 'ok';";
-            string nameImage = SendJSReturn(browser, $"{title}.innerText;");
-            string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
-            SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
-            Sleep(2);
-            List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
-            for (int i = 0; i < countInput; i++)
-            {
-                Bitmap image = GetImgBrowser(browser.MainFrame, $"{input}[" + i.ToString() + "]");
-                PredictNN predict = nn.Predict(image);
-                imageHistoryPredict.Add((image, predict));
-                if (value == EnumValues[predict.Num])
-                    SendJS(browser, $"{input}[" + i + "].querySelector('input').checked = true;");
-            }
-            SendJS(browser, $"{button}.click();");
-            return imageHistoryPredict;
-        }
-        public StatusJS OutCaptchaLab(IBrowser browser, NN nn, List<string> EnumValues, string title, string captcha, string input, int countInput, string button, string information, string? reload = null)
-        {
-            string js =
-@"var img_captcha = " + captcha + @";
-if(img_captcha != null)
-    "+(int)StatusJS.Error+ @";
-else "+(int)StatusJS.OK+@";";
-            if(InjectJS(browser, js) == StatusJS.OK)
-                return StatusJS.OK;           
+            string js = @$"var img_captcha = {captcha};
+                   if(img_captcha != null) 
+                       {(int)StatusJS.Error};
+                   else {(int)StatusJS.OK};";
+
+            if (await InjectJSAsync(browser, js) == StatusJS.OK)
+                return StatusJS.OK;
+
             BoundObject boundObject = new BoundObject();
-            WaitChangeElement(browser, boundObject, information);
+            await WaitChangeElementAsync(browser, boundObject, information);
+
             for (int iteration = 0; iteration < 10; iteration++)
             {
-                string nameImage = SendJSReturn(browser, $"{title}.innerText;");
-                string? value = EnumValues.Find(item => nameImage.IndexOf(item) != -1);
+                string nameImage = await SendJSReturnAsync(browser, $"{title}.innerText;");
+                string? value = EnumValues.Find(item => nameImage.IndexOf(item, StringComparison.OrdinalIgnoreCase) != -1);
+
                 if (value == null)
                     return StatusJS.Error;
-                SendJS(browser, $"{input}.forEach((element) => element.style.border = '0px');");
-                Sleep(2);
-                List<(Bitmap, PredictNN)> imageHistoryPredict = new List<(Bitmap, PredictNN)>();
-                for(int i =0; i < countInput; i++)
+
+                await SendJSAsync(browser, $"{input}.forEach((element) => element.style.border = '0px');");
+                await Task.Delay(2000);
+
+                List<Bitmap> imageList = new();
+                for (int i = 0; i < countInput; i++)
                 {
-                    Bitmap image = GetImgBrowser(browser.MainFrame, $"{input}[" + i.ToString() + "]");
-                    PredictNN predict = nn.Predict(image);
-                    imageHistoryPredict.Add((image, predict));
-                    if (value == EnumValues[predict.Num])
-                        SendJS(browser, $"{input}[" + i + "].querySelector('input').checked = true;");
+                    var img = await GetImgBrowserAsync(browser.MainFrame, $"{input}[{i}]");
+                    imageList.Add(img);
                 }
+
+                ImageDecode imageDecode = new()
+                {
+                    Files = imageList,
+                    Site = Type,
+                    ImageCategory = 1
+                };
+
+                await ApiClient.SendBitmapsAsync(imageDecode);
+
+                if (value == EnumValues[1])
+                    await SendJSAsync(browser, $"{input}[1].querySelector('input').checked = true;");
+
                 boundObject.ResetEvent();
-                SendJS(browser, $"{button}.click();");
+                await SendJSAsync(browser, $"{button}.click();");
+
                 string ev = boundObject.GetValue();
-                if (ev == "error")
+                if (ev == "error" || ev == "Нужно подтвердить, что Вы не робот!")
                 {
-                    SaveHistoryCaptcha(imageHistoryPredict, EnumValues, value);
-                }
-                else if (ev == "Нужно подтвердить, что Вы не робот!")
-                {
-                    SaveHistoryCaptcha(imageHistoryPredict, EnumValues, value);
+                    // SaveHistoryCaptcha(imageHistoryPredict, EnumValues, value);
                 }
                 else if (ev == "Ваш аккаунт заблокирован")
                 {
-                    AccountBlock();
                     return StatusJS.Block;
                 }
                 else
                     return StatusJS.OK;
-                if(reload != null)
-                    SendJS(browser, $"{reload}.click();");
-                Sleep(3);
+
+                if (reload != null)
+                    await SendJSAsync(browser, $"{reload}.click();");
+
+                await Task.Delay(3000);
             }
+
             return StatusJS.Error;
         }
     }

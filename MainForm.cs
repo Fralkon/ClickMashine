@@ -2,42 +2,28 @@
 using CefSharp.WinForms;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Data;
+using ClickMashine.Models;
 
 namespace ClickMashine
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        AutoClicker? autoClicker;
-        public MySQL mySQL = new MySQL("ClickMashine");
-        public int Step { private set; get; }
-        public int ID { private set; get; }
-        public const string PATH_SETTING = @"C:/ClickMashine/Settings/";
-        public Form1(string[] args)
+        AutoClicker autoClicker;
+        public MainForm(string[] args)
         {
             InitializeComponent();
             CefSettings settings = new CefSettings();
-            if (args.Length > 0) { Step = int.Parse(args[0]); }
-            else { Step = 0; }
-            using (StreamReader reader = new StreamReader(PATH_SETTING + "IDMashine.txt"))
+            var settingBrowser = new SettingBrowser()
             {
-                string text = reader.ReadToEnd();
-                ID = int.Parse(text);
-            }
-            using (DataTable settingData = mySQL.GetDataTableSQL("SELECT user_agent, language FROM step WHERE step = " + Step.ToString() + " AND id_object = " + ID.ToString()))
-            {
-                if (settingData.Rows.Count > 0)
-                {
-                    settings.UserAgent = settingData.Rows[0]["user_agent"].ToString();
-                    settings.AcceptLanguageList = settingData.Rows[0]["language"].ToString();
-                }
-                else
-                {
-                    throw new Exception("Error load setting CefSharp");
-                }
-                settings.CachePath = PATH_SETTING + "Cache/" + Step.ToString();
-                settings.CefCommandLineArgs.Add("disable-gpu", "");
-            }
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+                AcceptLanguageList = "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                Auths = [new AuthData("iliya9401@gmail.com", "Ussd1801", EnumTypeSite.Aviso)]
+            };
+            autoClicker = new AutoClicker(this, settingBrowser.Auths);
+            settings.UserAgent = settingBrowser.UserAgent;
+            settings.AcceptLanguageList = settingBrowser.AcceptLanguageList;
+            settings.CefCommandLineArgs.Add("disable-gpu", "1");
+            settings.CefCommandLineArgs.Add("disable-gpu-compositing", "1");
             Cef.Initialize(settings);
         }
         public EventWaitHandle event_eny = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -47,14 +33,11 @@ namespace ClickMashine
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            autoClicker.Close();
-            mySQL.SendSQL("UPDATE object SET status = 'offline' WHERE id = " + ID.ToString());
+            autoClicker?.Close();
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            autoClicker = new AutoClicker(this,mySQL);
-            Thread thread = new Thread(autoClicker.ClickSurf);
-            thread.Start();
+            Task.Run(autoClicker.ClickSurfAsync);
         }
         public void FocusTab(IBrowser browser)
         {

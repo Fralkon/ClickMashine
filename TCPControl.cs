@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using ClickMashine.Models;
+using System.Data;
 using System.Drawing.Imaging;
 using System.Net;
 using System.Net.Sockets;
@@ -16,18 +17,18 @@ namespace ClickMashine
     }
     public static class IPManager
     {
-        public static IPEndPoint GetEndPoint(MySQL mySQL, int IDObject)
-        {
-            using (DataTable dt = mySQL.GetDataTableSQL("SELECT ip, port FROM object WHERE id = " + IDObject.ToString()))
-            {
-                if (dt.Rows.Count > 0)
-                {
-                    return new IPEndPoint(IPAddress.Parse(dt.Rows[0]["ip"].ToString()),
-                        int.Parse(dt.Rows[0]["port"].ToString()));
-                }
-                else return null;
-            }
-        }
+        //public static IPEndPoint GetEndPoint(MySQL mySQL, int IDObject)
+        //{
+        //    using (DataTable dt = mySQL.GetDataTableSQL("SELECT ip, port FROM object WHERE id = " + IDObject.ToString()))
+        //    {
+        //        if (dt.Rows.Count > 0)
+        //        {
+        //            return new IPEndPoint(IPAddress.Parse(dt.Rows[0]["ip"].ToString()),
+        //                int.Parse(dt.Rows[0]["port"].ToString()));
+        //        }
+        //        else return null;
+        //    }
+        //}
     }
     public enum TypeMessage
     {
@@ -123,14 +124,14 @@ namespace ClickMashine
         public const int Port = 7000;
         public event EventHandler<EventArgTCPClient> ?MessageReceived;
         TcpListener Listener;
-        public TCPControl(MySQL mySQL, int IDMashine)
+        public TCPControl(int IDMashine)
         {            
             IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("192") != -1);
             //IPAddress iP = Dns.GetHostAddresses(Dns.GetHostName()).First<IPAddress>(f => f.AddressFamily == AddressFamily.InterNetwork && f.MapToIPv4().ToString().IndexOf("172") != -1);
             if (iP == null)
                 throw new Exception("Error IP server");
 
-            mySQL.SendSQL("UPDATE object SET status = 'online' , ip = '" + iP.ToString() + "' , port = " + Port.ToString() + " WHERE id = " + IDMashine.ToString());
+            //mySQL.SendSQL("UPDATE object SET status = 'online' , ip = '" + iP.ToString() + "' , port = " + Port.ToString() + " WHERE id = " + IDMashine.ToString());
 
             Listener = new TcpListener(iP,Port);
             Listener.Start();
