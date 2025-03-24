@@ -3,7 +3,6 @@ using CefSharp.WinForms;
 using System.Xml.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using ClickMashine_11;
 
 namespace ClickMashine
 {
@@ -21,8 +20,8 @@ namespace ClickMashine
         ErrorWait,
         Continue,
         Wait,
-        OK,
         OK1,
+        OK,
         End,
         None,
         Block
@@ -128,11 +127,26 @@ namespace ClickMashine
         }
         public new string Message {  get { return $"Site : {TypeSite}\nJS : {JS}\nMessage : {mess}"; } }
     }
-    abstract class Site : MyTask
+    abstract class Site
     {
+        protected CancellationToken cancellationToken = new CancellationToken();
+        Task task;
+        protected bool CheckCancellationToken()
+        {
+            return cancellationToken.IsCancellationRequested;
+        }
+        public void Start()
+        {
+            task.Start();
+        }
+        public void Stop()
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+        }
         protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public Form1 form;
-        public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
+        public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset); 
+        private TaskCompletionSource<bool> pageLoadedTcs = new TaskCompletionSource<bool>();
         public EventWaitHandle eventBrowserCreated = new EventWaitHandle(false, EventResetMode.ManualReset);
         protected List<(IWebBrowser, IBrowser)> BrowserConrols = new List<(IWebBrowser, IBrowser)>();
         protected IBrowser? LastBrowser;
@@ -140,7 +154,6 @@ namespace ClickMashine
         protected string HostName = String.Empty;
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser? main_browser;
-        public MyLifeSplanHandler? lifeSplanHandler;
         protected Auth? auth;
         public TCPMessageManager TCPMessageManager;
         protected MySQL mySQL;
@@ -151,15 +164,19 @@ namespace ClickMashine
         {
             this.form = form;
             this.auth = auth;
+            task = new Task(StartSurf);
         }
         public Site(Form1 form) : base()
         {
+            task = new Task(StartSurf);
             this.form = form;
         }
         public abstract bool Auth(Auth auth);
-        protected override void StartSurf()
+        protected virtual async void StartSurf()
         {
-            Initialize();
+            await SleepAsync(2);
+            await InitializeAsync();
+            await SleepAsync(2);
             if (!Auth(auth))
             {
                 if (!waitHandle.WaitOne())
@@ -171,12 +188,58 @@ namespace ClickMashine
                 Sleep(600);
             }
         }
-        public void SomedoIt()
+        protected virtual async Task InitializeAsync()
         {
+            eventLoadPage.Reset();          
+
+            form.Invoke(new Action(() =>
+            {
+                MyLifeSplanHandler lifeSplanHandler = new MyLifeSplanHandler(this);
+                main_browser = new ChromiumWebBrowser(homePage);
+                main_browser.LifeSpanHandler = lifeSplanHandler;
+
+                menuItemSite = new ToolStripMenuItem();
+                menuItemSite.Name = Type.ToString();
+                menuItemSite.Size = new Size(180, 22);
+                menuItemSite.Text = Type.ToString();
+
+                siteStripComboBox = new ToolStripComboBox()
+                {
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    Name = Type.ToString(),
+                    Size = new Size(121, 23)
+                };
+
+                foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
+                    siteStripComboBox.Items.Add(flavourName);
+
+                siteStripComboBox.SelectedIndexChanged += SiteStripComboBox_TextChanged;
+                menuItemSite.DropDownItems.Add(siteStripComboBox);
+                siteStripComboBox.Text = StatusSite.login.ToString();
+                form.waitToolStripMenuItem.DropDownItems.Add(menuItemSite);
+                TabPage newTabPage = new TabPage
+                {
+                    Text = Type.ToString(),
+                    BorderStyle = BorderStyle.None,
+                    Dock = DockStyle.Fill
+                };
+                newTabPage.Controls.Add(main_browser);
+                main_browser.Dock = DockStyle.Fill;
+                form.tabControl1.TabPages.Add(newTabPage);
+                form.tabControl1.SelectedTab = newTabPage;
+            }));
+
+            // Ожидаем загрузку страницы
+            bool loaded = await Task.WhenAny(pageLoadedTcs.Task, Task.Delay(15000)) == pageLoadedTcs.Task;
+
+            if (!loaded)
+            {
+                Console.WriteLine("Ошибка: страница не загрузилась за 15 секунд!");
+            }
         }
         protected virtual void Initialize()
         {
-            lifeSplanHandler = new MyLifeSplanHandler(this);
+            MyLifeSplanHandler lifeSplanHandler = new MyLifeSplanHandler(this);
             main_browser = new ChromiumWebBrowser(homePage);
             main_browser.LifeSpanHandler = lifeSplanHandler;
 
@@ -547,6 +610,16 @@ catch(e)
             Console.WriteLine("---------------------------");
 #endif
             Task.Delay(sec * 1000).Wait();
+        }
+        public Task SleepAsync(int sec)
+        {
+#if DEBUG
+            Console.WriteLine("---------------------------");
+            Console.WriteLine("Sleep: " + sec.ToString());
+            Console.WriteLine("Type: " + Type.ToString());
+            Console.WriteLine("---------------------------");
+#endif
+            return Task.Delay(sec * 1000);
         }
         public void Sleep(string sec)
         {

@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using ClickMashine;
 using PureHDF.Selections;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClickMashine
+namespace ClickMashine.Sites.Aviso
 {
     class Aviso : Site
     {
@@ -40,16 +41,16 @@ function FirstStep()
 function SecondStep()
 {
     var start_ln = surf_cl[n].querySelector('.start-yes-serf');
-    if (start_ln != null) { n++; start_ln.click(); return "+(int) StatusJS.OK+@"; }
-    else { return "+(int)StatusJS.Wait+ @"; }
+    if (start_ln != null) { n++; start_ln.click(); return " + (int)StatusJS.OK + @"; }
+    else { return " + (int)StatusJS.Wait + @"; }
 }
 function FirstStep()
 {
-    if (n >= surf_cl.length) return " + (int) StatusJS.End+ @";
-    else if (surf_cl[n].innerText.length > 200) { n++; "+(int) StatusJS.Continue+ @"; }
+    if (n >= surf_cl.length) return " + (int)StatusJS.End + @";
+    else if (surf_cl[n].innerText.length > 200) { n++; " + (int)StatusJS.Continue + @"; }
     else
     {
-        surf_cl[n].querySelector('a').click(); return "+(int) StatusJS.OK+@";
+        surf_cl[n].querySelector('a').click(); return " + (int)StatusJS.OK + @";
     }
 }";
             Click = new Surfing(this, "https://aviso.bz/work-serf", ClickJS, ClickMiddle, SurfingType.Click);
@@ -62,6 +63,7 @@ function FirstStep()
         public override bool Auth(Auth auth)
         {
             IBrowser? browser = GetBrowser(0);
+
             if (browser == null)
                 return false;
             LoadPage(browser, "https://aviso.bz/login");
@@ -88,9 +90,9 @@ else " + (int)StatusJS.End + @";";
                 string jsWaitYouTube =
 @"function WaitEnd(){
 if(document.querySelector('#capcha-tr-block').innerText.length > 3)
-    return "+(int)StatusJS.OK+ @";
+    return " + (int)StatusJS.OK + @";
 else
-    return "+(int)StatusJS.Wait+@";}";
+    return " + (int)StatusJS.Wait + @";}";
                 form.FocusTab(browser);
                 if (StatusJS.OK != FunctionWait(browser, "WaitEnd();", jsWaitYouTube))
                 {
@@ -98,7 +100,7 @@ else
                     if (WaitTime(browser, @"player.setVolume(0); player.seekTo(0, true); b = true; c = true;  timerInitial;"))
                     {
                         form.FocusTab(browser);
-                        if(StatusJS.OK == FunctionWait(browser, "WaitEnd();", jsWaitYouTube))
+                        if (StatusJS.OK == FunctionWait(browser, "WaitEnd();", jsWaitYouTube))
                             return true;
                     }
                 }
@@ -138,7 +140,7 @@ else
         }
         private bool MailMiddle(IBrowser browser)
         {
-            if(WaitTime(browser, "document.querySelector('#tmr').innerText"))
+            if (WaitTime(browser, "document.querySelector('#tmr').innerText"))
             {
                 string js =
 @"var range = document.querySelector('[type=""range""]');
@@ -147,9 +149,9 @@ if (range != null)
     range.value = range.max;
     document.querySelector('form').submit(); " + (int)StatusJS.End + @";
 }
-else { " + (int)StatusJS.Error +@"; }";
+else { " + (int)StatusJS.Error + @"; }";
 
-                if(InjectJS(browser, js) == StatusJS.End)
+                if (InjectJS(browser, js) == StatusJS.End)
                     return true;
             }
             return false;
