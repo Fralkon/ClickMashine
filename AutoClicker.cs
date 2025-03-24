@@ -6,7 +6,6 @@ using ClickMashine.Sites.Aviso;
 
 public class AutoClicker
 {
-    private readonly TCPControl _tcpControl;
     private readonly MainForm _form;
     private readonly List<Site> _siteList = new();
     private IEnumerable<AuthData> auths;
@@ -62,9 +61,9 @@ public class AutoClicker
     {
         foreach (var site in _siteList)
         {
-            _tasks.Add(site.StartSurf()); // Просто добавляем Task
+            _tasks.Add( site.Start());
         }
-        Task.WhenAll(_tasks);
+        Task.WaitAll( _tasks );
     }
 
     public void Close()

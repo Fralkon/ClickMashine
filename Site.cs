@@ -12,6 +12,32 @@ namespace ClickMashine
 {
     abstract class Site
     {
+        private readonly CancellationTokenSource _cts = new();
+        private Task? _task;
+
+        protected bool CheckCancellationToken() => _cts.Token.IsCancellationRequested;
+
+        public Task Start()
+        {
+            if (_task is { Status: TaskStatus.Running })
+            {
+                Console.WriteLine("[Warning] Задача уже запущена.");
+                return _task;
+            }
+
+            _task = Task.Run(() => StartSurf(), _cts.Token);
+            return _task;
+        }
+        public void Stop()
+        {
+            if (_task is not { Status: TaskStatus.Running })
+            {
+                Console.WriteLine("[Warning] Задача не запущена или уже остановлена.");
+                return;
+            }
+
+            _cts.Cancel();
+        }
         protected ManagerSurfing ManagerSurfing = new ManagerSurfing();
         public MainForm form;
         public EventWaitHandle eventLoadPage = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -22,7 +48,6 @@ namespace ClickMashine
         protected string HostName = String.Empty;
         public EnumTypeSite Type { get; protected set; }
         public ChromiumWebBrowser? main_browser;
-        public MyLifeSplanHandler? lifeSplanHandler;
         protected AuthData? auth;
         public TCPMessageManager TCPMessageManager;
         protected ToolStripMenuItem menuItemSite;
@@ -41,7 +66,7 @@ namespace ClickMashine
         public abstract Task<bool> Auth(AuthData auth);
         public async Task StartSurf()
         {
-            Initialize();
+            await InitializeAsync();
 
             if (!await Auth(auth))
             {
@@ -55,44 +80,32 @@ namespace ClickMashine
             //    await Task.Delay(600);
             //}
         }
-        public void Stop()
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                Console.WriteLine("[Warning] Задача не запущена или уже остановлена.");
-                return;
-            }
-
-            cancellationToken.Cancel();
-        }
-        protected virtual void Initialize()
-        {
-            lifeSplanHandler = new MyLifeSplanHandler(this);
-            main_browser = new ChromiumWebBrowser(homePage);
-            main_browser.LifeSpanHandler = lifeSplanHandler;
-
-            menuItemSite = new ToolStripMenuItem();
-            menuItemSite.Name = Type.ToString();
-            menuItemSite.Size = new Size(180, 22);
-            menuItemSite.Text = Type.ToString();
-
-            siteStripComboBox = new ToolStripComboBox()
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Name = Type.ToString(),
-                Size = new Size(121, 23)
-            };
-            foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
-                siteStripComboBox.Items.Add(flavourName);
-
-            siteStripComboBox.SelectedIndexChanged += SiteStripComboBox_TextChanged;
-
-            menuItemSite.DropDownItems.Add(siteStripComboBox);
-
-            siteStripComboBox.Text = StatusSite.login.ToString();
-
+        protected virtual async Task InitializeAsync()
+        {         
             form.Invoke(new Action(() =>
             {
+                main_browser = new ChromiumWebBrowser(homePage);
+                main_browser.LifeSpanHandler = new MyLifeSplanHandler(this);
+
+                menuItemSite = new ToolStripMenuItem();
+                menuItemSite.Name = Type.ToString();
+                menuItemSite.Size = new Size(180, 22);
+                menuItemSite.Text = Type.ToString();
+
+                siteStripComboBox = new ToolStripComboBox()
+                {
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    Name = Type.ToString(),
+                    Size = new Size(121, 23)
+                };
+                foreach (string flavourName in Enum.GetNames(typeof(StatusSite)))
+                    siteStripComboBox.Items.Add(flavourName);
+
+                siteStripComboBox.SelectedIndexChanged += SiteStripComboBox_TextChanged;
+
+                menuItemSite.DropDownItems.Add(siteStripComboBox);
+
+                siteStripComboBox.Text = StatusSite.login.ToString();
                 form.waitToolStripMenuItem.DropDownItems.Add(menuItemSite);
                 TabPage newTabPage = new TabPage();
                 newTabPage.Text = Type.ToString();
@@ -104,7 +117,7 @@ namespace ClickMashine
                 form.tabControl1.SelectedTab = newTabPage;
             }));
 
-            eventLoadPage.WaitOne(15000);
+            bool loaded = await Task.Run(() => eventLoadPage.WaitOne(15000));
         }
         protected string LoadJSOnFileBase(string nameFile,params object[] args)
         {

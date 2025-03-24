@@ -1,5 +1,6 @@
 ﻿using CefSharp;
 using ClickMashine.Models;
+using System.Runtime.CompilerServices;
 
 namespace ClickMashine.Sites.Profitcentr
 {
@@ -113,9 +114,9 @@ namespace ClickMashine.Sites.Profitcentr
             }
             return false;
         }
-        protected override void Initialize()
+        protected override Task InitializeAsync()
         {
-            base.Initialize();
+            return base.InitializeAsync();
         }
         private async Task<bool> YouTubeMiddle(IBrowser browser)
         {
